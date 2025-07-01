@@ -1,0 +1,21 @@
+{
+  "home": [
+    "PEREZ",
+    "PEREZ",
+    "42' GUPONT ⇄ PEREZ",
+    "46' GUPONT ⇄ PEREZ",
+    "66' GUPONT ⇄ PEREZ",
+    "ERU"
+  ],
+  "away": [
+    "LOTRIAN"
+  ],
+  "compo_home": {
+    "joueurs": [],
+    "remplacants": []
+  },
+  "compo_away": {
+    "joueurs": [],
+    "remplacants": []
+  }
+}

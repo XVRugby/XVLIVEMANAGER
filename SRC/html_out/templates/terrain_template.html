@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Terrain de Rugby</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: transparent;
+            font-family: Arial, sans-serif;
+        }
+
+        .terrain-wrapper {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .terrain-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            background: transparent;
+        }
+
+        .terrain-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("/static/terrain_rugby.png");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 1;
+        }
+
+        .joueur {
+            position: absolute;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: move;
+            white-space: nowrap;
+            z-index: 2;
+            user-select: none;
+        }
+
+        .joueur[data-team="home"] {
+            background-color: #002b5c;
+            color: white;
+        }
+
+        .joueur[data-team="away"] {
+            background-color: #b00000;
+            color: white;
+        }
+
+        .arrow {
+            position: absolute;
+            width: 2px;
+            background-color: red;
+            z-index: 0;
+            transform-origin: top left;
+        }
+
+        @media screen and (max-width: 768px) {
+            .joueur {
+                font-size: 10px;
+                padding: 2px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="terrain-wrapper">
+    <div class="terrain-container" id="terrain">
+        {% for j in terrain_home %}
+            <div class="joueur" data-team="home" style="left: {{ j.x }}%; top: {{ j.y }}%;" draggable="true">{{ j.nom }}</div>
+        {% endfor %}
+        {% for j in terrain_away %}
+            <div class="joueur" data-team="away" style="left: {{ j.x }}%; top: {{ j.y }}%;" draggable="true">{{ j.nom }}</div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    const joueurs = document.querySelectorAll('.joueur');
+    const terrain = document.getElementById('terrain');
+
+    joueurs.forEach(joueur => {
+        joueur.addEventListener('dragstart', (e) => {
+            joueur.classList.add('dragging');
+            e.dataTransfer.setDragImage(new Image(), 0, 0);
+        });
+
+        joueur.addEventListener('dragend', () => {
+            joueur.classList.remove('dragging');
+        });
+    });
+
+    terrain.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+
+    terrain.addEventListener('drop', (e) => {
+        const dragging = document.querySelector('.dragging');
+        if (dragging) {
+            const rect = terrain.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width * 100;
+            const y = (e.clientY - rect.top) / rect.height * 100;
+            dragging.style.left = `${x}%`;
+            dragging.style.top = `${y}%`;
+        }
+    });
+
+    // ➕ Flèches rouges (remplacements)
+    const arrows = {{ arrows|tojson }};
+    arrows.forEach(a => {
+        const x1 = a.x1;
+        const y1 = a.y1;
+        const x2 = a.x2;
+        const y2 = a.y2;
+
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const length = Math.sqrt(dx*dx + dy*dy);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+        const div = document.createElement('div');
+        div.className = 'arrow';
+        div.style.left = `${x1}%`;
+        div.style.top = `${y1}%`;
+        div.style.height = `${length}%`;
+        div.style.transform = `rotate(${angle}deg)`;
+        terrain.appendChild(div);
+    });
+</script>
+
+<script>
+function getPlayerDataByTeam(prefix) {
+    const joueurs = document.querySelectorAll(`.joueur[data-team="${prefix}"]`);
+    return Array.from(joueurs).map(j => {
+        const left = parseFloat(j.style.left || "0");
+        const top = parseFloat(j.style.top || "0");
+        return {
+            nom: j.textContent.trim(),
+            x: left,
+            y: top
+        };
+    });
+}
+
+function updateHiddenFields() {
+    const homeData = getPlayerDataByTeam("home");
+    const awayData = getPlayerDataByTeam("away");
+
+    const homeField = document.querySelector('input[name="terrain_home"]');
+    const awayField = document.querySelector('input[name="terrain_away"]');
+
+    if (homeField) homeField.value = JSON.stringify(homeData);
+    if (awayField) awayField.value = JSON.stringify(awayData);
+}
+
+document.querySelectorAll('form[action="/update_remplacants"]').forEach(form => {
+    form.addEventListener("submit", () => {
+        updateHiddenFields();
+    });
+});
+</script>
+
+</body>
+</html>

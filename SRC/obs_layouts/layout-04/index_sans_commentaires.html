@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="fr">
+   <head>
+      <meta charset="UTF-8">
+      <title>LAYOUT 04</title>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+      <style>
+         :root {
+         --scoreboard-height: 36px;
+         --mainblock-width: auto;
+         --sep-width: 2px;
+         --side-padding: 14px;
+         --col-padding: 12px;
+         }
+         html, body {
+         margin: 0; padding: 0;
+         width: 100vw; height: 100vh;
+         background: transparent;
+         font-family: Arial, sans-serif;
+         color: #fff;
+         overflow: hidden;
+         }
+         #infos-topbar-box,
+         #leftbar,
+         #rightbar,
+         #commentbar,
+         #partners-bar,
+         #last-matches,
+         #obs-marquee {
+         display: none !important;
+         }
+         #pro-scoreboard {
+         position: absolute;
+         top: 32px;
+         left: 1.5vw;
+         height: var(--scoreboard-height);
+         display: flex;
+         align-items: center;
+         z-index: 10;
+         box-shadow: none;
+         border-radius: 0;
+         }
+         #pro-timer {
+         width: 75px;
+         height: var(--scoreboard-height);
+         background: linear-gradient(180deg, #eeeded 0%, #e0e0e0 100%);
+         color: #211f5c;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-size: 15px;
+         font-weight: 800;
+         letter-spacing: 1px;
+         user-select: none;
+         border-radius: 0;
+         padding-left: var(--side-padding);
+         padding-right: var(--side-padding);
+         box-sizing: border-box;
+         white-space: nowrap;
+         }
+         .pro-small-block {
+         width: 8px;
+         height: var(--scoreboard-height);
+         background: linear-gradient(180deg, #28468f 0%, #4d7ef2 100%);
+         margin: 0;
+         border-radius: 0;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         box-shadow: 0 0 4px #16316a44 inset;
+         transition: background 0.2s;
+         }
+         .pro-small-block.red {
+         background: linear-gradient(180deg, #de2a33 0%, #ff6767 100%);
+         margin-left: 0;
+         border-radius: 0;
+         box-shadow: 0 0 4px #bb191933 inset;
+         transition: background 0.2s;
+         }
+         .pro-sep {
+         width: var(--sep-width);
+         height: var(--scoreboard-height);
+         background: linear-gradient(180deg, #3557b8 0%, #1532aa 100%);
+         margin: 0;
+         border-radius: 0;
+         align-self: center;
+         display: flex;
+         box-shadow: 0 0 3px #03168055;
+         }
+         #pro-main-block {
+         width: var(--mainblock-width);
+         height: var(--scoreboard-height);
+         background: linear-gradient(120deg, #328aff 0%, #0a2991 65%, #031680 100%);
+         background-size: 400% 400%;
+         color: #ebf1fc;
+         display: flex;
+         align-items: center;
+         position: relative;
+         overflow: visible;
+         border-radius: 0;
+         box-shadow: 0 4px 20px 0 rgba(10, 30, 100, 0.12);
+         padding: 0;
+         margin: 0;
+         animation: animate-gradient 20s ease-in-out infinite;
+         }
+         @keyframes animate-gradient {
+         0% { background-position: 0% 50%; }
+         50% { background-position: 100% 50%; }
+         100% { background-position: 0% 50%; }
+         }
+         .pro-team-col {
+         display: flex;
+         align-items: center;
+         position: relative;
+         min-width: 0;           
+         height: var(--scoreboard-height);
+         border-radius: 0;
+         padding: 0 var(--col-padding);
+         box-sizing: border-box;
+         flex: 0 0 auto !important;
+         }
+         .pro-team-name {
+         font-size: 15px;
+         font-weight: 700;
+         min-width: 0;             
+                  
+         overflow: visible;
+         white-space: nowrap;
+         text-overflow: ellipsis;
+         letter-spacing: 0.7px;
+         text-align: left;
+         display: block;
+         margin: 0;
+         padding: 0 1px;
+         position: relative;
+         border-radius: 0;
+         }
+         .pro-team-col.home {
+         justify-content: flex-start;
+         }
+         .pro-team-col.away {
+         justify-content: flex-end;
+         }
+         .pro-team-col.away .pro-team-name {
+         text-align: right;
+         }
+         .pro-score {
+         font-size: 17px;
+         font-weight: 900;
+         color: #ebf1fc;
+         min-width: 20px;
+         text-align: center;
+         align-self: center;
+         margin: 0 6px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         height: var(--scoreboard-height);
+         line-height: var(--scoreboard-height);
+         text-shadow: 0 1px 4px #112258cc;
+         border-radius: 0;
+         }
+         .pro-score-sep {
+         width: var(--sep-width);
+         height: 35%;
+         background: linear-gradient(180deg, #3557b8 0%, #1532aa 100%);
+         margin: 0 4px;
+         align-self: center;
+         border-radius: 0;
+         box-shadow: 0 0 3px #03168033;
+         display: flex;
+         }
+         .pro-cartons {
+         position: absolute;
+         top: -10px;
+         left: 0;
+         display: flex;
+         gap: 2px;
+         z-index: 10;
+         height: 12px;
+         transition: left 0.1s;
+         }
+         .pro-team-col.away .pro-cartons {
+         right: 0;
+         left: auto;
+         flex-direction: row-reverse;
+         transition: right 0.1s;
+         }
+         .pro-carton {
+         width: 8px;
+         height: 12px;
+         border-radius: 0;
+         margin: 0;
+         display: inline-block;
+         box-shadow: 0 0 2px #222;
+         }
+         .pro-carton.jaune { background: #ffe600; border: 1px solid #d1b200; }
+         .pro-carton.rouge { background: #e52323; border: 1px solid #aa1010; }
+         @media (max-width: 700px) {
+         #pro-scoreboard { transform: scale(0.85); left: 0; top: 0; }
+         #pro-main-block { width: auto !important; padding: 0 var(--side-padding); }
+         .pro-team-name { max-width: 38px; font-size: 9px;}
+         #pro-timer { width: 38px; font-size: 11px; }
+         .pro-cartons { top: -8px; }
+         }
+         #subs-pro-container-home, #subs-pro-container-away {
+         position: fixed;
+         bottom: 2vh;
+         width: 290px;
+         z-index: 99;
+         border-radius: 0;
+         overflow: hidden;
+         background: none;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         opacity: 1;
+         transition: opacity 0.5s;
+         margin: 0;
+         }
+         #subs-pro-container-home {
+         left: 2vw;
+         }
+         #subs-pro-container-away {
+         right: 2vw;
+         }
+         #subs-pro-container-home.hide,
+         #subs-pro-container-away.hide {
+         opacity: 0;
+         pointer-events: none;
+         transition: opacity 0.5s;
+         }
+         .subs-pro-header {
+         width: 290px;
+         height: 36px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-size: 15px;
+         font-weight: 600;
+         color: #51b4e6;
+         letter-spacing: 1px;
+         background: linear-gradient(-120deg, #328aff 0%, #0a2991 65%, #031680 100%);
+         border-radius: 0;
+         border-top: 2px solid #3557b8;
+         text-transform: uppercase;
+         user-select: none;
+         }
+         .subs-pro-row {
+         width: 290px;
+         height: 36px;
+         display: grid;
+         grid-template-columns: 40px 12px 84px 12px 18px 12px 84px 12px;
+         align-items: center;
+         font-size: 14px;
+         font-weight: 600;
+         color: #ebf1fc;
+         background: linear-gradient(120deg, #328aff 0%, #0a2991 65%, #031680 100%);
+         border-radius: 0;
+         position: relative;
+         overflow: hidden;
+         text-overflow: ellipsis;
+         white-space: nowrap;
+         opacity: 0;
+         animation: fadeInUp 0.6s forwards;
+         }
+         .subs-pro-row.bg-inverse {
+         background: linear-gradient(-120deg, #328aff 0%, #0a2991 65%, #031680 100%);
+         }
+         .subs-pro-minute {
+         color: #ffd900;
+         font-size: 13px;
+         font-weight: 900;
+         min-width: 40px;
+         max-width: 40px;
+         text-align: right;
+         padding-right: 0;
+         justify-self: end;
+         }
+         .subs-pro-space {
+         width: 12px;
+         min-width: 12px;
+         max-width: 12px;
+         display: block;
+         user-select: none;
+         }
+         .subs-pro-out, .subs-pro-in {
+         min-width: 0;
+         max-width: 90px;
+         text-overflow: ellipsis;
+         overflow: hidden;
+         white-space: nowrap;
+         font-weight: 700;
+         color: #ebf1fc;
+         display: block;
+         }
+         .subs-pro-out { text-align: right; }
+         .subs-pro-in { text-align: left; }
+         .subs-pro-emoji {
+         width: 18px;
+         text-align: center;
+         font-size: 1.2em;
+         user-select: none;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         }
+         .subs-pro-separator {
+         height: 1px;
+         background: linear-gradient(90deg, #3557b8 0%, #1532aa 100%);
+         margin: 0;
+         border: none;
+         width: 100%;
+         opacity: 0;
+         transition: opacity 0.4s;
+         }
+         .subs-pro-separator.visible {
+         opacity: 0.75;
+         }
+         @keyframes fadeInUp {
+         from {
+         opacity: 0;
+         transform: translateY(12px);
+         }
+         to {
+         opacity: 1;
+         transform: translateY(0);
+         }
+         }
+         @keyframes fadeOut {
+         to {
+         opacity: 0;
+         transform: translateY(24px);
+         }
+         }
+         #pro-blessure-block {
+         position: absolute;
+         left: calc(1.5vw);  
+         top: calc(32px + 36px);                 
+         width: auto;
+         height: 18px;
+         background: rgba(0,0,0,0.74);
+         border-radius: 0;
+         z-index: 12;
+         font-size: 13px;
+         font-weight: 700;
+         color: #ffd900;
+         display: flex;
+         align-items: center;
+         overflow: hidden;
+         opacity: 0;
+         transition: opacity 0.35s, transform 0.35s;
+         transform: translateY(6px);
+         box-shadow: none;
+         padding-right: 18px;
+         gap: 10px;
+         }
+         #pro-blessure-block.visible {
+         opacity: 1;
+         transform: translateY(0);
+         display: flex;
+         }
+         #pro-blessure-block .blessure-minute {
+         color: #ffd900;
+         font-size: 12px;
+         font-weight: 900;
+         min-width: 28px;
+         max-width: 36px;
+         text-align: right;
+         margin-left: 10px;
+         margin-right: 8px;
+         flex-shrink: 0;
+         }
+         #pro-blessure-block .blessure-player {
+         color: #ebf1fc;
+         font-size: 13px;
+         font-weight: 800;
+         max-width: auto;
+         overflow: hidden;
+         white-space: nowrap;
+         text-overflow: ellipsis;
+         margin-right: 7px;
+         flex-shrink: 1;
+         }
+         #pro-blessure-block .blessure-emoji {
+         font-size: 13px;
+         margin-left: 2px;
+         margin-right: 4px;
+         flex-shrink: 0;
+         }
+         #partners-block {
+         position: absolute;
+         left: 0;
+         top: 50%;
+         transform: translateY(-50%);
+         width: 8vw;
+         height: 9vw;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         opacity: 0.58;
+         z-index: 15;
+         box-shadow: none;
+         pointer-events: none;
+         }
+         #partner-logo {
+         max-width: 90%;
+         max-height: 80%;
+         filter: grayscale(40%) brightness(1.25);
+         object-fit: contain;
+         opacity: 0;
+         transition: opacity 0.7s cubic-bezier(.37,.59,.37,1.12);
+         }
+         #partner-logo.visible {
+         opacity: 1;
+         }
+         #partners-block.hide {
+         opacity: 0 !important;
+         pointer-events: none;
+         }
+#pause-bottom-block {
+    position: absolute;
+    left: 50%;
+    bottom: 38px;
+    transform: translateX(-50%);
+    width: 800px;
+    max-width: 97vw;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.4s;
+}
+         #pause-bottom-block.hide {
+         opacity: 0 !important;
+         pointer-events: none;
+         }
+         .pause-block-top {
+         width: 800px;
+         max-width: 97vw;
+         height: 22px;
+         background: rgba(35,56,73,0.93);
+         color: #fff;
+         font-size: 16px;
+         font-weight: 700;
+         letter-spacing: 1.1px;
+         text-align: center;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         border-radius: 0;
+         margin: 0;
+         border-bottom: 2px solid #3557b8;
+         user-select: none;
+         text-transform: uppercase;
+         padding: 0;
+         }
+.pause-block-main {
+    width: 800px;
+    max-width: 97vw;
+    min-height: 50px;
+    height: auto !important;
+    background: linear-gradient(120deg, #328aff 0%, #0a2991 65%, #031680 100%);
+    background-size: 400% 400%;
+    display: flex;
+    align-items: stretch !important;   
+    justify-content: space-between;
+    border-radius: 0;
+    box-shadow: 0 2px 10px 0 rgba(10, 30, 100, 0.09);
+    position: relative;
+    margin: 0;
+    animation: animate-gradient 20s ease-in-out infinite;
+    overflow: visible;
+}
+         .pause-blason {
+         width: 136px;            
+         height: 136px;
+         border-radius: 0;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         position: absolute;
+         top: -60px;              
+         z-index: 2;
+         }
+         .pause-blason.home {
+         left: -68px;             
+         }
+         .pause-blason.away {
+         right: -68px;            
+         }
+         .pause-blason img {
+         width: 108px;            
+         height: 108px;
+         object-fit: contain;
+         display: block;
+         border-radius: 0;
+         }
+.pause-main-content {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch !important;    
+    gap: 10px;
+    padding: 0 68px;
+    box-sizing: border-box;
+    min-height: 50px;
+    height: auto !important;
+}
+.pause-team-name {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e0e0e0;
+    text-shadow: 0 1px 6px #18225a52;
+    letter-spacing: 0.5px;
+    min-width: 130px;
+    max-width: 280px;
+    overflow: hidden;
+    white-space: normal;
+    text-overflow: unset;
+    margin: 0;
+    text-align: center;
+    line-height: 1.1;
+    word-break: break-word;
+    display: flex;
+    align-items: center;
+    height: 100%; 
+}
+         .pause-team-name.away {
+         text-align: center;
+         }
+         @media (max-width: 900px) {
+         #pause-bottom-block, .pause-block-top, .pause-block-main {width: 97vw !important; max-width: 97vw !important;}
+         .pause-main-content {padding: 0 12vw !important;}
+         .pause-blason.home {left: -24px;}
+         .pause-blason.away {right: -24px;}
+         .pause-team-name {min-width: 70px; max-width: 130px; font-size: 14px;}
+         }
+#comments-sidebar {
+  position: absolute;
+  top: 32px;
+  right: 2vw;
+  width: 240px;
+  min-height: 60px;
+  background: rgba(35,56,73,0.93);
+  color: #eee;
+  border-radius: 0;
+  box-shadow: 0 2px 8px 0 #131b2e38;
+  padding: 13px 14px 8px 14px;
+  z-index: 110;
+  font-size: 0.99rem;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border-left: 2px solid #328aff;
+  transition: opacity 0.3s;
+}
+#comments-sidebar.hide {
+  display: none;
+}
+#comments-sidebar .comment-latest {
+  font-size: 0.97rem;
+  color: #e3e9f4;
+  line-height: 1.22;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  white-space: normal;
+  word-break: break-word;
+}
+#comments-sidebar .comments-title {
+  font-size: 1.02rem;
+  color: #8ec8ff;
+  font-weight: 700;
+  margin-bottom: 3px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  padding: 0;
+  border-radius: 0;
+}
+
+      </style>
+   </head>
+   <body>
+      <div id="pro-scoreboard">
+         <div id="pro-timer"></div>
+         <div class="pro-small-block"></div>
+         <div class="pro-sep"></div>
+         <div id="pro-main-block">
+            <div class="pro-team-col home">
+               <div class="pro-cartons" id="cartons-home"></div>
+               <span class="pro-team-name" id="team-home-name"></span>
+            </div>
+            <div class="pro-score" id="score-home"></div>
+            <div class="pro-score-sep"></div>
+            <div class="pro-score" id="score-away"></div>
+            <div class="pro-team-col away">
+               <div class="pro-cartons" id="cartons-away"></div>
+               <span class="pro-team-name" id="team-away-name"></span>
+            </div>
+         </div>
+         <div class="pro-sep"></div>
+         <div class="pro-small-block red"></div>
+      </div>
+      <div id="pro-blessure-block"></div>
+      <div id="subs-pro-container-home"></div>
+      <div id="subs-pro-container-away"></div>
+      <div id="partners-block">
+         <img id="partner-logo" src="" alt="Logo partenaire">
+      </div>
+      <div id="pause-bottom-block" class="hide">
+         <div class="pause-block-top">
+            MATCH EN PAUSE
+         </div>
+         <div class="pause-block-main">
+            <div class="pause-blason home">
+               <img id="pause-logo-home" src="/static/logo_home.png" alt="Logo équipe home">
+            </div>
+            <div class="pause-main-content">
+               <span class="pause-team-name" id="pause-team-home"></span>
+               <span class="pause-team-name" id="pause-team-away"></span>
+            </div>
+            <div class="pause-blason away">
+               <img id="pause-logo-away" src="/static/logo_away.png" alt="Logo équipe away">
+            </div>
+         </div>
+      </div>
+      
+
+      <div id="infos-topbar-box">
+         <div id="infos-topbar-slide"></div>
+      </div>
+      <div id="leftbar" class="bottombar"></div>
+      <div id="rightbar" class="bottombar"></div>
+      <div id="commentbar"></div>
+      <div id="partners-bar" class="partners-single"><img id="partner-logo" src="" alt="Partner logo" /></div>
+      <div id="last-matches" class="last-matches-box"></div>
+      <div id="obs-marquee">
+         <div id="obs-message"></div>
+      </div>
+<script>
+async function updateCommentsSidebar() {
+  try {
+    const html = await fetch('/livecomments.html?' + Date.now()).then(r => r.text());
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+
+    const comments = Array.from(doc.querySelectorAll('.comment span'))
+      .slice(0, 1)
+      .map(el => el.innerText);
+    const sidebar = document.getElementById('comments-sidebar');
+    if (!sidebar) return;
+    sidebar.innerHTML = `
+      <div class="comments-title">Direct</div>
+      ${comments.map(txt => `<div class="comment-latest">${txt}</div>`).join('')}
+    `;
+    sidebar.classList.remove('hide');
+  } catch {
+
+    const sidebar = document.getElementById('comments-sidebar');
+    if (sidebar) sidebar.classList.add('hide');
+  }
+}
+
+setInterval(updateCommentsSidebar, 1500);
+updateCommentsSidebar();
+</script>
+      <script>
+         async function updateTimer() {
+           try {
+             const t = await fetch('/timer_value').then(r => r.json());
+             document.getElementById('pro-timer').innerText =
+               `${String(t.minute).padStart(2, '0')} : ${String(t.second).padStart(2, '0')}`;
+           } catch {
+             document.getElementById('pro-timer').innerText = '00:00';
+           }
+         }
+         setInterval(updateTimer, 1000);
+         updateTimer();
+
+function abbreviateTeamName(nom) {
+  if (!nom) return "";
+  
+  const sigles = ["AS", "RC", "US", "FC", "AC", "SC", "CA", "CO", "BO", "CAB", "AB", "CS", "SUA", "LOU", "BO", "CO", "CAB", "MHR", "RNR", "SFP", "ASM", "UBB", "R92", "SP", "COL", "OA", "CSBJ", "SR", "AIA"];
+  
+  let clean = nom.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\./g,"").trim().toUpperCase();
+  
+  let mots = clean.split(/[\s\-]+/);
+  
+  let abbr = "";
+  for (let i = 0; i < mots.length; i++) {
+    if (sigles.includes(mots[i])) abbr += mots[i];
+  }
+  
+  if (abbr.length < 3) {
+    for (let i = 0; i < mots.length && abbr.length < 4; i++) {
+      if (!sigles.includes(mots[i]) && mots[i].length > 0) abbr += mots[i][0];
+    }
+  }
+  
+  let num = clean.match(/\b\d{2}\b/);
+  if (num && mots[0].length > 0) {
+    abbr = mots[0][0] + num[0];
+  }
+  
+  if (abbr.length < 3) {
+    abbr = mots.map(m => m[0]).join("").slice(0,4);
+  }
+  
+  if (abbr.length < 3) abbr = clean.slice(0,4);
+  return abbr.slice(0,4).toUpperCase();
+}
+
+         async function updateScoreNames() {
+           const homeHtml = await fetch('/compo_home.html').then(r => r.text());
+           const awayHtml = await fetch('/compo_away.html').then(r => r.text());
+           const scoreHtml = await fetch('/score.html').then(r => r.text());
+
+           const homeDoc = new DOMParser().parseFromString(homeHtml, 'text/html');
+           const awayDoc = new DOMParser().parseFromString(awayHtml, 'text/html');
+           const scoreDoc = new DOMParser().parseFromString(scoreHtml, 'text/html');
+
+           const nomHome = homeDoc.querySelector('h1')?.innerText.trim() || 'DOMICILE';
+           const nomAway = awayDoc.querySelector('h1')?.innerText.trim() || 'EXTERIEUR';
+
+           const cols = scoreDoc.querySelectorAll('.col');
+           const scHome = cols[0]?.querySelector('.score')?.innerText.trim() || '0';
+           const scAway = cols[1]?.querySelector('.score')?.innerText.trim() || '0';
+
+document.getElementById('team-home-name').innerText = abbreviateTeamName(nomHome);
+document.getElementById('score-home').innerText = scHome;
+document.getElementById('team-away-name').innerText = abbreviateTeamName(nomAway);
+document.getElementById('score-away').innerText = scAway;
+           setTimeout(() => { repositionCartons(); }, 30);
+         }
+         setInterval(updateScoreNames, 1500);
+         updateScoreNames();
+
+         async function updateCartons() {
+           const html = await fetch('/evenements.html').then(r => r.text());
+           const doc = new DOMParser().parseFromString(html, 'text/html');
+           const cols = doc.querySelectorAll('.col');
+           function extractCartons(col) {
+             let jaunes = 0, rouges = 0;
+             col.querySelectorAll('.event span').forEach(span => {
+               const text = span.innerText;
+               jaunes += (text.match(/🟨/g) || []).length;
+               rouges += (text.match(/🟥/g) || []).length;
+             });
+             return { jaunes, rouges };
+           }
+           function renderCartons(el, {jaunes, rouges}, side) {
+             let html = '';
+             const cartonList = [];
+             for (let i = 0; i < jaunes; i++) cartonList.push('<span class="pro-carton jaune"></span>');
+             for (let i = 0; i < rouges; i++) cartonList.push('<span class="pro-carton rouge"></span>');
+             el.innerHTML = side === 'away' ? cartonList.reverse().join('') : cartonList.join('');
+           }
+           renderCartons(document.getElementById('cartons-home'), extractCartons(cols[0] || document.createElement('div')), 'home');
+           renderCartons(document.getElementById('cartons-away'), extractCartons(cols[1] || document.createElement('div')), 'away');
+           setTimeout(() => { repositionCartons(); }, 30);
+         }
+         setInterval(updateCartons, 2000);
+         updateCartons();
+
+         function repositionCartons() {
+
+           const teamHome = document.getElementById('team-home-name');
+           const cartonsHome = document.getElementById('cartons-home');
+           if (teamHome && cartonsHome) {
+             cartonsHome.style.left = teamHome.offsetLeft + 'px';
+           }
+
+           const teamAway = document.getElementById('team-away-name');
+           const cartonsAway = document.getElementById('cartons-away');
+           if (teamAway && cartonsAway) {
+             const width = teamAway.offsetWidth;
+             cartonsAway.style.right = (teamAway.parentNode.offsetWidth - teamAway.offsetLeft - width) + 'px';
+           }
+         }
+         window.addEventListener('resize', repositionCartons);
+      </script>
+
+      <script>
+         let lastSubsContentHome = '';
+         let lastSubsContentAway = '';
+
+         async function renderSubsPro(which) {
+           const html = await fetch('/remplacants.html').then(r => r.text());
+           const doc = new DOMParser().parseFromString(html, 'text/html');
+           const cols = doc.querySelectorAll('.col');
+           const col = which === 'home' ? cols[0] : cols[1];
+           if (!col) return;
+
+           let rempList = Array.from(col.querySelectorAll('.remp-list > div')).reverse();
+
+           let content = '';
+           if (rempList.length > 0) {
+             content = `<div class="subs-pro-header">Changement(s)</div>`;
+           }
+
+           rempList.forEach((div, idx) => {
+             if (idx > 0) content += `<div class="subs-pro-separator" id="subs-sep-${which}-${idx}"></div>`;
+
+             const bgClass = idx % 2 === 1 ? 'bg-inverse' : '';
+             let txt = div.innerText.replace(/✖|×|❌/g, '').trim();
+             let minute = '';
+             let remain = txt;
+             let match = txt.match(/^(\d{1,3}')\s*(.*)$/);
+             if (match) {
+               minute = match[1];
+               remain = match[2].trim();
+             }
+             let out = '', inc = '';
+             if (remain.includes('>')) {
+               [out, inc] = remain.split('>');
+             } else if (remain.includes('🔁')) {
+               [out, inc] = remain.split('🔁');
+             } else {
+               [out, inc] = remain.split(/\s+(.+)/);
+             }
+             out = (out || '').trim();
+             inc = (inc || '').trim();
+             if (out.length > 18) out = out.slice(0, 16) + '…';
+             if (inc.length > 18) inc = inc.slice(0, 16) + '…';
+
+             content += `
+               <div class="subs-pro-row ${bgClass}" id="subs-row-${which}-${idx}" style="opacity:0;animation-delay:${(idx+1)*0.15}s;">
+                 <span class="subs-pro-minute" title="${minute}">${minute}</span>
+                 <span class="subs-pro-space"></span>
+                 <span class="subs-pro-out" title="${out}">${out}</span>
+                 <span class="subs-pro-space"></span>
+                 <span class="subs-pro-emoji">⟷</span>
+                 <span class="subs-pro-space"></span>
+                 <span class="subs-pro-in" title="${inc}">${inc}</span>
+                 <span class="subs-pro-space"></span>
+               </div>`;
+           });
+
+           let lastContent = which === 'home' ? lastSubsContentHome : lastSubsContentAway;
+           const bloc = document.getElementById('subs-pro-container-' + which);
+
+           if (content !== lastContent) {
+             if (which === 'home') lastSubsContentHome = content;
+             else lastSubsContentAway = content;
+
+             if (rempList.length === 0) {
+               bloc.classList.add('hide');
+               bloc.innerHTML = '';
+               clearTimeout(bloc._hideTimer);
+               return;
+             }
+
+             bloc.classList.remove('hide');
+             bloc.innerHTML = content;
+
+             rempList.forEach((_, idx) => {
+               if (idx > 0) {
+                 setTimeout(() => {
+                   const sep = document.getElementById(`subs-sep-${which}-${idx}`);
+                   if (sep) sep.classList.add('visible');
+                 }, idx * 160);
+               }
+               setTimeout(() => {
+                 const row = document.getElementById(`subs-row-${which}-${idx}`);
+                 if (row) row.style.opacity = 1;
+               }, (idx + 1) * 160);
+             });
+
+             clearTimeout(bloc._hideTimer);
+             bloc._hideTimer = setTimeout(() => {
+               bloc.classList.add('hide');
+             }, 7000);
+           }
+         }
+
+         setInterval(() => { renderSubsPro('home'); renderSubsPro('away'); }, 1500);
+         renderSubsPro('home');
+         renderSubsPro('away');
+      </script>
+      <script>
+         let lastBlessureKey = '';
+         let blessureTimeout = null;
+
+         function extractMinuteAndKey(txt) {
+           let m = txt.match(/^(\d{1,3})['’]\s+(.+?),?\s*Blessure.*🚑/i);
+           if (m) {
+             return { 
+               minute: parseInt(m[1], 10), 
+               key: m[1] + ' ' + m[2].trim() 
+             };
+           }
+
+           m = txt.match(/^(\d{1,3})['’]/);
+           return { 
+             minute: m ? parseInt(m[1], 10) : -1, 
+             key: txt 
+           };
+         }
+
+         async function updateBlessureBlock() {
+           const html = await fetch('/evenements.html').then(r => r.text());
+           const doc = new DOMParser().parseFromString(html, 'text/html');
+           const allEvents = Array.from(doc.querySelectorAll('.event span'));
+           let maxMinute = -1;
+           let selectedBlessure = null;
+           let selectedKey = '';
+
+           allEvents.forEach(e => {
+             const txt = e.innerText.trim();
+             if (txt.includes('🚑')) {
+               const { minute, key } = extractMinuteAndKey(txt);
+               if (
+                 minute > maxMinute ||
+                 (minute === maxMinute && e !== null) 
+               ) {
+                 maxMinute = minute;
+                 selectedBlessure = txt;
+                 selectedKey = key;
+               }
+             }
+           });
+
+           let htmlContent = '';
+           if (selectedBlessure) {
+             let minute = '', joueur = '';
+             let m = selectedBlessure.match(/^(\d{1,3}['’])\s+([^.,]+)[.,]?\s*[,|]*\s*(?:Blessure)?\s*\(?.*🚑/i);
+             if (m) {
+               minute = m[1];
+               joueur = m[2].trim();
+             } else {
+               m = selectedBlessure.match(/^(\d{1,3}['’])\s+([^\s.,]+)/);
+               if (m) {
+                 minute = m[1];
+                 joueur = m[2].trim();
+               }
+             }
+             if (minute && joueur) {
+               htmlContent = `
+                 <span class="blessure-minute">${minute}</span>
+                 <span class="blessure-player">${joueur}</span>
+                 <span class="blessure-emoji">blessure</span>
+               `;
+             }
+           }
+
+           const bloc = document.getElementById('pro-blessure-block');
+           if (htmlContent && selectedKey !== lastBlessureKey) {
+             bloc.innerHTML = htmlContent;
+             bloc.classList.add('visible');
+             bloc.style.display = 'flex';
+             lastBlessureKey = selectedKey;
+             clearTimeout(blessureTimeout);
+             blessureTimeout = setTimeout(() => {
+               bloc.classList.remove('visible');
+               setTimeout(() => { bloc.style.display = 'none'; }, 400);
+             }, 6500);
+           } else if (!htmlContent) {
+             bloc.classList.remove('visible');
+             setTimeout(() => { bloc.style.display = 'none'; }, 400);
+             lastBlessureKey = '';
+           }
+         }
+         setInterval(updateBlessureBlock, 1500);
+         updateBlessureBlock();
+      </script>
+      <script>
+         let lastTimerValue = null;
+         let lastChangeTime = Date.now();
+         let partnersPaused = false;
+         let partnersLogos = [];
+         let currentLogoIndex = 0;
+         let partnersSlideshowInterval = null;
+
+         async function loadPartnersLogos() {
+           try {
+             const html = await fetch('/logos_partners.html?' + Date.now()).then(r => r.text());
+             const doc = new DOMParser().parseFromString(html, 'text/html');
+             partnersLogos = Array.from(doc.querySelectorAll('.logos-grid img')).map(img => img.getAttribute('src'));
+             if (partnersLogos.length === 0) {
+               partnersLogos = ["/static/logos_partners/logo_partenaire_1.png"];
+             }
+             currentLogoIndex = 0;
+           } catch {
+             partnersLogos = ["/static/logos_partners/logo_partenaire_1.png"];
+             currentLogoIndex = 0;
+           }
+         }
+         loadPartnersLogos();
+         setInterval(loadPartnersLogos, 5 * 60 * 1000); 
+
+         function showCurrentPartnerLogo(fade = true) {
+           const partnerLogo = document.getElementById('partner-logo');
+           if (partnersLogos.length === 0) return;
+           if (fade) {
+             partnerLogo.classList.remove('visible'); 
+             setTimeout(() => {
+               partnerLogo.src = partnersLogos[currentLogoIndex];
+               setTimeout(() => {
+                 partnerLogo.classList.add('visible'); 
+               }, 30);
+             }, 450); 
+           } else {
+             partnerLogo.src = partnersLogos[currentLogoIndex];
+             partnerLogo.classList.add('visible');
+           }
+         }
+
+         function nextPartnerLogo() {
+           if (partnersLogos.length === 0) return;
+           currentLogoIndex = (currentLogoIndex + 1) % partnersLogos.length;
+           showCurrentPartnerLogo(true); 
+         }
+
+         function startPartnersSlideshow() {
+           showCurrentPartnerLogo(false); 
+           if (partnersSlideshowInterval) clearInterval(partnersSlideshowInterval);
+           partnersSlideshowInterval = setInterval(nextPartnerLogo, 4500);
+         }
+
+         function stopPartnersSlideshow() {
+           if (partnersSlideshowInterval) clearInterval(partnersSlideshowInterval);
+           partnersSlideshowInterval = null;
+           document.getElementById('partner-logo').classList.remove('visible');
+         }
+
+         function showPauseBottomBlock(show) {
+           const pauseBlock = document.getElementById('pause-bottom-block');
+           if (!pauseBlock) return;
+           if (show) {
+             pauseBlock.classList.remove('hide');
+           } else {
+             pauseBlock.classList.add('hide');
+           }
+         }
+
+         async function updatePauseBlockTeams() {
+           try {
+             const homeHtml = await fetch('/compo_home.html').then(r => r.text());
+             const awayHtml = await fetch('/compo_away.html').then(r => r.text());
+             const homeDoc = new DOMParser().parseFromString(homeHtml, 'text/html');
+             const awayDoc = new DOMParser().parseFromString(awayHtml, 'text/html');
+             const nomHome = homeDoc.querySelector('h1')?.innerText.trim() || 'DOMICILE';
+             const nomAway = awayDoc.querySelector('h1')?.innerText.trim() || 'EXTERIEUR';
+             const logoHome = '/static/logos_teams/logo_home.png';
+             const logoAway = '/static/logos_teams/logo_away.png';
+             document.getElementById('pause-team-home').innerText = nomHome;
+             document.getElementById('pause-team-away').innerText = nomAway;
+             document.getElementById('pause-logo-home').src = logoHome;
+             document.getElementById('pause-logo-away').src = logoAway;
+           } catch (e) {
+             document.getElementById('pause-team-home').innerText = 'DOMICILE';
+             document.getElementById('pause-team-away').innerText = 'EXTERIEUR';
+             document.getElementById('pause-logo-home').src = '/static/logos_teams/logo_home.png';
+             document.getElementById('pause-logo-away').src = '/static/logos_teams/logo_away.png';
+           }
+         }
+         setInterval(updatePauseBlockTeams, 2500);
+         updatePauseBlockTeams();
+
+         async function detectPauseAndTogglePartnersAndPauseBlock() {
+           const partnersBlock = document.getElementById('partners-block');
+           const partnerLogo = document.getElementById('partner-logo');
+           if (!partnersBlock || !partnerLogo) return;
+           try {
+             const res = await fetch('/timer_value?' + Date.now());
+             if (!res.ok) throw new Error('Erreur timer');
+             const t = await res.json();
+             if (typeof t.minute !== "number" || typeof t.second !== "number") throw new Error("Timer incomplet");
+             const value = t.minute * 60 + t.second;
+             if (lastTimerValue !== value) {
+               lastTimerValue = value;
+               lastChangeTime = Date.now();
+             }
+
+             const isPaused = (Date.now() - lastChangeTime > 2000);
+             if (isPaused) {
+               partnersBlock.classList.remove('hide');
+               partnerLogo.classList.add('visible');
+               showPauseBottomBlock(true);
+               if (!partnersPaused) startPartnersSlideshow();
+               partnersPaused = true;
+             } else {
+               partnersBlock.classList.add('hide');
+               partnerLogo.classList.remove('visible');
+               showPauseBottomBlock(false);
+               if (partnersPaused) stopPartnersSlideshow();
+               partnersPaused = false;
+             }
+           } catch (e) {
+             partnersBlock.classList.add('hide');
+             partnerLogo.classList.remove('visible');
+             showPauseBottomBlock(false);
+             if (partnersPaused) stopPartnersSlideshow();
+             partnersPaused = false;
+           }
+         }
+         setInterval(detectPauseAndTogglePartnersAndPauseBlock, 900);
+      </script>
+   </body>
+</html>

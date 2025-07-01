@@ -1,0 +1,43 @@
+CONDITIONS D’UTILISATION – XVLIVEMANAGER
+========================================
+
+IMPORTANT : Lisez attentivement ce document avant d’installer ou d’utiliser XVLIVEMANAGER.
+En installant, copiant ou utilisant ce logiciel, vous acceptez d’être lié par les présentes conditions.
+
+1. DÉFINITIONS
+--------------
+« Logiciel » désigne l’ensemble des fichiers, programmes, scripts, documents et ressources fournis sous le nom XVLIVEMANAGER.
+
+2. DROIT D’USAGE
+----------------
+Vous êtes autorisé à installer, utiliser et exploiter librement le Logiciel, sans limitation de poste ou de nombre d’installations, pour tous vos besoins, dans le respect des lois en vigueur et de la destination du Logiciel.
+
+3. RESTRICTIONS
+---------------
+Vous vous engagez à ne pas :
+  • distribuer, louer, prêter, céder ou transférer le Logiciel à des tiers à des fins commerciales sans autorisation préalable de l’auteur,
+  • modifier, décompiler, désassembler ou créer une œuvre dérivée à partir du Logiciel sans autorisation écrite,
+  • utiliser le Logiciel à des fins illégales ou non conformes à sa destination.
+
+4. PROPRIÉTÉ INTELLECTUELLE
+---------------------------
+Le Logiciel et tous ses éléments (code source, graphismes, documentation, marques déposées, etc.) restent la propriété exclusive de l’auteur, PEREZ Romain. Toute utilisation non autorisée constitue une contrefaçon sanctionnée par le Code de la propriété intellectuelle.
+
+5. MISES À JOUR ET SUPPORT
+--------------------------
+Les mises à jour, correctifs et services d’assistance peuvent faire l’objet d’accords ou conditions complémentaires. Aucune obligation de fournir un support n’est garantie par le présent document.
+
+6. GARANTIE LIMITÉE
+-------------------
+Le Logiciel est fourni « en l’état », sans aucune garantie expresse ou implicite. L’auteur ne garantit pas qu’il répondra à tous vos besoins ni qu’il fonctionnera sans interruption ni erreur.
+
+7. LIMITATION DE RESPONSABILITÉ
+-------------------------------
+En aucun cas, l’auteur ne pourra être tenu responsable des dommages indirects, incidentels ou spéciaux, y compris la perte de données, de bénéfices ou toute autre perte économique résultant de l’utilisation ou de l’incapacité à utiliser le Logiciel.
+
+8. LOI APPLICABLE
+-----------------
+Ce document est régi par le droit français. En cas de litige, les tribunaux français seront seuls compétents.
+
+------------------------------------------
+© 2025 XVLIVEMANAGER. Tous droits réservés.

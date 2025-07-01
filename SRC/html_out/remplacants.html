@@ -1,0 +1,18 @@
+<html>
+<head>
+  <meta http-equiv='refresh' content='5'>
+  <link rel="stylesheet" href="/static/css/remplacants.css">
+  <title>Remplacements en direct</title>
+</head>
+<body>
+<h2></h2>
+<div class="columns"><div class="col">
+<h3></h3><div class='remp-list'>
+</div></div><div class='col'><h3></h3><div class='remp-list'>
+</div></div></div>
+<script>
+function supprimer(team, index) {
+  fetch('/delete_remplacant/' + team + '/' + index, { method: 'POST' }).then(() => location.reload());
+}
+</script>
+</body></html>

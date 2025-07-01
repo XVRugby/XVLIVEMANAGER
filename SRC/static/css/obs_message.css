@@ -1,0 +1,30 @@
+
+body {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  background: transparent;
+  color: white;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#message {
+  font-size: 24px;
+  font-weight: bold;
+  padding: 20px;
+  text-align: center;
+  animation: fadeInOut 4s infinite;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}

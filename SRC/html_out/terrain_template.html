@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Terrain Rugby</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .terrain {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: url("/static/terrain_rugby.png") center center no-repeat;
+      background-size: contain;
+      overflow: hidden;
+    }
+
+    .player {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      background-color: #002b5c;
+      color: white;
+      cursor: move;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+
+    .player[data-team="away"] {
+      background-color: #b00000;
+    }
+
+h2 {
+  text-align: center;
+  font-size: 20px;
+  color: white;
+}
+
+    @media (max-width: 768px) {
+      .player {
+        font-size: 9px;
+        padding: 1px 4px;
+        max-width: 70px;
+      }
+    }
+
+    svg.arrows {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+#drawCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1; /* en dessous des joueurs */
+}
+  </style>
+</head>
+<body>
+<h2>Terrain en direct</h2>
+  <div class="terrain" id="terrain">
+    {% for j in terrain_home %}
+      <div class="player" draggable="true" data-team="home"
+           style="left: {{ j.x }}%; top: {{ j.y }}%;" data-name="{{ j.nom }}" title="{{ j.nom }}">
+        {{ j.nom[:5] ~ '…' if j.nom|length > 5 else j.nom }}
+      </div>
+    {% endfor %}
+<canvas id="drawCanvas"></canvas>
+<button onclick="clearDrawings()" style="position:absolute; top:10px; right:10px; z-index:4; background:#b00000; color:white; border:none; padding:6px 10px; border-radius:4px;">
+  🧹 Effacer les traits
+</button>
+    {% for j in terrain_away %}
+
+      <div class="player" draggable="true" data-team="away"
+           style="left: {{ j.x }}%; top: {{ j.y }}%;" data-name="{{ j.nom }}" title="{{ j.nom }}">
+        {{ j.nom[:5] ~ '…' if j.nom|length > 5 else j.nom }}
+      </div>
+    {% endfor %}
+
+    {% if arrows %}
+    <svg class="arrows">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="red"/>
+        </marker>
+      </defs>
+      {% for arrow in arrows %}
+        <line x1="{{ arrow.x1 }}%" y1="{{ arrow.y1 }}%" x2="{{ arrow.x2 }}%" y2="{{ arrow.y2 }}%"
+              stroke="red" stroke-width="2" marker-end="url(#arrowhead)" />
+        <text x="{{ (arrow.x1 + arrow.x2) / 2 }}%" y="{{ (arrow.y1 + arrow.y2) / 2 - 2 }}%"
+              fill="red" font-size="12" text-anchor="middle">{{ arrow.label }}</text>
+      {% endfor %}
+    </svg>
+    <script>
+      setTimeout(() => {
+        const svg = document.querySelector(".arrows");
+        if (svg) svg.remove();
+      }, 5000);
+    </script>
+    {% endif %}
+  </div>
+
+  <script>
+    const terrain = document.getElementById('terrain');
+    terrain.addEventListener('dragover', e => e.preventDefault());
+
+    terrain.addEventListener('drop', e => {
+      const joueur = document.querySelector('.dragging');
+      if (joueur) {
+        const rect = terrain.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        joueur.style.left = `${x}%`;
+        joueur.style.top = `${y}%`;
+        joueur.classList.remove('dragging');
+        savePositions();
+      }
+    });
+
+    document.querySelectorAll('.player').forEach(player => {
+      player.addEventListener('dragstart', () => {
+        player.classList.add('dragging');
+      });
+      player.addEventListener('dragend', () => {
+        player.classList.remove('dragging');
+      });
+    });
+
+    function savePositions() {
+      const joueurs = document.querySelectorAll('.player');
+      const terrain_home = [];
+      const terrain_away = [];
+
+      joueurs.forEach(j => {
+        const name = j.dataset.name;
+        const team = j.dataset.team;
+        const left = parseFloat(j.style.left);
+        const top = parseFloat(j.style.top);
+        const joueur = { nom: name, x: left, y: top };
+
+        if (team === "home") terrain_home.push(joueur);
+        else terrain_away.push(joueur);
+      });
+
+      fetch("/save_positions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          terrain_home: terrain_home,
+          terrain_away: terrain_away
+        })
+      });
+    }
+  </script>
+<script>
+  const canvas = document.getElementById('drawCanvas');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+
+  function resizeCanvas() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  canvas.addEventListener('mousedown', (e) => {
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (drawing) {
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.strokeStyle = 'yellow';
+      ctx.lineWidth = 3;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+  });
+
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('mouseleave', () => drawing = false);
+
+  function clearDrawings() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+</script>
+</body>
+</html>

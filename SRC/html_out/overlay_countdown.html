@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="300">
+  <title>Compte à rebours</title>
+  <link rel="stylesheet" href="/static/css/overlay_countdown.css">
+</head>
+<body>
+  <div id="message"></div>
+  <div id="countdown"></div>
+  <script>
+    let remaining = 300;
+    const el = document.getElementById("countdown");
+    function pad(n) { return n.toString().padStart(2, "0"); }
+    function update() {
+      const m = Math.floor(remaining / 60);
+      const s = remaining % 60;
+      el.textContent = `${pad(m)}:${pad(s)}`;
+      if (remaining <= 0) clearInterval(timer);
+      else remaining--;
+    }
+    update();
+    const timer = setInterval(update, 1000);
+  </script>
+</body>
+</html>

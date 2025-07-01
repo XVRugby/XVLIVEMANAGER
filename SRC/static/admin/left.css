@@ -1,0 +1,352 @@
+.page-body {
+display: flex;
+gap: 1rem;                               
+min-height: calc(100vh - 80px - 60px);   
+}
+.left-column {
+flex: 0 0 auto;
+width: 434px;
+padding: 1rem;
+box-sizing: border-box;
+box-shadow: 4px 0 12px -2px rgba(0,0,0,0.16);
+position: relative; 
+}
+.left-column::after {
+content: "";
+position: absolute;
+top: 0; right: 0; bottom: 0;
+width: 1px;
+background: linear-gradient(
+to bottom,
+rgba(255,255,255,0.15) 0%,
+rgba(255,255,255,0.08) 40%,
+rgba(255,255,255,0.00) 100%
+);
+pointer-events: none;
+z-index: 2;
+}
+.main-content {
+flex: 1 1 auto;
+padding: 1rem;
+box-sizing: border-box;
+}
+.section-subtitle {
+margin: 1.5rem 0 0.75rem; 
+}
+.dashboard-card {
+margin-bottom: 1.5rem;
+}
+#stream-card,
+#timer-card {
+background: rgba(0, 0, 0, 0.2);
+}
+.section-subtitle .bi-clock-fill,
+.section-subtitle .bi-tv-fill {
+color: #bf2a3c;
+margin-right: 0.5rem;
+}
+#stream-card .stream-container {
+margin-bottom: 0.75rem;
+height: 200px;
+overflow: hidden;
+border-radius: var(--radius);
+}
+#stream-card .stream-container iframe {
+width: 100%;
+height: 100%;
+border: none;
+}
+#stream-card .card-label {
+margin-bottom: 0.75rem;
+}
+#stream-card .stream-controls-row,
+#timer-card .timer-controls-row {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 0.5rem;
+margin-bottom: 0.75rem;
+}
+#timer-card .card-info {
+display: flex;
+flex-direction: column;
+align-items: center;
+}
+#timer-display {
+font-size: 1.8rem;
+margin-bottom: 0.5rem;
+}
+#timer-card .settings-form {
+margin-top: 0.75rem;
+}
+#timer-card .form-group {
+margin-bottom: 0;
+}
+#timer-card .timer-input-wrapper {
+flex: 0 0 80px;   
+}
+#timer-card .steam-bar {
+margin-top: 0.5rem;
+}
+#timer-card .timer-bounds {
+display: flex;
+justify-content: space-between;
+width: 100%;
+font-size: 0.7rem;
+color: var(--text-default);
+margin-top: 0.25rem;
+}
+#timer-card input[type="number"]::-webkit-inner-spin-button,
+#timer-card input[type="number"]::-webkit-outer-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+#timer-card input[type="number"] {
+-moz-appearance: textfield;
+appearance: textfield;
+}
+#score-card {
+background: rgba(0, 0, 0, 0.2);
+display: flex;              
+flex-direction: column;
+align-items: center;
+padding: 1rem;
+}
+#score-card .card-info {
+width: 100%;
+display: flex;
+flex-direction: column;
+align-items: center;
+}
+#score-card .score-display {
+display: flex;
+justify-content: space-between; 
+align-items: center;
+width: 100%;
+margin-bottom: 0.75rem;
+}
+#score-card .score-display .score-label {
+font-size: 0.75rem;
+color: #aaa;
+}
+#score-card .score-display .card-number {
+font-size: 2rem;
+}
+#score-card .score-controls-row {
+display: flex;
+justify-content: space-between;
+width: 100%;
+gap: 1rem;
+flex-wrap: nowrap;
+margin-bottom: 0.5rem;
+}
+#score-card .score-controls-team {
+display: flex;
+gap: 0.25rem;
+flex-wrap: nowrap;
+justify-content: center;
+}
+#score-card .status-btn {
+padding: 0.4rem 0.75rem;
+border: none;
+border-radius: 4px;
+font-size: 0.85rem;
+font-weight: 600;
+color: #fff;
+cursor: pointer;
+}
+#score-card .status-btn-sub {
+background-color: #bf2a3c !important;
+}
+#score-card .status-btn-sub:hover {
+background-color: #dd3333 !important;
+}
+.btn-score-add {
+background-color: #10b981;      
+color: #fff;
+border: none;
+border-radius: 4px;
+padding: 0.4rem 0.75rem;
+font-size: 0.85rem;
+font-weight: 600;
+cursor: pointer;
+transition: background-color 0.2s ease;
+}
+.btn-score-add:hover {
+background-color: #0f9f6e;      
+}
+.section-subtitle .bi-bar-chart-fill {
+color: #bf2a3c;
+margin-right: 0.5rem;
+}
+@media (max-width: 900px) {
+.page-body {
+flex-direction: column;
+gap: 0;
+min-height: unset;
+}
+.left-column {
+width: 100%;
+min-width: 0;
+max-width: 100vw;
+padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+margin-bottom: 1.2rem;
+box-shadow: none;
+border-radius: 0;
+}
+.left-column::after {
+display: none;
+}
+.main-content {
+padding: 0.5rem;
+}
+.dashboard-card,
+#score-card,
+#timer-card {
+padding: 0.8rem !important;
+margin-bottom: 1rem !important;
+width: 100%;
+min-width: 0;
+max-width: 100vw;
+border-radius: 8px;
+}
+.section-subtitle {
+margin: 1.1rem 0 0.5rem;
+font-size: 1rem;
+text-align: center;
+}
+#score-card .score-display {
+flex-direction: column;
+gap: 0.4rem;
+width: 100%;
+align-items: center;
+font-size: 1.1rem;
+}
+#score-card .score-label {
+font-size: 0.85rem;
+}
+#score-card .card-number {
+font-size: 1.6rem;
+}
+#score-card .score-controls-row {
+flex-direction: column;
+gap: 0.5rem;
+width: 100%;
+align-items: stretch;
+}
+#score-card .score-controls-team {
+flex-wrap: wrap;
+gap: 0.35rem;
+width: 100%;
+justify-content: center;
+}
+.btn-score-add,
+#score-card .status-btn {
+font-size: 0.9rem;
+padding: 0.45rem 1.1rem;
+min-width: 64px;
+}
+#timer-card {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+text-align: center;
+}
+#timer-card > * {
+width: 100%;
+text-align: center !important;
+}
+#timer-display {
+text-align: center;
+margin: 0 auto;
+}
+#timer-card .timer-controls-row {
+flex-wrap: wrap;
+gap: 0.45rem;
+justify-content: center;
+}
+#timer-card .timer-input-wrapper {
+flex: 1 1 100%;
+min-width: 75px;
+margin-top: 0.7rem;
+}
+#timer-display {
+font-size: 1.4rem;
+}
+.timer-input-wrapper {
+display: none !important;
+}
+.steam-bar {
+width: 100%;
+min-width: 0;
+}
+#stream-card {
+display: flex;
+flex-direction: column;
+align-items: center;
+text-align: center;
+}
+#stream-card .stream-container {
+width: 100%;
+margin-left: auto;
+margin-right: auto;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+#stream-card .stream-controls-row {
+justify-content: center;
+align-items: center;
+width: 100%;
+text-align: center;
+}
+#stream-card .card-label {
+width: 100%;
+text-align: center;
+}
+}
+@media screen and (max-width: 768px) {
+.obs-subtitle,
+.obs-card {
+text-align: center !important;
+}
+.obs-card a,
+.obs-card img,
+.obs-card div {
+margin-left: auto !important;
+margin-right: auto !important;
+display: block !important;
+text-align: center !important;
+}
+}
+@media (max-width: 600px) {
+.section-subtitle {
+font-size: 0.97rem;
+}
+.dashboard-card,
+#score-card,
+#timer-card {
+padding: 0.5rem !important;
+border-radius: 5px;
+}
+.main-content {
+padding: 0.3rem;
+}
+.left-column {
+padding: 0.5rem 0.3rem;
+margin-bottom: 0.8rem;
+}
+#score-card .score-display {
+font-size: 0.97rem;
+}
+.btn-score-add,
+#score-card .status-btn {
+font-size: 0.8rem;
+padding: 0.38rem 0.85rem;
+min-width: 48px;
+}
+#stream-card .stream-container {
+height: 150px; 
+}
+}

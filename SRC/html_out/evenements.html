@@ -1,0 +1,19 @@
+<html>
+<head>
+  <meta http-equiv='refresh' content='5'>
+  <link rel="stylesheet" href="/static/css/evenements.css">
+  <title></title>
+</head>
+<body>
+<h2></h2>
+<div class="columns"><div class="col">
+<h3></h3><div class='events-list'>
+</div></div><div class='col'><h3></h3><div class='events-list'>
+</div></div></div>
+
+<script>
+function supprimerEvent(team, index) {
+  fetch('/delete_event/' + team + '/' + index, { method: 'POST' }).then(() => location.reload());
+}
+</script>
+</body></html>

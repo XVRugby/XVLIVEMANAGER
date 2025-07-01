@@ -1,0 +1,3459 @@
+<!DOCTYPE html>
+<html lang="fr">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>XVLIVEMANAGER – Admin</title>
+      <!-- Bootstrap + Bootstrap Icons -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+      <link href="static/admin/base.css" rel="stylesheet"/>
+      <link href="static/admin/reg_sta.css" rel="stylesheet"/>
+      <link href="static/admin/left.css" rel="stylesheet"/>
+      <link href="static/admin/main.css" rel="stylesheet"/>
+      <style>
+      </style>
+   </head>
+   <body>
+      <header class="header">
+         <div class="header-title">
+            <img id="pageLogo" src="" alt="Logo XVLIVEMANAGER" class="header-logo" style="max-height: 60px; height: auto; display: none;" />
+            <div class="title-text-group">
+               <div class="title-main">XVLIVEMANAGER</div>
+               <div class="user-info">
+                  <div class="user-name"><span id="welcomeUser">Utilisateur</span></div>
+                  <div class="user-message"><span id="welcomeTaglineText">Merci d'utiliser XVLIVEMANAGER</span></div>
+               </div>
+            </div>
+         </div>
+         <div class="header-right">
+            <div class="obs-status">
+               <strong>Gestion du direct :</strong>
+               <span id="obs-state-container" style="display: flex; gap: 0.75rem; margin-left: 0.75rem;"></span>
+            </div>
+            <script>
+               function updateOBSStates() {
+                 fetch("/obs/interface", { headers: { "X-Requested-With": "XMLHttpRequest" } })
+                   .then(res => res.json())
+                   .then(data => {
+                     const container = document.getElementById("obs-state-container");
+                     container.innerHTML = "";
+               
+                     data.states.forEach(item => {
+                       const wrapper = document.createElement("span");
+                       wrapper.className = "obs-state-item";
+                       wrapper.style.display = "inline-flex";
+                       wrapper.style.alignItems = "center";
+                       wrapper.style.gap = "0.35rem";
+                       wrapper.style.cursor = "pointer";  
+               
+                       const indicator = document.createElement("span");
+                       indicator.className = "status-indicator";
+                       indicator.style.width = "12px";
+                       indicator.style.height = "12px";
+                       indicator.style.display = "inline-block";
+                       indicator.style.borderRadius = "50%";
+                       indicator.style.backgroundColor = item.visible ? "#10b981" : "#ef4444";
+                       indicator.style.transition = "background 0.15s";
+               
+                       const label = document.createElement("span");
+                       label.textContent = item.label;
+                       label.style.fontSize = "0.8rem";
+                       label.style.color = item.visible ? "var(--text-white)" : "#6c6774";
+               
+                       wrapper.appendChild(indicator);
+                       wrapper.appendChild(label);
+               
+                       wrapper.onclick = () => {
+               
+                         indicator.style.opacity = "0.5";
+                         setTimeout(() => indicator.style.opacity = "1", 150);
+               
+                         toggleOBS(item.name);
+                       };
+               
+                       container.appendChild(wrapper);
+                     });
+                   });
+               }
+               
+               function toggleOBS(name) {
+                 fetch("/obs/toggle/" + encodeURIComponent(name), { method: "POST" })
+                   .then(() => setTimeout(updateOBSStates, 150));
+               }
+               
+               document.addEventListener("DOMContentLoaded", () => {
+                 updateOBSStates();
+                 setInterval(updateOBSStates, 2000);
+               });
+            </script>
+            <div class="icon-block" title="Arrêter le serveur">
+               <button id="shutdown-server-btn" class="stop-server-btn">
+               <i class="bi bi-power"></i> Stop serveur
+               </button>
+            </div>
+            <script>
+               document.getElementById('shutdown-server-btn').addEventListener('click', function(e) {
+                 e.preventDefault();
+                 if (!confirm('Voulez-vous vraiment arrêter le serveur XVLIVEMANAGER ?')) return;
+               
+                 fetch('/shutdown', { method: 'POST' })
+                   .then(res => {
+                     if (res.ok) {
+                       alert('Le serveur va s\'arrêter…');
+                       setTimeout(() => { window.close(); }, 1000);
+                     } else {
+                       alert('Échec de l’arrêt du serveur !');
+                     }
+                   })
+                   .catch(() => alert('Serveur arrêté'));
+               });
+            </script>
+            <div class="obs-description">
+               Visualisez en temps réel la scène active dans OBS.
+            </div>
+            <div class="icon-block">
+               <div class="icon-label">Arrêter le serveur local</div>
+            </div>
+         </div>
+      </header>
+      <div class="sub-header">
+         <div class="sub-header-left">
+            <div>Informations principales</div>
+            <div>Compositions des équipes</div>
+            <div>Ajout de partenaires</div>
+            <div>Préparation du direct</div>
+            <div id="btnOpenLayouts">Interfaces</div>
+            <script>
+               document.addEventListener('DOMContentLoaded', function() {
+                 var btn = document.getElementById('btnOpenLayouts');
+                 if (btn) {
+                   btn.style.cursor = 'pointer';
+                   btn.addEventListener('click', function() {
+                     toggleLayoutsPanel(true);
+                   });
+                 }
+               });
+            </script>
+            <div class="danger-item" onclick="toggleDeleteDataModal(true)">Suppression des données</div>
+         </div>
+         <div class="sub-header-right">
+            <div id="open-archives">Archives des rencontres</div>
+            <script>
+               document.getElementById('open-archives').addEventListener('click', function() {
+                 toggleArchivePanel(true);
+                 loadArchives(); 
+               });
+            </script>
+         </div>
+      </div>
+      <div class="page-body">
+         <aside class="left-column">
+            <div class="section-subtitle">
+               <i class="bi bi-clock-fill"></i>
+               Chronomètre
+            </div>
+            <div id="timer-card" class="dashboard-card">
+               <div class="card-info">
+                  <div id="timer-display" class="card-number">00:00</div>
+                  <p class="card-label mb-3">
+                     Gérez chaque moment du match avec précision, fluidité et réactivité.
+                  </p>
+                  <form
+                     id="timer-form"
+                     class="settings-form"
+                     method="POST"
+                     action="/update_timer?anchor=timer"
+                     autocomplete="off"
+                     >
+                     <div class="form-group">
+                        <div class="timer-controls-row">
+                           <button
+                              type="submit"
+                              name="action"
+                              value="start"
+                              class="btn btn-primary btn-sm has-tooltip"
+                              data-tooltip="Démarrer"
+                              onclick="document.getElementById('timer-action').value='start';"
+                              >
+                           <i class="bi bi-play-fill"></i>
+                           </button>
+                           <button
+                              type="submit"
+                              name="action"
+                              value="pause"
+                              class="btn btn-primary btn-sm has-tooltip"
+                              data-tooltip="Pause"
+                              onclick="document.getElementById('timer-action').value='pause';"
+                              >
+                           <i class="bi bi-pause-fill"></i>
+                           </button>
+                           <button
+                              type="submit"
+                              name="action"
+                              value="reset"
+                              class="btn btn-primary btn-sm has-tooltip"
+                              data-tooltip="Reset"
+                              onclick="document.getElementById('timer-action').value='reset';"
+                              >
+                           <i class="bi bi-arrow-counterclockwise"></i>
+                           </button>
+                           <button
+                              type="submit"
+                              name="action"
+                              value="stop"
+                              class="btn btn-primary btn-sm has-tooltip"
+                              data-tooltip="Stop"
+                              onclick="document.getElementById('timer-action').value='stop';"
+                              >
+                           <i class="bi bi-stop-fill"></i>
+                           </button>
+                           <div class="timer-input-wrapper">
+                              <input
+                                 id="timer-start-minute"
+                                 name="start_minute"
+                                 type="number"
+                                 min="0"
+                                 value="0"
+                                 class="form-control no-spinner"
+                                 autocomplete="on"
+                                 style="width:6ch;"
+                                 />
+                           </div>
+                           <input
+                              type="hidden"
+                              id="timer-action"
+                              name="action"
+                              value="start"
+                              />
+                        </div>
+                     </div>
+                  </form>
+                  <div class="steam-bar">
+                     <div id="timer-bar" class="steam-bar-fill"></div>
+                  </div>
+                  <div class="timer-bounds">
+                     <span id="timer-lower-bound">00:00</span>
+                     <span id="timer-upper-bound">80m</span>
+                  </div>
+               </div>
+            </div>
+            <script>
+               document.addEventListener('DOMContentLoaded', () => {
+                 const card      = document.getElementById('timer-card');
+                 const form      = document.getElementById('timer-form');
+                 const buttons   = form.querySelectorAll('button[name="action"]');
+                 const display   = document.getElementById('timer-display');
+                 const inputMin  = form.querySelector('input[name="start_minute"]');
+                 const hiddenAct = form.querySelector('input[name="action"]');
+                 const bar       = document.getElementById('timer-bar');
+                 const lower     = document.getElementById('timer-lower-bound');
+                 const MAX       = 80;
+               
+                 let hiddenSec = form.querySelector('#timer-action-second');
+                 if (!hiddenSec) {
+                   hiddenSec = document.createElement('input');
+                   Object.assign(hiddenSec, {
+                     type:  'hidden',
+                     id:    'timer-action-second',
+                     name:  'start_second',
+                     value: '0'
+                   });
+                   form.appendChild(hiddenSec);
+                 }
+               
+                 function sendAction(action) {
+                   hiddenAct.value      = action;
+                   inputMin.value       = inputMin.value;
+                   hiddenSec.value      = (action === 'start') ? 0 : display.textContent.split(':')[1];
+               
+                   card.classList.add('updating');
+                   fetch('/update_timer?anchor=timer', {    
+                     method:      'POST',
+                     credentials: 'same-origin',
+                     body:        new FormData(form)
+                   })
+                   .then(r => {
+                     if (!r.ok) throw new Error('Erreur serveur');
+                     return r.json();
+                   })
+                   .then(json => {
+                     const m    = +json.minute || 0;
+                     const s    = +json.second || 0;
+                     const mmss = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                     display.textContent = mmss;
+                     bar.style.width     = Math.min(100, (m / MAX)*100) + '%';
+                     lower.textContent   = mmss;
+                     hiddenSec.value     = s;
+                   })
+                   .catch(console.error)
+                   .finally(() => card.classList.remove('updating'));
+                 }
+               
+                 buttons.forEach(btn => {
+                   btn.addEventListener('click', e => {
+                     e.preventDefault();
+                     sendAction(btn.value);
+                   });
+                 });
+               
+                 function refreshDisplay() {
+                   card.classList.add('updating');
+                   fetch('/timer_value', { credentials: 'same-origin' })    
+                     .then(r => r.json())
+                     .then(data => {
+                       const m    = +data.minute || 0;
+                       const s    = +data.second || 0;
+                       const mmss = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                       display.textContent = mmss;
+                       bar.style.width     = Math.min(100, (m / MAX)*100) + '%';
+                       lower.textContent   = mmss;
+                     })
+                     .catch(console.error)
+                     .finally(() => card.classList.remove('updating'));
+                 }
+               
+                 refreshDisplay();
+                 setInterval(refreshDisplay, 1000);
+               
+                 inputMin.addEventListener('keydown', function(e) {
+                   if (e.key === 'Enter') {
+                     e.preventDefault();
+                     hiddenAct.value = 'start';
+                     form.submit();
+                   }
+                 });
+               });
+            </script>
+            <div class="section-subtitle">
+               <i class="bi bi-bar-chart-fill"></i>
+               Score du match
+            </div>
+            <form id="score" action="/update_score?anchor=score" method="POST" autocomplete="off">
+               <div id="score-card" class="dashboard-card">
+                  <div class="card-info">
+                     <div class="score-display">
+                        <span class="score-label">Domicile</span>
+                        <span id="score-home" class="card-number">{{ score.home if score.home is defined else 0 }}</span>
+                        <span class="card-number">–</span>
+                        <span id="score-away" class="card-number">{{ score.away if score.away is defined else 0 }}</span>
+                        <span class="score-label">Extérieur</span>
+                     </div>
+                     <input type="hidden" id="score_home" name="score_home" value="{{ score.home if score.home is defined else 0 }}">
+                     <input type="hidden" id="score_away" name="score_away" value="{{ score.away if score.away is defined else 0 }}">
+                     <div class="score-controls-row">
+                        <div class="score-controls-team">
+                           <button type="button" onclick="updateScore('home', 5)" class="btn-score-add">+5</button>
+                           <button type="button" onclick="updateScore('home', 3)" class="btn-score-add">+3</button>
+                           <button type="button" onclick="updateScore('home', 2)" class="btn-score-add">+2</button>
+                           <button type="button" onclick="updateScore('home', -5)" class="status-btn status-btn-sub">-5</button>
+                        </div>
+                        <div class="score-controls-team">
+                           <button type="button" onclick="updateScore('away', 5)" class="btn-score-add">+5</button>
+                           <button type="button" onclick="updateScore('away', 3)" class="btn-score-add">+3</button>
+                           <button type="button" onclick="updateScore('away', 2)" class="btn-score-add">+2</button>
+                           <button type="button" onclick="updateScore('away', -5)" class="status-btn status-btn-sub">-5</button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </form>
+            <script>
+               function updateScore(team, val) {
+                 const inputHome   = document.getElementById('score_home');
+                 const inputAway   = document.getElementById('score_away');
+                 const displayHome = document.getElementById('score-home');
+                 const displayAway = document.getElementById('score-away');
+                 const form        = document.getElementById('score');
+               
+                 if (team === 'home') {
+                   let v = parseInt(inputHome.value, 10) || 0;
+                   v = Math.max(0, v + val);
+                   inputHome.value = v;
+                   if (displayHome) displayHome.textContent = v;
+                 } else {
+                   let v = parseInt(inputAway.value, 10) || 0;
+                   v = Math.max(0, v + val);
+                   inputAway.value = v;
+                   if (displayAway) displayAway.textContent = v;
+                 }
+               
+                 const url  = form.getAttribute('action');
+                 const data = new FormData(form);
+                 fetch(url, {
+                   method: form.getAttribute('method') || 'POST',
+                   body: data,
+                   credentials: 'same-origin'
+                 });
+               }
+               
+               document.addEventListener('DOMContentLoaded', function() {
+                 const inputHome   = document.getElementById('score_home');
+                 const inputAway   = document.getElementById('score_away');
+                 const displayHome = document.getElementById('score-home');
+                 const displayAway = document.getElementById('score-away');
+                 if (inputHome && displayHome) displayHome.textContent = inputHome.value;
+                 if (inputAway && displayAway) displayAway.textContent = inputAway.value;
+               });
+            </script>
+            <div class="section-subtitle">
+               <i class="bi bi-tv-fill"></i>
+               Flux vidéo
+            </div>
+            <div id="stream-card" class="dashboard-card">
+               <div class="card-info">
+                  <div class="stream-container">
+                     <iframe
+                        id="stream-iframe"
+                        src=""
+                        frameborder="0"
+                        allow="autoplay; encrypted-media"
+                        allowfullscreen
+                        ></iframe>
+                  </div>
+                  <p class="card-label">
+                     Collez l’URL d’intégration de votre plateforme et cliquez sur « Charger ».
+                  </p>
+                  <div class="settings-form">
+                     <div class="form-group">
+                        <label for="stream-url" class="form-label">URL d’intégration</label>
+                        <form id="stream-form" onsubmit="return false;" style="margin:0;">
+                           <div class="stream-controls-row">
+                              <input
+                                 id="stream-url"
+                                 type="text"
+                                 class="form-control"
+                                 placeholder="https://www.youtube.com/embed/…"
+                                 />
+                              <button id="stream-load" class="btn btn-primary btn-sm" type="button">
+                              Charger
+                              </button>
+                           </div>
+                        </form>
+                     </div>
+                  </div>
+               </div>
+            </div>
+<script>
+function toEmbedUrl(url) {
+  if (!url) return '';
+  try {
+    url = url.trim();
+
+    if (
+      url.includes('/embed/') ||
+      url.includes('player.twitch.tv') ||
+      url.includes('player.vimeo.com') ||
+      url.includes('dailymotion.com/embed/') ||
+      url.includes('facebook.com/plugins/video.php') ||
+      url.includes('tiktok.com/embed/')
+    ) {
+      return url;
+    }
+
+    const u = new URL(url);
+
+    // YouTube
+    if (u.hostname.includes('youtube.com') || u.hostname === 'youtu.be') {
+      let vid;
+      if (u.hostname === 'youtu.be') {
+        vid = u.pathname.slice(1);
+      } else if (u.searchParams.has('v')) {
+        vid = u.searchParams.get('v');
+      } else if (u.pathname.startsWith('/embed/')) {
+        vid = u.pathname.split('/').pop();
+      }
+      if (vid) return `https://www.youtube.com/embed/${vid}`;
+    }
+
+    // Twitch
+    if (u.hostname.includes('twitch.tv')) {
+      const path = u.pathname.split('/').filter(Boolean);
+      if (path[0] === 'videos' && path[1]) {
+        return `https://player.twitch.tv/?video=${path[1]}&parent=${location.hostname}`;
+      } else if (path[0]) {
+        return `https://player.twitch.tv/?channel=${path[0]}&parent=${location.hostname}`;
+      }
+    }
+
+    // Facebook
+    if (u.hostname.includes('facebook.com')) {
+      return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&width=560`;
+    }
+
+    // TikTok
+    if (u.hostname.includes('tiktok.com')) {
+      const match = url.match(/\/video\/(\d+)/);
+      if (match) {
+        return `https://www.tiktok.com/embed/v2/${match[1]}`;
+      }
+    }
+
+    // Dailymotion
+    if (u.hostname.includes('dailymotion.com')) {
+      let id = null;
+      if (u.pathname.startsWith('/video/')) {
+        id = u.pathname.split('/')[2];
+      }
+      if (id) {
+        return `https://www.dailymotion.com/embed/video/${id}`;
+      }
+    }
+
+    // Vimeo
+    if (u.hostname.includes('vimeo.com')) {
+      const parts = u.pathname.split('/');
+      const id = parts.filter(Boolean).pop();
+      if (id && /^\d+$/.test(id)) {
+        return `https://player.vimeo.com/video/${id}`;
+      }
+    }
+
+    return url;
+  } catch (e) {
+    return url;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const btn = document.getElementById('stream-load');
+  const input = document.getElementById('stream-url');
+  const iframe = document.getElementById('stream-iframe');
+  if (!btn || !input || !iframe) return;
+
+  // On recharge la dernière valeur sauvegardée
+  const lastUrl = localStorage.getItem('stream-url') || '';
+  input.value = lastUrl;
+  iframe.src = lastUrl ? toEmbedUrl(lastUrl) : '';
+
+  btn.addEventListener('click', function () {
+    const url = input.value.trim();
+    localStorage.setItem('stream-url', url); 
+    if (!url) {
+      iframe.src = "";
+      return;
+    }
+    const embedUrl = toEmbedUrl(url);
+    iframe.src = embedUrl;
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      btn.click();
+      e.preventDefault();
+    }
+    // Sauvegarde aussi à chaque saisie
+    setTimeout(() => {
+      localStorage.setItem('stream-url', input.value.trim());
+    }, 10);
+  });
+});
+</script>
+            <script>
+               document.addEventListener('DOMContentLoaded', () => {
+                 const input  = document.getElementById('stream-url');
+                 const btn    = document.getElementById('stream-load');
+                 const iframe = document.getElementById('stream-iframe');
+                 const KEY    = 'streamEmbedUrl';
+               
+                 const saved = localStorage.getItem(KEY);
+                 if (saved) {
+                   input.value  = saved;
+                   iframe.src   = saved;
+                 }
+               
+                 btn.addEventListener('click', () => {
+                   let url = input.value.trim();
+                   if (!url) return alert('Veuillez saisir une URL.');
+               
+                   const embed = toEmbedUrl(url);
+                   localStorage.setItem(KEY, embed);
+                   iframe.src = embed;
+                 });
+               });
+            </script>
+            <div class="section-subtitle obs-subtitle" style="margin-top:2.2em;">
+               <i class="bi bi-lightning-fill" style="color:#bf2a3c"></i>
+               Seulement pour OBS Studio
+            </div>
+            <div class="dashboard-card obs-card" style="background:rgba(0,0,0,0.20);text-align:center;box-shadow:0 1px 7px rgba(0,0,0,0.06);padding:1.25em 1em 1em 1em;">
+               <a href="https://obsproject.com/fr" target="_blank" class="obs-logo-link" style="display:inline-block;">
+               <img src="static/admin/obs.png" alt="OBS Studio" style="height:54px;width:auto;display:block;margin:0 auto;transition:transform 0.16s;">
+               </a>
+               <div style="font-size:0.98em;color:#d4d8de;margin-top:0.70em;text-align:center;">
+                  Compatibilité et intégration optimales.
+               </div>
+            </div>
+            <script>
+               document.querySelectorAll('.obs-logo-link img').forEach(function(img){
+                 img.addEventListener('mouseover',function(){ this.style.transform="scale(1.12)"; });
+                 img.addEventListener('mouseout',function(){ this.style.transform="none"; });
+               });
+            </script>
+         </aside>
+         <main class="main-content">
+            <div class="main-intro-block">
+               <div class="main-intro-title">Pilotage de la rencontre</div>
+               <div class="main-intro-desc">
+                  Maîtrisez tous les moments du match : enregistrement des buteurs, gestion des événements, des remplacements et des commentaires, le tout en temps réel.
+               </div>
+            </div>
+            <div class="dashboard-card tabbed-card">
+               <div class="tabs-header">
+                  <button type="button" class="tab-btn active" data-tab="buteurs">Liste des buteurs</button>
+                  <button type="button" class="tab-btn" data-tab="evenements">Faits marquants</button>
+                  <button type="button" class="tab-btn" data-tab="remplacants">Rotation d’effectif</button>
+               </div>
+               <div class="tabs-content">
+                  <div class="tab-panel active" data-tab="buteurs">
+                     <div class="info-block">
+                        <div class="main-intro-desc">Glissez un joueur sur le type de but pour enregistrer.</div>
+                        <div class="sub-block buteurs-subblock">
+                           <form id="buteurs-dnd" action="/update_buteurs?anchor=buteurs" method="POST" autocomplete="off">
+                              <div class="buteurs-columns-row">
+                                 <div class="teams-column buteurs-home">
+                                    <h3 class="buteurs-title buteurs-title-home">Équipe domicile</h3>
+                                    <div class="buteurs-players-list">
+                                       {% for joueur in select_players_home %}
+                                       {% if joueur %}
+                                       <button type="button" class="status-btn home-btn" draggable="true"
+                                          data-player="{{ joueur }}" data-team="home"
+                                          style="width:120px; min-width:120px; max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                       {{ joueur }}
+                                       </button>
+                                       {% endif %}
+                                       {% endfor %}
+                                    </div>
+                                 </div>
+                                 <div class="types-column buteurs-types">
+                                    {% for type, label in [
+                                    ('Essai 🏉', 'Essai'),
+                                    ('Transfo 🎯', 'Transformation'),
+                                    ('Drop 🦶', 'Drop'),
+                                    ('Pénalité 🎯', 'Pénalité')
+                                    ] %}
+                                    <div class="type-dropzone" data-type="{{ type }}">
+                                       {{ label }}
+                                    </div>
+                                    {% endfor %}
+                                 </div>
+                                 <div class="teams-column buteurs-away">
+                                    <h3 class="buteurs-title buteurs-title-away">Équipe extérieure</h3>
+                                    <div class="buteurs-players-list">
+                                       {% for joueur in select_players_away %}
+                                       {% if joueur %}
+                                       <button type="button" class="status-btn away-btn" draggable="true"
+                                          data-player="{{ joueur }}" data-team="away"
+                                          style="width:120px; min-width:120px; max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                       {{ joueur }}
+                                       </button>
+                                       {% endif %}
+                                       {% endfor %}
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="buteurs-iframe-btnrow" style="display:flex; justify-content: flex-end;">
+                                 <button type="button" id="show-buteurs-iframe" class="btn-score-add">
+                                 Voir la liste des buteurs
+                                 </button>
+                              </div>
+                              <div id="buteurs-modal" class="buteurs-modal-main">
+                                 <div class="buteurs-modal-bg"></div>
+                                 <div class="buteurs-modal-content">
+                                    <button class="sidePanel-close" type="button" id="buteurs-close-btn">×</button>
+                                    <div class="main-intro-block buteurs-modal-titleblock">
+                                       <div class="main-intro-title">Liste complète des buteurs</div>
+                                       <div class="main-intro-desc">
+                                          Retrouvez l’historique des buteurs du match, en temps réel.<br>
+                                          (Ce tableau s’actualise automatiquement à chaque action)
+                                       </div>
+                                    </div>
+                                    <div class="buteurs-modal-equipes-row" style="display: flex; justify-content: center; align-items: center; gap: 1.2rem; margin-bottom: 0.5rem;">
+                                       <span style="font-weight: 600; color: #4fc3f7; font-size: 1.08rem;">ÉQUIPE DOMICILE</span>
+                                       <span style="display:inline-block;width:1.5px;height:22px;background:#fff;opacity:.35;margin:0 1.1rem;border-radius:2px;"></span>
+                                       <span style="font-weight: 600; color: #ef4444; font-size: 1.08rem;">ÉQUIPE EXTÉRIEURE</span>
+                                    </div>
+                                    <iframe id="buteurs-modal-frame" class="iframe-light" src="" allowfullscreen></iframe>
+                                 </div>
+                              </div>
+                              <input type="hidden" name="buteur_minute_home" id="buteur_minute_home" value="">
+                              <input type="hidden" name="buteur_minute_away" id="buteur_minute_away" value="">
+                              <input type="hidden" name="buteur_joueur_home" id="buteur_joueur_home" value="">
+                              <input type="hidden" name="buteur_joueur_away" id="buteur_joueur_away" value="">
+                              <input type="hidden" name="buteur_type_home" id="buteur_type_home" value="">
+                              <input type="hidden" name="buteur_type_away" id="buteur_type_away" value="">
+                           </form>
+                        </div>
+                     </div>
+                  </div>
+                  <script>
+                     document.addEventListener('DOMContentLoaded', () => {
+                       const formButeurs  = document.getElementById('buteurs-dnd');
+                       const formScore    = document.getElementById('score');
+                       const scoreHomeEl  = document.getElementById('score-home');
+                       const scoreAwayEl  = document.getElementById('score-away');
+                       const inputHome    = document.getElementById('score_home');
+                       const inputAway    = document.getElementById('score_away');
+                       const minSelect    = document.getElementById('minute-select');
+                     
+                       const pointsByType = {
+                         'Essai 🏉':     5,
+                         'Transfo 🎯':   2,
+                         'Drop 🦶':      3,
+                         'Pénalité 🎯':  3
+                       };
+                     
+                       document.querySelectorAll('.status-btn.home-btn, .status-btn.away-btn').forEach(btn => {
+                         btn.addEventListener('dragstart', e => {
+                           const payload = { player: btn.dataset.player, team: btn.dataset.team };
+                           e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+                         });
+                       });
+                     
+                       document.querySelectorAll('.type-dropzone').forEach(zone => {
+                         zone.addEventListener('dragover', e => {
+                           e.preventDefault();
+                           zone.classList.add('dragover');
+                         });
+                         zone.addEventListener('dragleave', () => {
+                           zone.classList.remove('dragover');
+                         });
+                         zone.addEventListener('drop', async e => {
+                           e.preventDefault();
+                           zone.classList.remove('dragover');
+                           let dragData;
+                           try {
+                             dragData = JSON.parse(e.dataTransfer.getData('text/plain'));
+                           } catch {
+                             alert('Erreur dans les données du drag');
+                             return;
+                           }
+                           dragData.type = zone.dataset.type;
+                     
+                           const pts = pointsByType[dragData.type] || 0;
+                           if (dragData.team === 'home') {
+                             const newHome = (parseInt(inputHome.value,10)||0) + pts;
+                             inputHome.value    = newHome;
+                             scoreHomeEl.textContent = newHome;
+                           } else {
+                             const newAway = (parseInt(inputAway.value,10)||0) + pts;
+                             inputAway.value    = newAway;
+                             scoreAwayEl.textContent = newAway;
+                           }
+                     
+                           try {
+                     
+                             const resp = await fetch(formScore.action, {
+                               method: 'POST',
+                               credentials: 'same-origin',
+                               body: new FormData(formScore)
+                             });
+                             if (!resp.ok) throw new Error('Échec update_score');
+                     
+                             const timerResp = await fetch('/timer_value', { credentials: 'same-origin' });
+                             if (!timerResp.ok) throw new Error('Échec timer_value');
+                             const data = await timerResp.json();
+                             const minute = data.minute != null ? String(data.minute) : '';
+                             if (minSelect) minSelect.value = minute;
+                     
+                             const minuteInput = document.getElementById(`buteur_minute_${dragData.team}`);
+                             if (minuteInput) minuteInput.value = minute;
+                             const joueurInput = document.getElementById(`buteur_joueur_${dragData.team}`);
+                             if (joueurInput) joueurInput.value = dragData.player;
+                             const typeInput   = document.getElementById(`buteur_type_${dragData.team}`);
+                             if (typeInput) typeInput.value = dragData.type;
+                     
+                             const resp2 = await fetch(formButeurs.action, {
+                               method: 'POST',
+                               credentials: 'same-origin',
+                               body: new FormData(formButeurs)
+                             });
+                             if (!resp2.ok) throw new Error('Échec update_buteurs');
+                     
+                             const modal = document.getElementById('buteurs-modal');
+                             const iframe = document.getElementById('buteurs-modal-frame');
+                             if (modal && iframe && modal.classList.contains('show')) {
+                               iframe.src = '/buteurs.html?t=' + Date.now();
+                             }
+                     
+                           } catch(err) {
+                             console.error(err);
+                             alert('Erreur lors de la mise à jour du score ou du temps.');
+                           }
+                         });
+                       });
+                     
+                       formButeurs.addEventListener('submit', e => {
+                         e.preventDefault();
+                         fetch(formButeurs.action, {
+                           method: 'POST',
+                           credentials: 'same-origin',
+                           body: new FormData(formButeurs)
+                         })
+                         .then(resp => {
+                           if (!resp.ok) throw new Error('Échec update_buteurs');
+                     
+                           const modal = document.getElementById('buteurs-modal');
+                           const iframe = document.getElementById('buteurs-modal-frame');
+                           if (modal && iframe && modal.classList.contains('show')) {
+                             iframe.src = '/buteurs.html?t=' + Date.now();
+                           }
+                         })
+                         .catch(err => {
+                           console.error(err);
+                           alert('Erreur mise à jour des buteurs.');
+                         });
+                       });
+                     });
+                  </script>
+                  <script>
+                     document.addEventListener('DOMContentLoaded', function() {
+                       const btn = document.getElementById('show-buteurs-iframe');
+                       const modal = document.getElementById('buteurs-modal');
+                       const iframe = document.getElementById('buteurs-modal-frame');
+                       const closeBtn = document.getElementById('buteurs-close-btn');
+                       const bg = modal.querySelector('.buteurs-modal-bg');
+                       if(btn && modal && iframe && closeBtn && bg) {
+                         btn.addEventListener('click', function() {
+                           iframe.src = '/buteurs.html?t=' + Date.now();
+                           modal.classList.add('show');
+                         });
+                         closeBtn.addEventListener('click', function() {
+                           modal.classList.remove('show');
+                           iframe.src = '';
+                         });
+                         bg.addEventListener('click', function() {
+                           modal.classList.remove('show');
+                           iframe.src = '';
+                         });
+                         window.addEventListener('keydown', function(e){
+                           if(e.key === 'Escape') {
+                             modal.classList.remove('show');
+                             iframe.src = '';
+                           }
+                         });
+                       }
+                     });
+                  </script>
+                  <div class="tab-panel" data-tab="evenements">
+                     <div class="info-block">
+                        <div class="main-intro-desc">Glissez un joueur sur le type d’événement pour enregistrer.</div>
+                        <div class="sub-block buteurs-subblock">
+                           <form id="evenements-dnd" action="/update_evenements?anchor=evenements" method="POST" autocomplete="off">
+                              <div class="buteurs-columns-row">
+                                 <div class="teams-column buteurs-home">
+                                    <h3 class="buteurs-title buteurs-title-home">Équipe domicile</h3>
+                                    <div class="buteurs-players-list">
+                                       {% for joueur in select_players_home %}
+                                       {% if joueur %}
+                                       <button type="button" class="status-btn home-btn" draggable="true"
+                                          data-player="{{ joueur }}" data-team="home"
+                                          style="width:120px; min-width:120px; max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                       {{ joueur }}
+                                       </button>
+                                       {% endif %}
+                                       {% endfor %}
+                                    </div>
+                                 </div>
+                                 <div class="types-column buteurs-types">
+                                    {% for type, label in [
+                                    ('Carton (🟨)', 'Carton jaune'),
+                                    ('Carton (🟥)', 'Carton rouge'),
+                                    ('Blessure (🚑)', 'Blessure')
+                                    ] %}
+                                    <div class="type-dropzone" data-type="{{ type }}">
+                                       {{ label }}
+                                    </div>
+                                    {% endfor %}
+                                    <div id="minute-container" style="display:none; margin-top:1rem;">
+                                       <select id="minute-select" class="minute-select">
+                                          <option value="">Minute</option>
+                                          {% for m in range(1,81) %}
+                                          <option value="{{m}}">{{m}}</option>
+                                          {% endfor %}
+                                          {% for m in range(1,11) %}
+                                          <option value="80+{{m}}">80+{{m}}</option>
+                                          {% endfor %}
+                                       </select>
+                                    </div>
+                                 </div>
+                                 <div class="teams-column buteurs-away">
+                                    <h3 class="buteurs-title buteurs-title-away">Équipe extérieure</h3>
+                                    <div class="buteurs-players-list">
+                                       {% for joueur in select_players_away %}
+                                       {% if joueur %}
+                                       <button type="button" class="status-btn away-btn" draggable="true"
+                                          data-player="{{ joueur }}" data-team="away"
+                                          style="width:120px; min-width:120px; max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                       {{ joueur }}
+                                       </button>
+                                       {% endif %}
+                                       {% endfor %}
+                                    </div>
+                                 </div>
+                              </div>
+                              <input type="hidden" name="event_minute_home" id="event_minute_home" value="">
+                              <input type="hidden" name="event_player_home" id="event_player_home" value="">
+                              <input type="hidden" name="event_action_home" id="event_action_home" value="">
+                              <input type="hidden" name="event_minute_away" id="event_minute_away" value="">
+                              <input type="hidden" name="event_player_away" id="event_player_away" value="">
+                              <input type="hidden" name="event_action_away" id="event_action_away" value="">
+                           </form>
+                           <div class="buteurs-iframe-btnrow" style="display:flex; justify-content: flex-end;">
+                              <button type="button" id="show-evenements-iframe" class="btn-score-add">
+                              Voir la liste des événements
+                              </button>
+                           </div>
+                           <div id="evenements-modal" class="buteurs-modal-main">
+                              <div class="buteurs-modal-bg"></div>
+                              <div class="buteurs-modal-content">
+                                 <button class="sidePanel-close" type="button" id="evenements-close-btn">×</button>
+                                 <div class="main-intro-block buteurs-modal-titleblock">
+                                    <div class="main-intro-title">Liste complète des faits marquants</div>
+                                    <div class="main-intro-desc">
+                                       Retrouvez l’historique des événements du match, en temps réel.<br>
+                                       (Ce tableau s’actualise automatiquement à chaque action)
+                                    </div>
+                                 </div>
+                                 <div class="buteurs-modal-equipes-row" style="display: flex; justify-content: center; align-items: center; gap: 1.2rem; margin-bottom: 0.5rem;">
+                                    <span style="font-weight: 600; color: #4fc3f7; font-size: 1.08rem;">ÉQUIPE DOMICILE</span>
+                                    <span style="display:inline-block;width:1.5px;height:22px;background:#fff;opacity:.35;margin:0 1.1rem;border-radius:2px;"></span>
+                                    <span style="font-weight: 600; color: #ef4444; font-size: 1.08rem;">ÉQUIPE EXTÉRIEURE</span>
+                                 </div>
+                                 <iframe id="evenements-frame" class="iframe-light" src="" allowfullscreen></iframe>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <script>
+                  document.addEventListener('DOMContentLoaded', () => {
+                  
+                    const form = document.getElementById('evenements-dnd');
+                    const minSel = document.getElementById('minute-select');
+                    const dropzones = document.querySelectorAll('#evenements-dnd .type-dropzone');
+                    const buttons = document.querySelectorAll('#evenements-dnd .status-btn');
+                  
+                    if (!form || !minSel || buttons.length === 0 || dropzones.length === 0) {
+                      console.error('Éléments manquants pour le drag&drop événements.');
+                      return;
+                    }
+                  
+                    buttons.forEach(btn => {
+                      btn.setAttribute('draggable', 'true');
+                      btn.addEventListener('dragstart', e => {
+                        const dragInfo = { player: btn.dataset.player, team: btn.dataset.team };
+                        e.dataTransfer.setData('text/plain', JSON.stringify(dragInfo));
+                        e.dataTransfer.effectAllowed = 'copy';
+                      });
+                    });
+                  
+                    dropzones.forEach(zone => {
+                      zone.addEventListener('dragover', e => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'copy';
+                        zone.classList.add('dragover');
+                      });
+                      zone.addEventListener('dragleave', () => {
+                        zone.classList.remove('dragover');
+                      });
+                      zone.addEventListener('drop', e => {
+                        e.preventDefault();
+                        zone.classList.remove('dragover');
+                        let dragInfo;
+                        try {
+                          dragInfo = JSON.parse(e.dataTransfer.getData('text/plain'));
+                        } catch {
+                          return alert('Erreur dans les données du drag');
+                        }
+                        dragInfo.type = zone.dataset.type;
+                  
+                        fetch('/timer_value', { credentials: 'same-origin' })
+                        .then(r => {
+                          if (!r.ok) throw new Error('Échec timer_value');
+                          return r.json();
+                        })
+                        .then(data => {
+                          const m = data.minute != null ? String(data.minute) : '';
+                          minSel.value = m;
+                          const t = dragInfo.team;
+                          document.getElementById(`event_minute_${t}`).value = m;
+                          document.getElementById(`event_player_${t}`).value = dragInfo.player;
+                          document.getElementById(`event_action_${t}`).value = dragInfo.type;
+                  
+                          fetch(form.action, {
+                            method: form.method,
+                            credentials: 'same-origin',
+                            body: new FormData(form)
+                          })
+                          .then(resp => {
+                            if (!resp.ok) throw new Error('Échec update_evenements');
+                            const iframe = document.getElementById('evenements-frame');
+                            if (iframe) {
+                              iframe.src = '/evenements.html?t=' + Date.now();
+                            }
+                          })
+                          .catch(err => {
+                            console.error(err);
+                            alert('Erreur lors de la mise à jour des événements.');
+                          });
+                        })
+                        .catch(() => {
+                          alert('Impossible de récupérer la minute.');
+                        });
+                      });
+                    });
+                  
+                    form.addEventListener('submit', e => {
+                      e.preventDefault();
+                      fetch(form.action, {
+                        method: form.method,
+                        credentials: 'same-origin',
+                        body: new FormData(form)
+                      })
+                      .then(resp => {
+                        if (!resp.ok) throw new Error('Échec update_evenements');
+                        const iframe = document.getElementById('evenements-frame');
+                        if (iframe) {
+                          iframe.src = '/evenements.html?t=' + Date.now();
+                        }
+                      })
+                      .catch(err => {
+                        console.error(err);
+                        alert('Erreur mise à jour des événements.');
+                      });
+                    });
+                  
+                    const btn = document.getElementById('show-evenements-iframe');
+                    const modal = document.getElementById('evenements-modal');
+                    const iframe = document.getElementById('evenements-frame');
+                    const closeBtn = document.getElementById('evenements-close-btn');
+                    const bg = modal ? modal.querySelector('.buteurs-modal-bg') : null;
+                    if(btn && modal && iframe && closeBtn && bg) {
+                      btn.addEventListener('click', function() {
+                        iframe.src = '/evenements.html?t=' + Date.now();
+                        modal.classList.add('show');
+                      });
+                      closeBtn.addEventListener('click', function() {
+                        modal.classList.remove('show');
+                        iframe.src = '';
+                      });
+                      bg.addEventListener('click', function() {
+                        modal.classList.remove('show');
+                        iframe.src = '';
+                      });
+                      window.addEventListener('keydown', function(e){
+                        if(e.key === 'Escape') {
+                          modal.classList.remove('show');
+                          iframe.src = '';
+                        }
+                      });
+                    }
+                  });
+               </script>
+               <div class="tab-panel" data-tab="remplacants">
+                  <div class="info-block">
+                     <div class="main-intro-desc">Glissez un titulaire sur un remplaçant pour enregistrer le remplacement.</div>
+                     <div class="sub-block buteurs-subblock">
+                        <form id="remplacants" action="/update_remplacants?anchor=remplacants" method="POST" autocomplete="off">
+                           <div class="buteurs-columns-row">
+                              <div class="teams-column buteurs-home">
+                                 <h3 class="buteurs-title buteurs-title-home">Équipe domicile</h3>
+                                 <div class="buteurs-players-list" id="home-tit">
+                                    {% for j in compo_home.joueurs %}
+                                    {% if j %}
+                                    <button type="button" class="status-btn home-btn" draggable="true"
+                                       data-team="home" data-player="{{ j }}"
+                                       style="width:120px; min-width:120px; max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    {{ j }}
+                                    </button>
+                                    {% endif %}
+                                    {% endfor %}
+                                 </div>
+                              </div>
+                              <div class="types-column buteurs-types">
+                                 <div class="remp-label" style="font-size:0.92rem; text-align: center; margin-bottom:0.6rem;">Remplaçants</div>
+                                 <div class="remp-blocks" style="display: flex; gap: 1.2rem; align-items: flex-start; justify-content: center;">
+                                    <div style="min-width:140px; flex:1;">
+                                       <div class="buteurs-players-list remp-list-gauche" id="home-remp-zone" style="display:flex; flex-direction:column; align-items:flex-start; gap:0.3rem;">
+                                          {% for j in compo_home.remplacants %}
+                                          {% if j %}
+                                          <div class="status-btn home-btn repl-btn"
+                                             data-team="home" data-player="{{ j }}" tabindex="0"
+                                             style="width:120px; min-width:120px; max-width:120px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                             {{ j }}
+                                          </div>
+                                          {% endif %}
+                                          {% endfor %}
+                                       </div>
+                                    </div>
+                                    <div style="width:1px; min-height:60px; background:#fff; opacity:.20; border-radius:2px; margin:0 0.3rem;"></div>
+                                    <div style="min-width:140px; flex:1;">
+                                       <div class="buteurs-players-list remp-list-droite" id="away-remp-zone" style="display:flex; flex-direction:column; align-items:flex-end; gap:0.3rem;">
+                                          {% for j in compo_away.remplacants %}
+                                          {% if j %}
+                                          <div class="status-btn away-btn repl-btn"
+                                             data-team="away" data-player="{{ j }}" tabindex="0"
+                                             style="width:120px; min-width:120px; max-width:120px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                             {{ j }}
+                                          </div>
+                                          {% endif %}
+                                          {% endfor %}
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="teams-column buteurs-away">
+                                 <h3 class="buteurs-title buteurs-title-away">Équipe extérieure</h3>
+                                 <div class="buteurs-players-list" id="away-tit">
+                                    {% for j in compo_away.joueurs %}
+                                    {% if j %}
+                                    <button type="button" class="status-btn away-btn" draggable="true"
+                                       data-team="away" data-player="{{ j }}"
+                                       style="width:120px; min-width:120px; max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    {{ j }}
+                                    </button>
+                                    {% endif %}
+                                    {% endfor %}
+                                 </div>
+                              </div>
+                           </div>
+                           <input type="hidden" name="remp_min_home" id="remp_min_home">
+                           <input type="hidden" name="remp_out_home" id="remp_out_home">
+                           <input type="hidden" name="remp_in_home"  id="remp_in_home">
+                           <input type="hidden" name="remp_min_away" id="remp_min_away">
+                           <input type="hidden" name="remp_out_away" id="remp_out_away">
+                           <input type="hidden" name="remp_in_away"  id="remp_in_away">
+                        </form>
+                        <div class="buteurs-iframe-btnrow" style="display:flex; justify-content: flex-end;">
+                           <button type="button" id="show-remplacants-iframe" class="btn-score-add">
+                           Voir la liste des remplacements
+                           </button>
+                        </div>
+                        <div id="remplacants-modal" class="buteurs-modal-main">
+                           <div class="buteurs-modal-bg"></div>
+                           <div class="buteurs-modal-content">
+                              <button class="sidePanel-close" type="button" id="remplacants-close-btn">×</button>
+                              <div class="main-intro-block buteurs-modal-titleblock">
+                                 <div class="main-intro-title">Liste complète des remplacements</div>
+                                 <div class="main-intro-desc">
+                                    Retrouvez l’historique des remplacements du match, en temps réel.<br>
+                                    (Ce tableau s’actualise automatiquement à chaque action)
+                                 </div>
+                              </div>
+                              <div class="buteurs-modal-equipes-row" style="display: flex; justify-content: center; align-items: center; gap: 1.2rem; margin-bottom: 0.5rem;">
+                                 <span style="font-weight: 600; color: #4fc3f7; font-size: 1.08rem;">ÉQUIPE DOMICILE</span>
+                                 <span style="display:inline-block;width:1.5px;height:22px;background:#fff;opacity:.35;margin:0 1.1rem;border-radius:2px;"></span>
+                                 <span style="font-weight: 600; color: #ef4444; font-size: 1.08rem;">ÉQUIPE EXTÉRIEURE</span>
+                              </div>
+                              <iframe id="remplacants-frame-modal" class="iframe-light" src="" allowfullscreen></iframe>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <script>
+               document.addEventListener('DOMContentLoaded', () => {
+                 const form = document.getElementById('remplacants');
+               
+                 document.querySelectorAll('#home-tit button, #away-tit button').forEach(btn => {
+                   btn.setAttribute('draggable', 'true');
+                   btn.addEventListener('dragstart', e => {
+                     const payload = { team: btn.dataset.team, player: btn.dataset.player };
+                     e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+                     e.dataTransfer.effectAllowed = 'move';
+                   });
+                 });
+               
+                 document.querySelectorAll('.repl-btn').forEach(repBtn => {
+                   repBtn.addEventListener('dragover', e => e.preventDefault());
+                   repBtn.addEventListener('drop', e => {
+                     e.preventDefault();
+                     let payload;
+                     try {
+                       payload = JSON.parse(e.dataTransfer.getData('text/plain'));
+                     } catch {
+                       return alert('Erreur dans les données du drag');
+                     }
+                     const tgt = e.currentTarget;
+                     if (!payload || payload.team !== tgt.dataset.team) {
+                       return alert('Glissez un titulaire de la bonne équipe.');
+                     }
+                     const t   = payload.team;
+                     const src = document.querySelector(`#${t}-tit button[data-player="${payload.player}"]`);
+                     document.getElementById(`${t}-tit`).replaceChild(tgt, src);
+                     document.getElementById(`${t}-remp-zone`).appendChild(src);
+               
+                     fetch('/timer_value', { credentials: 'same-origin' })
+                       .then(r => {
+                         if (!r.ok) throw new Error('Échec timer_value');
+                         return r.json();
+                       })
+                       .then(data => {
+                         const minute = data.minute != null ? String(data.minute) : '';
+                         document.getElementById(`remp_min_${t}`).value = minute;
+                         document.getElementById(`remp_out_${t}`).value = payload.player;
+                         document.getElementById(`remp_in_${t}`).value  = tgt.dataset.player;
+               
+                         fetch(form.action, {
+                           method: form.method,
+                           credentials: 'same-origin',
+                           body: new FormData(form)
+                         })
+                         .then(resp => {
+                           if (!resp.ok) throw new Error('Échec update_remplacants');
+               
+                           const iframe = document.getElementById('remplacants-frame');
+                           if (iframe) iframe.src = '/remplacants.html?t=' + Date.now();
+               
+                           const iframeModal = document.getElementById('remplacants-frame-modal');
+                           const modal = document.getElementById('remplacants-modal');
+                           if (modal && iframeModal && modal.classList.contains('show')) {
+                             iframeModal.src = '/remplacants.html?t=' + Date.now();
+                           }
+                         })
+                         .catch(err => {
+                           console.error(err);
+                           alert('Erreur lors de la mise à jour des remplaçants.');
+                         });
+                       })
+                       .catch(() => {
+                         alert('Impossible de récupérer la minute.');
+                       });
+                   });
+                 });
+               
+                 form.addEventListener('submit', e => {
+                   e.preventDefault();
+                   fetch(form.action, {
+                     method: form.method,
+                     credentials: 'same-origin',
+                     body: new FormData(form)
+                   })
+                   .then(resp => {
+                     if (!resp.ok) throw new Error('Échec update_remplacants');
+                     const iframe = document.getElementById('remplacants-frame');
+                     if (iframe) iframe.src = '/remplacants.html?t=' + Date.now();
+                     const iframeModal = document.getElementById('remplacants-frame-modal');
+                     const modal = document.getElementById('remplacants-modal');
+                     if (modal && iframeModal && modal.classList.contains('show')) {
+                       iframeModal.src = '/remplacants.html?t=' + Date.now();
+                     }
+                   })
+                   .catch(err => {
+                     console.error(err);
+                     alert('Erreur mise à jour des remplaçants.');
+                   });
+                 });
+               
+                 const btn = document.getElementById('show-remplacants-iframe');
+                 const modal = document.getElementById('remplacants-modal');
+                 const iframeModal = document.getElementById('remplacants-frame-modal');
+                 const closeBtn = document.getElementById('remplacants-close-btn');
+                 const bg = modal ? modal.querySelector('.buteurs-modal-bg') : null;
+                 if(btn && modal && iframeModal && closeBtn && bg) {
+                   btn.addEventListener('click', function() {
+                     iframeModal.src = '/remplacants.html?t=' + Date.now();
+                     modal.classList.add('show');
+                   });
+                   closeBtn.addEventListener('click', function() {
+                     modal.classList.remove('show');
+                     iframeModal.src = '';
+                   });
+                   bg.addEventListener('click', function() {
+                     modal.classList.remove('show');
+                     iframeModal.src = '';
+                   });
+                   window.addEventListener('keydown', function(e){
+                     if(e.key === 'Escape') {
+                       modal.classList.remove('show');
+                       iframeModal.src = '';
+                     }
+                   });
+                 }
+               });
+            </script>
+            <script>
+               document.addEventListener('DOMContentLoaded', function() {
+                 document.querySelectorAll('.tabbed-card .tab-btn').forEach(btn => {
+                   btn.addEventListener('click', function() {
+                     const tab = this.getAttribute('data-tab');
+               
+                     this.parentNode.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                     this.classList.add('active');
+               
+                     const panels = this.closest('.tabbed-card').querySelectorAll('.tab-panel');
+                     panels.forEach(p => p.classList.remove('active'));
+                     const target = this.closest('.tabbed-card').querySelector('.tab-panel[data-tab="' + tab + '"]');
+                     if (target) target.classList.add('active');
+                   });
+                 });
+               });
+            </script>
+            <button id="toggle-comments-zone" type="button" style="margin-bottom: 1rem;">
+            Afficher le flux de commentaires
+            </button>
+            <div id="comments-zone" class="tabbed-card commentaires-tab">
+               <div class="main-intro-title" style="text-align:center;margin-top:1.4rem;">
+                  Flux de commentaires
+               </div>
+               <div class="main-intro-desc" style="text-align:center;margin-top:1.1rem;margin-bottom:1.4rem;">
+                  Choisissez un commentaire prédéfini et glissez-le dans la zone centrale pour l’envoyer automatiquement. Vous pouvez aussi saisir un texte manuel.
+               </div>
+               <div class="tabs-header" style="display:flex;flex-wrap:nowrap;justify-content:center;align-items:center;gap:0.2rem;width:calc(100% + 4rem);position:relative;z-index:2;overflow-x:auto;white-space:nowrap;margin-left:-2rem;margin-right:-2rem;border-bottom:1.5px solid rgba(255,255,255,0.09);">
+                  <button class="tab-btn active comment-tab-btn" data-section="Accueil et mise en ambiance" type="button" style="font-size:0.94rem;">Accueil</button>
+                  <button class="tab-btn comment-tab-btn" data-section="Conditions météo" type="button" style="font-size:0.94rem;">Météo</button>
+                  <button class="tab-btn comment-tab-btn" data-section="Première mi-temps" type="button" style="font-size:0.94rem;">1ère mi-temps</button>
+                  <button class="tab-btn comment-tab-btn" data-section="Mi-temps Discussion" type="button" style="font-size:0.94rem;">Mi-temps</button>
+                  <button class="tab-btn comment-tab-btn" data-section="Deuxième mi-temps" type="button" style="font-size:0.94rem;">2ème mi-temps</button>
+                  <button class="tab-btn comment-tab-btn" data-section="Fin du match" type="button" style="font-size:0.94rem;">Fin du match</button>
+                  <button class="tab-btn comment-tab-btn" data-section="Arbitre" type="button" style="font-size:0.94rem;">Arbitrage</button>
+                  <button class="tab-btn comment-tab-btn" data-section="Action vous" type="button" style="font-size:0.94rem;">Votre équipe</button>
+                  <button class="tab-btn comment-tab-btn" data-section="Action adverse" type="button" style="font-size:0.94rem;">Adversaire</button>
+                  <button class="tab-btn comment-tab-btn" data-section="Expression" type="button" style="font-size:0.94rem;">Expressions</button>
+               </div>
+               <form id="commentaires" action="/update_commentaires?anchor=commentaires" method="POST" target="comments-frame">
+                  <input type="hidden" id="comment_minute" name="comment_minute" value="0"/>
+                  <input type="hidden" name="submit_comment" value="1"/>
+                  <input type="hidden" id="comment_section" name="comment_section" value="Accueil et mise en ambiance"/>
+                  <div class="buteurs-columns-row commentaires-columns-row" style="margin-top:1.4rem;">
+                     <div class="buteurs-home commentaires-list">
+                        <div class="buteurs-title">Commentaires prédéfinis</div>
+                        <div id="section-comments" class="buteurs-players-list commentaires-list-inner"></div>
+                     </div>
+                     <div class="buteurs-types commentaires-dropzone">
+                        <div class="buteurs-title commentaires-dropzone-title">&nbsp;</div>
+                        <div id="drop-zone" class="type-dropzone">
+                           Déposez ici
+                        </div>
+                        <input id="comment_custom" name="comment_custom" placeholder="Texte personnalisé…" type="text"
+                           class="form-control"/>
+                     </div>
+                     <div class="buteurs-away commentaires-preview">
+                        <div class="buteurs-title buteurs-title-away">Aperçu direct</div>
+                        <div class="commentaires-iframe-wrapper">
+                           <iframe id="comments-frame" name="comments-frame" class="iframe-light commentaires-iframe" src="/livecomments.html?t={{ timestamp }}" scrolling="yes"></iframe>
+                        </div>
+                     </div>
+                  </div>
+               </form>
+               <div id="comment-preview" class="commentaires-preview-guide">
+                  Passez la souris sur un commentaire pour le prévisualiser.
+               </div>
+            </div>
+      </div>
+      <script>
+         (function() {
+         
+             const COMMENTS_ZONE_ID   = 'comments-zone';
+             const TOGGLE_BTN_ID      = 'toggle-comments-zone';
+             const COMMENTS_KEY       = 'commentsZoneOpen';
+         
+             function onReady(fn) {
+                 if (document.readyState !== 'loading') fn();
+                 else document.addEventListener('DOMContentLoaded', fn);
+             }
+         
+             onReady(function() {
+                 var commentsZone = document.getElementById(COMMENTS_ZONE_ID);
+                 var toggleBtn    = document.getElementById(TOGGLE_BTN_ID);
+                 if (!commentsZone || !toggleBtn) return;
+         
+                 function setCommentsVisibility(open) {
+                     commentsZone.style.display = open ? '' : 'none';
+                     toggleBtn.textContent = open ? "Masquer le flux de commentaires" : "Afficher le flux de commentaires";
+                     localStorage.setItem(COMMENTS_KEY, open ? '1' : '0');
+                 }
+         
+                 var isOpen = localStorage.getItem(COMMENTS_KEY) === '1';
+                 setCommentsVisibility(isOpen);
+         
+                 toggleBtn.addEventListener('click', function() {
+                     setCommentsVisibility(commentsZone.style.display === 'none');
+                 });
+             });
+         })();
+      </script>
+      <script>
+         document.addEventListener('DOMContentLoaded', function() {
+           var iframe = document.getElementById('comments-frame');
+           iframe.onload = function() {
+             try {
+               var doc = iframe.contentDocument || iframe.contentWindow.document;
+               var style = doc.createElement('style');
+               style.innerHTML = `
+                 body, html, * {
+                   color: #fff !important;
+                   font-weight: 400 !important;
+                 }
+               `;
+               doc.head.appendChild(style);
+             } catch (e) {
+         
+             }
+           };
+         });
+      </script>
+      <script>
+         const commentsData = {
+           'Accueil et mise en ambiance': [
+             "Bienvenue dans l'arène ! Aujourd'hui, c'est l'ovale qui commande.",
+             "Le terrain est prêt, les supporters sont chauds, le rugby peut parler !",
+             "Les guerriers de l'ovale sont en place, prêts à en découdre !",
+             "Un ballon, deux équipes, 80 minutes de combat intense. C'est ça, le rugby !",
+             "Aujourd'hui, place au courage, à la solidarité et au beau jeu.",
+             "Vibrez avec nous pour ce grand moment de rugby passion !",
+         "Le coup d’envoi est lancé, et le spectacle ovale commence !",
+         "Les titans du ballon rond se préparent à rugir sur la pelouse !",
+         "Chaque passe compte, chaque plaquage fait vibrer vive le rugby !",
+         "Stade plein à craquer, émotions garanties place au rugby !",
+         "Du dynamisme, de la puissance et du cœur c’est l’esprit rugby !",
+         "La mêlée se forme, la tension monte, prêts pour l’assaut ?",
+         "Ici, on ne lâche rien, on se bat jusqu’au bout bienvenue au combat ovale !",
+         "Des essais spectaculaires en perspective accrochez-vous !",
+         "Le sifflet va retentir, les joueurs sont fin prêts place à l’action !",
+         "Un voyage au cœur de la solidarité, de la force et de la passion vive le rugby !"
+           ],
+           'Conditions météo': [
+             "Sous un grand ciel bleu, tout est prêt pour envoyer du jeu à la main et mettre du rythme dans cette rencontre !",
+             "La pelouse est parfaite, le soleil est là… on devrait assister à un vrai feu d'artifice offensif aujourd'hui !",
+             "Le terrain est sec, les jambes sont légères. L'occasion rêvée pour les trois-quarts de faire parler la vitesse.",
+         "Malgré la pluie fine qui tombe, pas question de fermer le jeu. Il va falloir s'adapter à un ballon glissant et resserrer les lignes.",
+         "Attention au cuir qui se transforme en savonnette aujourd'hui… les avants vont devoir verrouiller chaque ballon dans les zones de combat !",
+         "La boue est de sortie, les appuis sont lourds. Ici, seuls les costauds survivront au défi physique qui s’annonce.",
+         "Le vent s'invite sur le terrain. Les buteurs vont devoir faire preuve de nerfs d'acier pour passer les pénalités.",
+         "Avec ce vent capricieux, l'occupation du terrain sera stratégique. Les chandelles vont fuser, mais attention aux rebonds traîtres !",
+         "Le froid mord les doigts, le terrain est gras... C’est un vrai match de guerriers qui nous attend cet après-midi !",
+         "Sous cette météo hivernale, oubliez le beau jeu ! Aujourd'hui, c'est le rugby de combat, le vrai, celui qui forge les champions !",
+         "Sous la pluie, dans le vent, dans la gadoue... C’est aussi ça le rugby, et c’est pour ces batailles qu’on aime ce sport !",
+         "Les conditions sont difficiles, mais les grands joueurs savent briller quand la météo est contre eux.",
+         "Le ciel se couvre de nuages menaçants, mais préparez-vous à un festival de contres rapides !",
+         "La bruine matinale laisse place à un vent léger, idéal pour des passes longues et précises !",
+         "Le thermomètre descend, les muscles se raidissent chaque mêlée va se jouer au mental !",
+         "Une fine rosée persiste sur la pelouse, promettant des accélérations foudroyantes dès la première touche !",
+         "Le soleil tape fort, l’endurance sera la clé attendez-vous à un duel de relais incessants !",
+         "La pelouse humide crée des trajectoires imprévisibles, chaque réception sera un défi en soi !",
+         "Les rafales balaient le terrain, l’art du jeu au pied va faire la différence aujourd’hui !",
+         "Un orage lointain gronde, mais les avants ne reculeront pas la bataille dans les rucks s’annonce épique !",
+         "La chaleur monte inexorablement, les rotations de banc vont devenir cruciales pour tenir le rythme !",
+         "Une brise fraîche s’infiltre, les chandelles stratégiques vont rythmer ce combat aérien !"
+           ],
+           'Première mi-temps': [
+             "Le coup d'envoi vient d'être donné, c'est parti pour 40 premières minutes intenses !",
+         "Premier ballon, la bataille des rucks est lancée !",
+         "Les deux équipes se jaugent en ce début de match, personne ne veut se découvrir.",
+         "Premier franchissement, le match s'emballe déjà sous l'ovale !",
+         "Le rythme est élevé, les deux équipes cherchent à imposer leur tempo.",
+         "Le combat est rude, personne ne lâche un centimètre sur le terrain.",
+         "Les avants s’installent dans un long temps de jeu, la défense résiste.",
+         "Petite faute de main sous la pression, mêlée ordonnée par l'arbitre.",
+         "Mêlée simulée, la bataille se poursuit dans les rucks.",
+         "Touche bien jouée, la balle est rapidement remise en mouvement.",
+         "Ballon capté en touche, lancement d’une nouvelle attaque.",
+         "Premier temps fort, les supporters donnent de la voix !",
+         "Percée spectaculaire sur l’aile, ça se joue à vitesse grand V !",
+         "Changement de rythme surprenant, l’adversaire est pris de vitesse.",
+         "Contre-attaque éclair, tout le public se lève !",
+         "Coup de pied de recentrage qui soulage la pression adverse.",
+         "La défense est impeccable, aucun espace n’est trouvé.",
+         "Pressing haut des avants, l’adversaire recule sous la pression.",
+         "Pression constante. Le demi de mêlée cherche la faille.",
+         "Retour défensif impeccable, aucun point n’est concédé.",
+         "Manque de précision dans la passe, le ballon file en touche.",
+         "Temps mort virtuel pour soigner un joueur. Le jeu reprend vite.",
+         "Le score reste serré, chaque action compte dans cette première mi-temps tendue.",
+         "Le pack s’organise, ça sent la puissance dans cette touche !",
+         "Une percée dans l’axe, les avants se faufilent sous la pression !",
+         "La défense adverse tient bon, chaque plaquage fait reculer l’attaque !",
+         "Le demi d’ouverture fixe la ligne, cherche un intervalle !",
+         "Nouvelle touche, ballon lancé à la perfection !",
+         "L’essai est dans toutes les têtes, mais la mêlée se prépare !",
+         "Carton jaune imminent, le duel physique tourne au vinaigre !",
+         "Un coup de pied tactique pour soulager la pression dans l’en-but !",
+         "La relance du talonneur surprend tout le monde, ça part en folie !",
+         "Le public est debout, l’atmosphère est électrique avant la reprise !",
+         "Et c'est la mi-temps ! 40 minutes de haute intensité dans ce premier acte."
+           ],
+           'Mi-temps Discussion': [
+         "Une première mi-temps engagée, les deux équipes ont livré une belle bataille.",
+         "Beaucoup d'intensité mais peu d'occasions franches dans ce premier acte.",
+         "Le score est serré, rien n'est encore joué dans cette rencontre.",
+         "Nous avons l'avantage à la pause, mais tout reste à faire.",
+         "L'équipe adverse a su faire la différence juste avant la pause.",
+         "La pluie complique les transmissions, mais l'engagement est total des deux côtés.",
+         "Le public est au rendez-vous, l'ambiance est magnifique ici à la pause.",
+         "Les coachs vont devoir ajuster leurs plans pour faire la différence en seconde période.",
+         "Le match est encore très ouvert, tout reste à écrire en deuxième mi-temps.",
+         "On attend une reprise tambour battant après cette première période intense.",
+         "La pause sonne sur un duel d’exception où chaque mètre a été âprement disputé !",
+         "Aucun essai inscrit, mais la bataille des avants fait toujours rage !",
+         "Les deux équipes n’ont pas lâché un centimètre, la tension reste palpable !",
+         "Score vierge à la mi-temps, mais l’incertitude reste maître du jeu !",
+         "Un premier acte marqué par la maîtrise des défenses et l’engagement physique !",
+         "Le public a vibré sur chaque action, l’atmosphère est électrique !",
+         "L’arbitre a sifflé peu de fautes, gage d’un arbitrage fluide et maîtrisé !",
+         "Les cadenas défensifs ont tenu bon, il faudra trouver la clé en deuxième période !",
+         "Les coachs observent attentivement, prêts à déclencher leurs ajustements !",
+         "Les duels au sol ont rythmé ce premier acte, et la fatigue commence à poindre !",
+         "Le jeu au pied tactique a dessiné le terrain, mais aucun point n’a encore été marqué !",
+         "Une première mi-temps sans essai, mais pleine de promesses pour la suite !",
+         "La mêlée a été le théâtre de nombreux affrontements, symbole de la combativité !",
+         "Les trois-quarts sont restés en embuscade, guettant la moindre faille !",
+         "Rendez-vous à l’entame de la seconde mi-temps pour un dénouement passionnant !"
+         
+           ],
+           'Deuxième mi-temps': [
+         "Le coup d'envoi de la deuxième mi-temps vient d'être donné, 40 minutes pour faire la différence !",
+         "Notre équipe revient des vestiaires avec de bien meilleures intentions.",
+         "Les adversaires semblent déterminés à creuser l'écart dès la reprise.",
+         "Touche jouée rapidement, on veut maintenir la pression.",
+         "Mêlée concédée, l’arbitre sanctionne un en-avant.",
+         "Ballon gratté au sol, quelle prise d’initiative !",
+         "Pressing sur le porteur, rien ne passe dans ce couloir.",
+         "Tentative de break, grosse séquence offensive en cours.",
+         "Percée sur l’aile, l’espace se crée enfin dans la défense.",
+         "Les défenses tiennent bon malgré les assauts répétés.",
+         "Défense barricadée, aucun espace n’est trouvé.",
+         "Reprise de la pression sur la ligne, défense héroïque.",
+         "Changement opéré. Un impact frais arrive sur le terrain.",
+         "Pénalité jouée vite, l’arbitre ménage le spectacle.",
+         "Coup de pied tactique en bout de ligne pour tuer le temps.",
+         "Touche stratégique dans le camp adverse, à suivre…",
+         "Les impacts sont de plus en plus rudes, la fatigue commence à se faire sentir.",
+         "Les premières crampes apparaissent, signe d'une dépense physique énorme.",
+         "Chaque ballon est disputé comme une finale, l'intensité est maximale.",
+         "Le money-time approche, chaque décision va compter dans cette fin de match.",
+         "Dernière opportunité avant le coup de sifflet final. Tout se joue maintenant.",
+         "Dernier plaquage décisif, la victoire se joue dans les dernières secondes.",
+         "Les remplaçants entrent en jeu pour insuffler un nouvel élan offensif !",
+         "La ligne arrière combine parfaitement, l’ouverture est imminente !",
+         "La mêlée solide fait reculer l’adversaire d’un mètre à chaque engagement !",
+         "Le demi de mêlée joue vite, l’ailier prend la profondeur !",
+         "Carton jaune pour un plaquage haut, l’infériorité numérique pèse déjà !",
+         "La réduction d’homme est gérée, la défense se resserre à dix !",
+         "Une relance foudroyante depuis l’en-but et le terrain s’embrase !",
+         "Pénalité jouée en touche pour une conquête près de la ligne !",
+         "Un coup de billard dans la surface, spectaculaire mais sans concrétiser !",
+         "Le chrono file, il faut accélérer pour éviter la prolongation !"
+           ],
+           'Fin du match': [
+         "Coup de sifflet final, fin de la rencontre.",
+         "Victoire logique après une performance solide de l'équipe !",
+         "Succès de l'équipe adverse mérité après un match maîtrisé.",
+         "Match accroché jusqu'au bout, bravo aux deux équipes.",
+         "Défaite malgré une grosse débauche d'énergie.",
+         "Match frustrant, beaucoup d'efforts pour peu de récompense.",
+         "L'équipe n'a jamais baissé les bras malgré l'issue.",
+         "On retiendra l'engagement total des joueurs aujourd'hui.",
+         "Coupe de sifflet final, la rencontre s’achève !",
+         "Victoire incontestable après un match maîtrisé de bout en bout !",
+         "Défaite amère malgré une collecte d’efforts remarquable !",
+         "Succès étriqué au terme d’un duel âpre et équilibré !",
+         "Fin de match haletante, bravo aux deux collectifs !",
+         "L’équipe gagne en confiance et tourne la page sur cette performance !",
+         "L’adversaire s’impose logiquement grâce à une grosse efficacité !",
+         "Retour aux vestiaires sur une note positive pour préparer la suite !",
+         "Le score reflète l’engagement total des joueurs jusqu’au bout !",
+         "Merci aux supporters pour leur ferveur, rendez-vous bientôt !",
+         "Malgré la défaite, l’état d’esprit n’a jamais faibli !",
+         "Le public a vibré, cette ambiance restera gravée !",
+         "Prochain rendez-vous fixé pour corriger les erreurs du jour !",
+         "L’arbitrage a soufflé la fin des débats, félicitations aux vainqueurs !",
+         "Clap de fin sur un spectacle rugueux et passionnant !",
+         "Rendez-vous au prochain match pour rebondir.",
+         "Merci à tous d'avoir suivi ce direct avec nous, à bientôt !"
+           ],
+           'Arbitre': [
+         "L'arbitre siffle une pénalité en notre faveur.",
+         "Pénalité contre l'équipe adverse pour hors-jeu.",
+         "Simple pénalité après visionnage, aucun carton distribué.",
+         "Carton jaune pour faute répétée.",
+         "Carton jaune contre un joueur adverse pour anti-jeu.",
+         "Carton rouge direct ! L'équipe est réduite à 14.",
+         "Carton rouge pour un geste dangereux côté adverse.",
+         "Notre joueur sort sur blessure.",
+         "Joueur de l'équipe adverse sort sur blessure.",
+         "L'arbitre fait appel à la vidéo pour vérifier l'essai.",
+         "L'arbitre demande la vidéo pour une action litigieuse.",
+         "Après consultation vidéo, l'essai est validé par l'arbitre.",
+         "Après arbitrage vidéo, l'essai est refusé.",
+         "Mêlée sifflée, faute de main sur ce ballon glissant.",
+         "Discussion entre l'arbitre et les capitaines pour calmer les esprits.",
+         "Arrêt du temps.",
+         "Reprise du temps."
+           ],
+           'Action vous': [
+         "ESSAI !!! Magnifique enchaînement collectif, tout en puissance.",
+         "ESSAI !!! Percée fulgurante, quelle action individuelle !",
+         "ESSAI sur interception, quelle lecture du jeu incroyable !",
+         "Transformation réussie, deux points supplémentaires au compteur.",
+         "Transformation manquée, le ballon fuit les perches de peu.",
+         "Pénalité réussie, l’écart se creuse au score.",
+         "Pénalité manquée, dommage dans ce moment important.",
+         "DROP !!! Trois points supplémentaires dans la besace !",
+         "Tentative de drop, mais le ballon passe sous la barre."
+           ],
+           'Action adverse': [
+         "Essai inscrit après plusieurs temps de jeu.",
+         "Essai marqué après une interception.",
+         "Transformation réussie suite à l'essai.",
+         "Transformation manquée après l'essai.",
+         "Pénalité réussie sur faute au sol.",
+         "Pénalité manquée, le ballon passe à côté.",
+         "Drop réussi pour ajouter trois points.",
+         "Tentative de drop manquée."
+           ],
+           'Expression': [
+         "Les mouches ont changé d’âne !",
+         "La boîte à gifles est ouverte !",
+         "C’est à la fin de la foire que l’on compte les bouses...",
+         "La cabane est tombée sur le chien !",
+         "Le cochon est dans le maïs !",
+         "Oh la belle cocotte !",
+         "Il a pris un caramel XXL !",
+         "C’est un coup de casque dans le buffet !",
+         "Il est tombé comme une crêpe mal retournée !",
+         "Le placage a fait trembler les tribunes !",
+         "Il a été plié en deux comme une serviette !",
+         "On a ouvert la boîte à gifles !",
+         "Le tracteur est passé sur lui !",
+         "Ça frotte sévère dans les rucks !",
+         "La cabane est tombée sur le chien !",
+         "Il a pris la marée sur ce plaquage !",
+         "Il est resté collé comme un post-it sur son vis-à-vis !",
+         "Ça tape comme à l'ancienne aujourd'hui !",
+         "Le cochon est dans le maïs !",
+         "On a sorti la bétonneuse en défense !",
+         "La cocotte avance comme un rouleau compresseur !",
+         "La cabane est tombée et le chien est parti en courant !"
+           ]
+         };
+         
+         const colorsBySection = {
+         'Accueil et mise en ambiance': '#14b8a6',
+         'Conditions météo'           : '#3b82f6',
+         'Première mi-temps'          : '#8b5cf6',
+         'Mi-temps Discussion'        : '#f97316',
+         'Deuxième mi-temps'          : '#ef4444',
+         'Fin du match'               : '#6b7280',
+         'Arbitre'                    : '#3fa796',
+         'Action vous'                : '#10b981',
+         'Action adverse'             : '#ef4444',
+         'Expression'                 : '#f472b6'
+         };
+         
+         document.addEventListener('DOMContentLoaded', function() {
+         const form         = document.getElementById('commentaires');
+         const minuteField  = document.getElementById('comment_minute');
+         const sectionField = document.getElementById('comment_section');
+         const container    = document.getElementById('section-comments');
+         const dropZone     = document.getElementById('drop-zone');
+         const customInput  = document.getElementById('comment_custom');
+         const iframe       = document.getElementById('comments-frame');
+         const timerDisplay = document.getElementById('timer-display');
+         const preview      = document.getElementById('comment-preview');
+         
+         let currentSection = sectionField.value || 'Accueil et mise en ambiance';
+         
+         function getCurrentMinute() {
+          if (!timerDisplay) return '0';
+          const parts = timerDisplay.textContent.trim().split(':');
+          let m = parseInt(parts[0], 10);
+          if (isNaN(m) || m < 0) m = 0;
+          return (m <= 80) ? String(m) : '80+' + String(m - 80);
+         }
+         
+         function loadComments(section) {
+          container.innerHTML = '';
+          (commentsData[section] || []).forEach(text => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'comment-btn';
+            btn.draggable = true;
+            btn.setAttribute('data-fulltext', text);
+         
+            const span = document.createElement('span');
+            span.className = 'comment-btn-ellipsis';
+            span.textContent = text;
+            btn.appendChild(span);
+         
+            btn.style.background = colorsBySection[section] || 'var(--accent)';
+            btn.style.border     = '2px solid #191d23';
+         
+            btn.addEventListener('dragstart', function(e) {
+              const payload = { text: this.getAttribute('data-fulltext'), section: section };
+              e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+              e.dataTransfer.effectAllowed = 'move';
+            });
+         
+            btn.addEventListener('mouseenter', () => preview.textContent = text);
+            btn.addEventListener('mouseleave', () =>
+              preview.textContent = "Passez la souris sur un commentaire pour le prévisualiser."
+            );
+            btn.addEventListener('click', () => {
+              customInput.value   = text;
+              preview.textContent = text;
+            });
+         
+            container.appendChild(btn);
+          });
+         }
+         
+         document.querySelectorAll('.comment-tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.comment-tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentSection = btn.dataset.section;
+            sectionField.value = currentSection;
+            loadComments(currentSection);
+          });
+         });
+         const firstActive = document.querySelector('.comment-tab-btn.active')
+                          || document.querySelector('.comment-tab-btn');
+         if (firstActive) firstActive.click();
+         
+         function submitComment(text) {
+          minuteField.value  = getCurrentMinute();
+          sectionField.value = currentSection;
+          customInput.value  = text;
+          const data = new FormData(form);
+          fetch(form.action, {
+            method:      'POST',
+            body:        data,
+            credentials: 'same-origin'
+          }).then(function() {
+            if (iframe) iframe.src = `/livecomments.html?t=${Date.now()}`;
+            customInput.value = '';
+          });
+         }
+         
+         ['dragenter', 'dragover'].forEach(evt => {
+          dropZone.addEventListener(evt, function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('dragover');
+          });
+         });
+         ['dragleave', 'drop'].forEach(evt => {
+          dropZone.addEventListener(evt, function(e) {
+            this.classList.remove('dragover');
+          });
+         });
+         
+         dropZone.addEventListener('drop', function(e) {
+          e.preventDefault();
+          let payload = null;
+          try {
+            payload = JSON.parse(e.dataTransfer.getData('text/plain'));
+          } catch (err) {
+         
+            return;
+          }
+         
+          if (
+            payload &&
+            typeof payload.text === 'string' &&
+            payload.section === currentSection &&
+            commentsData[currentSection] &&
+            commentsData[currentSection].includes(payload.text)
+          ) {
+            submitComment(payload.text);
+          }
+         
+         });
+         
+         customInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            submitComment(customInput.value);
+          }
+         });
+         });
+      </script>
+      </main>
+      </div>
+      <div id="archivePanel" class="side-panel">
+         <button class="sidePanel-close" onclick="toggleArchivePanel(false)">×</button>
+         <div class="sidePanel-header">
+            <h2>Archives des rencontres</h2>
+         </div>
+         <div id="archivesContainer" class="sidePanel-section">
+            <p id="archivesLoading" style="text-align:center; color:var(--text-secondary); margin-top:2rem;">
+               Chargement des archives…
+            </p>
+         </div>
+      </div>
+      <script>
+         function loadArchives() {
+           const container = document.getElementById('archivesContainer');
+           const loading = document.getElementById('archivesLoading');
+           container.innerHTML = '';
+           loading.style.display = 'block';
+         
+           fetch('/archives')
+             .then(resp => {
+               if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+               return resp.text();
+             })
+             .then(html => {
+               const doc = new DOMParser().parseFromString(html, 'text/html');
+               const nodes = doc.querySelectorAll('main.container > div');
+               if (!nodes.length) {
+                 container.innerHTML = '<p style="color:#ccc;">Aucune archive disponible.</p>';
+                 return;
+               }
+         
+               // Stocke les blocs temporairement
+               let blocks = [];
+               nodes.forEach(div => {
+                 const h3 = div.querySelector('h3');
+                 const link = div.querySelector('a[href^="/archives/"]');
+                 const form = div.querySelector('form[action^="/delete_archive/"]');
+                 if (!h3 || !link || !form) return;
+         
+                 const dateText = h3.textContent.replace('📄 Résumé du ', '');
+                 const href = link.getAttribute('href');
+                 const filename = href.split('/').pop();
+         
+                 const block = document.createElement('div');
+                 block.className = 'info-block';
+                 block.innerHTML = `
+                   <h3 class="info-title">Résumé du ${dateText}</h3>
+                   <p class="info-desc">Contient date, lieu, composition, score, événements…</p>
+                   <div style="margin-top:0.75rem; display:flex; gap:0.5rem; justify-content:flex-end;">
+                     <a href="${href}" target="_blank" class="btn btn-add">Consulter</a>
+                     <form action="/delete_archive/${filename}" method="post" style="display:inline;">
+                       <button type="submit" class="btn btn-cancel" onclick="return confirm('Supprimer ce résumé ?');">
+                         Supprimer
+                       </button>
+                     </form>
+                   </div>`;
+                 blocks.push(block);
+               });
+         
+               // Ajoute les blocs du plus récent au plus ancien
+               for (let i = blocks.length - 1; i >= 0; i--) {
+                 container.appendChild(blocks[i]);
+               }
+             })
+             .catch(err => {
+               console.error(err);
+               container.innerHTML = '<p style="color:red; text-align:center;">Échec du chargement.</p>';
+             })
+             .finally(() => {
+               loading.style.display = 'none';
+             });
+         }
+               
+      </script>
+      <div id="layoutsPanel" class="side-panel side-panel-left">
+         <button class="sidePanel-close" onclick="toggleLayoutsPanel(false)">×</button>
+         <div class="sidePanel-header">
+            <h2>Interfaces</h2>
+         </div>
+         <div class="settings-form">
+            <div class="warning-block warning-block--yellow" style="margin-bottom:1.5rem; width:100%;">
+               <div class="warning-icon"><i class="bi bi-info-circle-fill"></i></div>
+               <div>
+                  <p class="warning-title">Instructions</p>
+                  <p class="warning-message">
+                     <b>Un pack ZIP d'une interface</b> correspond à tous les affichages utilisés lors d'un match : avant-match, résumé de la première mi-temps, résumé du match, et match en direct.
+                  </p>
+               </div>
+            </div>
+            <!-- Message hors ligne -->
+            <div id="offline-message" style="display:none;color:#fa5252;text-align:center;font-weight:700;margin-top:2rem;">
+               Indisponible hors ligne. Veuillez vous connecter à Internet pour accéder à la galerie d'interfaces.
+            </div>
+            <!-- Conteneur de la galerie dynamique -->
+            <div id="interfaces-gallery" class="layouts-grid" style="display:grid;grid-template-columns:1fr;gap:2.2rem;"></div>
+            <div class="form-actions" style="margin-top:2rem;text-align:center;">
+               <button type="button" class="btn btn-cancel" data-close>
+               Annuler
+               </button>
+            </div>
+         </div>
+      </div>
+      <div id="offline-message" style="display:none;color:#fa5252;text-align:center;font-weight:700;margin-top:2rem;">
+         Indisponible hors ligne. Veuillez vous connecter à Internet pour accéder à la galerie d'interfaces.
+      </div>
+      <div id="interfaces-gallery" class="layouts-grid" style="display:grid;grid-template-columns:1fr;gap:2.2rem;"></div>
+      <script>
+         const INTERFACES_URL = "https://xvlivemanager.fr/interfaces.json";
+         
+         function closeAllPanels() {
+           document.querySelectorAll('.side-panel').forEach(function(panel) {
+             panel.classList.remove('active');
+           });
+         }
+         
+         function toggleLayoutsPanel(show) {
+           var panel = document.getElementById('layoutsPanel');
+           if (!panel) return;
+           if (show) {
+             closeAllPanels(); 
+             panel.classList.add('active');
+           } else {
+             panel.classList.remove('active');
+           }
+         }
+         
+         function renderInterfaces(interfaces) {
+           const gallery = document.getElementById('interfaces-gallery');
+           gallery.innerHTML = '';
+           interfaces.forEach(function(layout) {
+             const block = document.createElement('div');
+             block.className = "sub-block";
+             block.style = "margin-bottom:1.5rem;padding:1.3rem 1rem 1.1rem 1rem;background:rgba(40,40,40,0.30);box-shadow:0 3px 14px 0 rgba(0,0,0,0.09);border:none;";
+         
+             const inputId = `file_${layout.id}`;
+             const btnId = `btn_import_${layout.id}`;
+             block.innerHTML = `
+               <div style="display:flex;align-items:center;gap:0.7em;margin-bottom:0.7rem;">
+                 <span style="color:#fff;font-size:1.03em;font-weight:700;padding:2.5px 10px 3.5px 10px;letter-spacing:0.01em;">
+                   ${layout.name}
+                 </span>
+               </div>
+               <div style="width:360px;max-width:100%;height:202px;margin:0 auto 1.2rem auto;position:relative;overflow:hidden;background:#18191b;box-shadow:0 6px 18px 0 rgba(15,12,9,0.07);display:flex;align-items:center;justify-content:center;">
+                 <img src="${layout.image}"
+                   alt="Aperçu ${layout.name}"
+                   style="max-width:100%;max-height:100%;object-fit:contain;display:block;background:#18191b;">
+                 <a href="${layout.zip}"
+                    target="_blank"
+                    style="position:absolute;bottom:12px;right:16px;z-index:2;background:rgba(30,30,30,0.85);color:#fff;padding:7px 18px;border-radius:5px;text-decoration:none;font-weight:600;font-size:1em;box-shadow:0 2px 8px rgba(0,0,0,0.19);transition:background .18s;">
+                    Télécharger le pack ZIP
+                 </a>
+               </div>
+               <div style="margin-top:0.5rem;color:#c1c7d2;">${layout.description || ""}</div>
+               <form class="replace-layouts-form"
+                 action="/replace-layouts"
+                 method="post"
+                 enctype="multipart/form-data"
+                 style="display:flex;flex-direction:row;align-items:center;justify-content:center;gap:1.15rem;padding:0.2rem 0 0.7rem 0;margin-top:0.2rem;flex-wrap:wrap;">
+                 <input type="file" id="${inputId}" name="layouts_zip" accept=".zip" required style="display:none;">
+                 <button type="button"
+                   class="btn btn-cancel"
+                   id="${btnId}"
+                   style="display:block;max-width:160px;width:100%;padding:0.55rem 1.2rem;font-size:0.96rem;font-weight:600;border-radius:4px;margin:0;letter-spacing:0.03em;"
+                   onclick="document.getElementById('${inputId}').click();">
+                   Importer
+                 </button>
+                 <button type="submit"
+                   class="btn btn-primary"
+                   style="display:block;max-width:160px;width:100%;padding:0.55rem 1.2rem;font-size:0.96rem;font-weight:700;border-radius:4px;margin:0;letter-spacing:0.03em;">
+                   Installer
+                 </button>
+                 <div class="replace-layout-break" style="flex-basis:100%;height:0;"></div>
+               </form>
+             `;
+             gallery.appendChild(block);
+         
+             setTimeout(function() {
+               const input = document.getElementById(inputId);
+               const btn = document.getElementById(btnId);
+               if (input && btn) {
+                 input.addEventListener('change', function() {
+                   if (input.files && input.files.length > 0) {
+                     btn.textContent = input.files[0].name;
+                   } else {
+                     btn.textContent = "Importer";
+                   }
+                 });
+               }
+             }, 100);
+           });
+         
+           document.querySelectorAll('.replace-layouts-form').forEach(function(form) {
+             form.addEventListener('submit', function(e) {
+               e.preventDefault();
+               var submitBtn = form.querySelector('button[type="submit"]');
+               submitBtn.disabled = true;
+               submitBtn.textContent = "Installation...";
+               var formData = new FormData(form);
+               fetch(form.action, {
+                 method: 'POST',
+                 body: formData
+               })
+               .then(response => response.text())
+               .then(text => {
+                 var breakDiv = form.querySelector('.replace-layout-break');
+                 var info = form.querySelector('.replace-layout-info');
+                 if (!info) {
+                   info = document.createElement('div');
+                   info.className = 'replace-layout-info';
+                   if (breakDiv && breakDiv.nextSibling) {
+                     form.insertBefore(info, breakDiv.nextSibling);
+                   } else {
+                     form.appendChild(info);
+                   }
+                 }
+                 info.textContent = text;
+                 info.style.color = text.toLowerCase().includes("succès") ? "#20c997" : "#ff5252";
+                 info.style.margin = "1.1rem auto 0 auto";
+                 info.style.textAlign = "center";
+                 info.style.width = "100%";
+                 info.style.fontWeight = "600";
+                 info.style.fontSize = "1em";
+                 submitBtn.disabled = false;
+                 submitBtn.textContent = "Installer";
+               })
+               .catch(() => {
+                 var breakDiv = form.querySelector('.replace-layout-break');
+                 var info = form.querySelector('.replace-layout-info');
+                 if (!info) {
+                   info = document.createElement('div');
+                   info.className = 'replace-layout-info';
+                   if (breakDiv && breakDiv.nextSibling) {
+                     form.insertBefore(info, breakDiv.nextSibling);
+                   } else {
+                     form.appendChild(info);
+                   }
+                 }
+                 info.textContent = "Erreur lors de l'installation du pack ZIP.";
+                 info.style.color = "#ff5252";
+                 info.style.margin = "1.1rem auto 0 auto";
+                 info.style.textAlign = "center";
+                 info.style.width = "100%";
+                 info.style.fontWeight = "600";
+                 info.style.fontSize = "1em";
+                 submitBtn.disabled = false;
+                 submitBtn.textContent = "Installer";
+               });
+             });
+           });
+         }
+         
+         function showOffline() {
+           document.getElementById('interfaces-gallery').style.display = "none";
+           document.getElementById('offline-message').style.display = "";
+         }
+         function showGallery() {
+           document.getElementById('interfaces-gallery').style.display = "";
+           document.getElementById('offline-message').style.display = "none";
+         }
+         
+         function loadGallery() {
+           if (!navigator.onLine) { showOffline(); return; }
+           fetch(INTERFACES_URL + '?' + Date.now())
+             .then(resp => {
+               if (!resp.ok) throw new Error('offline');
+               return resp.json();
+             })
+             .then(data => { showGallery(); renderInterfaces(data); })
+             .catch(showOffline);
+         }
+         window.addEventListener('DOMContentLoaded', loadGallery);
+         window.addEventListener('online', loadGallery);
+         window.addEventListener('offline', showOffline);
+         
+         document.addEventListener('DOMContentLoaded', function() {
+           var btn = document.getElementById('btnOpenLayouts');
+           if (btn) {
+             btn.style.cursor = 'pointer';
+             btn.addEventListener('click', function() {
+               toggleLayoutsPanel(true);
+             });
+           }
+           document.querySelectorAll('.sidePanel-close, .btn-cancel[data-close]').forEach(function(el){
+             el.addEventListener('click', function(){
+               toggleLayoutsPanel(false);
+             });
+           });
+         });
+      </script>
+      <div id="infoPanel" class="side-panel side-panel-left">
+         <button class="sidePanel-close" onclick="toggleInfoPanel(false)">×</button>
+         <div class="sidePanel-header">
+            <h2>Informations principales</h2>
+         </div>
+         <div id="infoContainer" class="sidePanel-section">
+            <div class="settings-form">
+               <div class="warning-block warning-block--yellow" style="margin-bottom:1.5rem;width:100%;">
+                  <div class="warning-icon"><i class="bi bi-info-circle-fill"></i></div>
+                  <div>
+                     <p class="warning-title">Instructions</p>
+                     <p class="warning-message">
+                        Veuillez remplir les champs suivants avec les informations exactes du match : date, heure, lieu et noms des arbitres.
+                     </p>
+                  </div>
+               </div>
+               <form action="/update_infos_match?anchor=infos" method="POST">
+                  <div class="sub-block">
+                     <div class="section-subtitle">Détails de la rencontre</div>
+                     <div class="grid" style="display:grid; gap:1rem; grid-template-columns: repeat(2, minmax(120px, 1fr));">
+                        <div class="field">
+                           <label for="date" class="form-label">Date</label>
+                           <input type="date" id="date" name="date" class="form-control input-date no-spinner" value="{{ date }}">
+                        </div>
+                        <div class="field">
+                           <label for="heure" class="form-label">Heure</label>
+                           <input type="time" id="heure" name="heure" class="form-control input-time no-spinner" value="{{ heure }}">
+                        </div>
+                        <div class="field">
+                           <label for="ville" class="form-label">Ville</label>
+                           <input type="text" id="ville" name="ville" class="form-control" placeholder="Ville" value="{{ ville }}">
+                        </div>
+                        <div class="field">
+                           <label for="stade" class="form-label">Stade</label>
+                           <input type="text" id="stade" name="stade" class="form-control" placeholder="Stade" value="{{ stade }}">
+                        </div>
+                     </div>
+                  </div>
+                  <div class="sub-block">
+                     <div class="section-subtitle">Arbitres</div>
+                     <div class="grid" style="display:grid; gap:1rem; grid-template-columns: repeat(2, minmax(120px, 1fr));">
+                        <div class="field">
+                           <label for="arbitre_central" class="form-label">Central</label>
+                           <input type="text" id="arbitre_central" name="arbitre_central" class="form-control" placeholder="Central" value="{{ arbitres.central }}">
+                        </div>
+                        <div class="field">
+                           <label for="arbitre_touche_1" class="form-label">Touche 1</label>
+                           <input type="text" id="arbitre_touche_1" name="arbitre_touche_1" class="form-control" placeholder="Touche 1" value="{{ arbitres.touche_1 }}">
+                        </div>
+                        <div class="field">
+                           <label for="arbitre_touche_2" class="form-label">Touche 2</label>
+                           <input type="text" id="arbitre_touche_2" name="arbitre_touche_2" class="form-control" placeholder="Touche 2" value="{{ arbitres.touche_2 }}">
+                        </div>
+                        <div class="field">
+                           <label for="arbitre_video" class="form-label">TMO</label>
+                           <input type="text" id="arbitre_video" name="arbitre_video" class="form-control" placeholder="TMO" value="{{ arbitres.video }}">
+                        </div>
+                     </div>
+                  </div>
+                  <div class="form-actions">
+                     <button type="button" class="btn btn-cancel" data-close>Annuler</button>
+                     <button type="submit" class="btn btn-primary">Valider</button>
+                  </div>
+               </form>
+            </div>
+         </div>
+      </div>
+      <script>
+         function closeAllPanels() {
+         
+           document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('active'));
+         
+           var reglagesSection = document.getElementById('reglages-section');
+           if (reglagesSection) reglagesSection.classList.add('is-hidden');
+         }
+         
+         function toggleInfoPanel(show = true) {
+           closeAllPanels();
+           const panel = document.getElementById('infoPanel');
+           if (!panel) return;
+           panel.classList.toggle('active', show);
+         }
+         
+         document.addEventListener('DOMContentLoaded', () => {
+         
+           const infoBtn = document.querySelector('.sub-header-left > div:first-child');
+           if (infoBtn) {
+             infoBtn.style.cursor = 'pointer';
+             infoBtn.addEventListener('click', () => toggleInfoPanel(true));
+           }
+         
+           document.addEventListener('click', function(e) {
+             if (
+               e.target.matches('#infoPanel .btn-cancel[data-close]') ||
+               e.target.closest('#infoPanel .btn-cancel[data-close]') ||
+               e.target.matches('#infoPanel .sidePanel-close')
+             ) {
+               toggleInfoPanel(false);
+             }
+           });
+         });
+      </script>
+      <div id="compoPanel" class="side-panel side-panel-left">
+         <button class="sidePanel-close" onclick="toggleCompoPanel(false)">×</button>
+         <div class="sidePanel-header">
+            <h2>Compositions des équipes</h2>
+         </div>
+         <div class="settings-form">
+            <div class="warning-block warning-block--yellow" style="margin-bottom:1.5rem;width:100%;">
+               <div class="warning-icon"><i class="bi bi-info-circle-fill"></i></div>
+               <div>
+                  <p class="warning-title">Instructions</p>
+                  <p class="warning-message">
+                     Veuillez remplir les champs pour chaque équipe : sélectionnez un logo, saisissez le nom de l’équipe, complétez les joueurs titulaires et remplaçants.
+                  </p>
+               </div>
+            </div>
+            <form id="compo-form" action="/update_equipes?anchor=compos" method="POST" enctype="multipart/form-data" autocomplete="off">
+               <div style="display:flex;gap:2.5rem;align-items:flex-start;flex-wrap:wrap;">
+                  <div style="flex:1 1 0;min-width:220px;max-width:340px;">
+                     <h3 class="section-subtitle" style="margin-top:0;margin-bottom:1.2rem;">Équipe domicile</h3>
+                     <div style="display:flex;flex-direction:column;align-items:center;position:relative;">
+                        <div class="logo-preview-wrapper" style="text-align:center; position:relative;">
+                           <img id="logoPreviewHome"
+                              src="{% if logo_home %}/static/logos_teams/logo_home.png{% endif %}"
+                              alt="Logo domicile"
+                              class="logo-preview"
+                              style="max-width:100px;max-height:100px;display:{% if logo_home %}block{% else %}none{% endif %};" />
+                           <button id="deleteLogoHome"
+                              type="button"
+                              class="logo-delete-btn"
+                              style="display:{% if logo_home %}block{% else %}none{% endif %}; position:absolute; top:-8px; right:-8px;"
+                              onclick="removeTeamLogo('logo_home', 'logoPreviewHome', 'deleteLogoHome', 'logoHomeRemoved'); return false;">×</button>
+                           <button type="button"
+                              class="btn btn-cancel"
+                              style="margin:0.7rem auto 1rem auto;display:block;"
+                              onclick="document.getElementById('logo_home').click();">Choisir un logo</button>
+                           <input type="file"
+                              id="logo_home"
+                              name="logo_home"
+                              accept=".png,.jpg,.jpeg"
+                              style="display:none;"
+                              onchange="handleTeamLogo(event, 'logoPreviewHome', 'deleteLogoHome', 'logoHomeRemoved')" />
+                           <input type="hidden" id="logoHomeRemoved" name="logoHomeRemoved" value="0" />
+                        </div>
+                        <span id="previewTextHome" style="color:#666; font-size:0.875rem; display:{% if logo_home %}none{% else %}block{% endif %};margin-bottom:0.5rem;">Aucun logo</span>
+                     </div>
+                     <div class="field">
+                        <label for="nom_home" class="form-label">Nom de l’équipe</label>
+                        <input id="nom_home" name="nom_home" class="form-control" type="text" placeholder="France" value="{{ compo_home.nom }}" />
+                     </div>
+                     {% for i, poste in [(1,"Pilier gauche"),(2,"Talonneur"),(3,"Pilier droit"),(4,"Deuxième ligne"),(5,"Deuxième ligne"),(6,"Troisième ligne aile fermé"),(7,"Troisième ligne aile ouvert"),(8,"Numéro 8"),(9,"Demi de mêlée"),(10,"Demi d'ouverture"),(11,"Ailier gauche"),(12,"Premier centre"),(13,"Deuxième centre"),(14,"Ailier droit"),(15,"Arrière")] %}
+                     <div class="field">
+                        <label for="poste_home_{{ i }}" class="form-label">{{ i }} – {{ poste }}</label>
+                        <input id="poste_home_{{ i }}" name="poste_home_{{ i }}" class="form-control" type="text" placeholder="Nom du joueur" value="{{ compo_home.joueurs[i-1] if compo_home.joueurs|length >= i else '' }}" />
+                     </div>
+                     {% endfor %}
+                     <div class="section-subtitle" style="font-size:1.07rem;margin:1.2rem 0 0.4rem 0;">Remplaçants</div>
+                     {% for i in range(1,9) %}
+                     <div class="field">
+                        <label for="remplaçant_home_{{ i }}" class="form-label">Remplaçant {{ i }}</label>
+                        <input id="remplaçant_home_{{ i }}" name="remplaçant_home_{{ i }}" class="form-control" type="text" placeholder="Nom du joueur" value="{{ compo_home.remplacants[i-1] if compo_home.remplacants|length >= i else '' }}" />
+                     </div>
+                     {% endfor %}
+                  </div>
+                  <div style="flex:1 1 0;min-width:220px;max-width:340px;">
+                     <h3 class="section-subtitle" style="margin-top:0;margin-bottom:1.2rem;">Équipe extérieure</h3>
+                     <div style="display:flex;flex-direction:column;align-items:center;position:relative;">
+                        <div class="logo-preview-wrapper" style="text-align:center; position:relative;">
+                           <img id="logoPreviewAway"
+                              src="{% if logo_away %}/static/logos_teams/logo_away.png{% endif %}"
+                              alt="Logo extérieure"
+                              class="logo-preview"
+                              style="max-width:100px;max-height:100px;display:{% if logo_away %}block{% else %}none{% endif %};" />
+                           <button id="deleteLogoAway"
+                              type="button"
+                              class="logo-delete-btn"
+                              style="display:{% if logo_away %}block{% else %}none{% endif %}; position:absolute; top:-8px; right:-8px;"
+                              onclick="removeTeamLogo('logo_away', 'logoPreviewAway', 'deleteLogoAway', 'logoAwayRemoved'); return false;">×</button>
+                           <button type="button"
+                              class="btn btn-cancel"
+                              style="margin:0.7rem auto 1rem auto;display:block;"
+                              onclick="document.getElementById('logo_away').click();">Choisir un logo</button>
+                           <input type="file"
+                              id="logo_away"
+                              name="logo_away"
+                              accept=".png,.jpg,.jpeg"
+                              style="display:none;"
+                              onchange="handleTeamLogo(event, 'logoPreviewAway', 'deleteLogoAway', 'logoAwayRemoved')" />
+                           <input type="hidden" id="logoAwayRemoved" name="logoAwayRemoved" value="0" />
+                        </div>
+                        <span id="previewTextAway" style="color:#666; font-size:0.875rem; display:{% if logo_away %}none{% else %}block{% endif %};margin-bottom:0.5rem;">Aucun logo</span>
+                     </div>
+                     <div class="field">
+                        <label for="nom_away" class="form-label">Nom de l’équipe</label>
+                        <input id="nom_away" name="nom_away" class="form-control" type="text" placeholder="Nouvelle-Zélande" value="{{ compo_away.nom }}" />
+                     </div>
+                     {% for i, poste in [(1,"Pilier gauche"),(2,"Talonneur"),(3,"Pilier droit"),(4,"Deuxième ligne"),(5,"Deuxième ligne"),(6,"Troisième ligne aile fermé"),(7,"Troisième ligne aile ouvert"),(8,"Numéro 8"),(9,"Demi de mêlée"),(10,"Demi d'ouverture"),(11,"Ailier gauche"),(12,"Premier centre"),(13,"Deuxième centre"),(14,"Ailier droit"),(15,"Arrière")] %}
+                     <div class="field">
+                        <label for="poste_away_{{ i }}" class="form-label">{{ i }} – {{ poste }}</label>
+                        <input id="poste_away_{{ i }}" name="poste_away_{{ i }}" class="form-control" type="text" placeholder="Nom du joueur" value="{{ compo_away.joueurs[i-1] if compo_away.joueurs|length >= i else '' }}" />
+                     </div>
+                     {% endfor %}
+                     <div class="section-subtitle" style="font-size:1.07rem;margin:1.2rem 0 0.4rem 0;">Remplaçants</div>
+                     {% for i in range(1,9) %}
+                     <div class="field">
+                        <label for="remplaçant_away_{{ i }}" class="form-label">Remplaçant {{ i }}</label>
+                        <input id="remplaçant_away_{{ i }}" name="remplaçant_away_{{ i }}" class="form-control" type="text" placeholder="Nom du joueur" value="{{ compo_away.remplacants[i-1] if compo_away.remplacants|length >= i else '' }}" />
+                     </div>
+                     {% endfor %}
+                  </div>
+               </div>
+               <div class="form-actions">
+                  <button type="button" class="btn btn-cancel" data-close>Annuler</button>
+                  <button type="submit" class="btn btn-primary">Valider</button>
+               </div>
+            </form>
+         </div>
+      </div>
+      <script>
+         function handleTeamLogo(event, imgId, deleteBtnId, removedInputId) {
+            const file = event.target.files[0];
+            const previewImg = document.getElementById(imgId);
+            const deleteBtn  = document.getElementById(deleteBtnId);
+            const removed    = document.getElementById(removedInputId);
+            if (file) {
+               const reader = new FileReader();
+               reader.onload = e => {
+                  previewImg.src           = e.target.result;
+                  previewImg.style.display = 'block';
+                  deleteBtn.style.display  = 'block';
+                  if (removed) removed.value = '0';
+               };
+               reader.readAsDataURL(file);
+            }
+         }
+         function removeTeamLogo(inputId, imgId, deleteBtnId, removedInputId) {
+            const fileInput = document.getElementById(inputId);
+            const previewImg = document.getElementById(imgId);
+            const deleteBtn  = document.getElementById(deleteBtnId);
+            const removed    = document.getElementById(removedInputId);
+            if (fileInput) fileInput.value = '';
+            if (previewImg) previewImg.src = '';
+            if (previewImg) previewImg.style.display = 'none';
+            if (deleteBtn)  deleteBtn.style.display = 'none';
+            if (removed)    removed.value = '1';
+         }
+      </script>
+      <script>
+         function closeAllPanels() {
+         
+           document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('active'));
+         
+           var reglagesSection = document.getElementById('reglages-section');
+           if (reglagesSection) reglagesSection.classList.add('is-hidden');
+         }
+         
+         function toggleCompoPanel(show = true) {
+           closeAllPanels();
+           const panel = document.getElementById('compoPanel');
+           if (!panel) return;
+           panel.classList.toggle('active', show);
+         }
+         
+         document.addEventListener('DOMContentLoaded', () => {
+         
+           const compoBtn = document.querySelector('.sub-header-left > div:nth-child(2)');
+           if (compoBtn) {
+             compoBtn.style.cursor = 'pointer';
+             compoBtn.addEventListener('click', () => toggleCompoPanel(true));
+           }
+         
+           document.addEventListener('click', function(e) {
+             if (
+               e.target.matches('#compoPanel .btn-cancel[data-close]') ||
+               e.target.closest('#compoPanel .btn-cancel[data-close]') ||
+               e.target.matches('#compoPanel .sidePanel-close')
+             ) {
+               toggleCompoPanel(false);
+             }
+           });
+         });
+      </script>
+      <div id="partenairesPanel" class="side-panel side-panel-left">
+         <button class="sidePanel-close" onclick="togglePartenairesPanel(false)">×</button>
+         <div class="sidePanel-header">
+            <h2>Ajout des partenaires</h2>
+         </div>
+         <div class="settings-form">
+            <div class="warning-block warning-block--yellow" style="margin-bottom:1.5rem; width:100%;">
+               <div class="warning-icon"><i class="bi bi-info-circle-fill"></i></div>
+               <div>
+                  <p class="warning-title">Instructions</p>
+                  <p class="warning-message">
+                     Importez les logos de vos 6 partenaires ci-dessous.<br>
+                     Un aperçu s’affichera et vous pourrez supprimer chaque logo via la croix.
+                  </p>
+               </div>
+            </div>
+            <form id="partnersForm" action="/update_overlay?anchor=overlay" method="POST" enctype="multipart/form-data">
+               <div class="section-subtitle">Vos partenaires</div>
+               <div class="logos-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:30px;justify-items:center;">
+                  {% for i in range(6) %}
+                  <div class="sub-block" style="margin-bottom:1.5rem; padding-top:1rem;">
+                     <div class="logo-item" style="display:flex; flex-direction:column; align-items:center;">
+                        <label for="logo_partenaire_{{ i+1 }}" class="form-label" style="width:100%;text-align:center;margin-bottom:0.5rem;">
+                        Partenaire {{ i+1 }}
+                        </label>
+                        <div class="logo-preview-wrapper" style="text-align:center; position:relative;">
+                           <img id="preview_logo_partenaire_{{ i+1 }}"
+                              src="{% if overlay.logos and overlay.logos[i] %}{{ overlay.logos[i] }}{% endif %}"
+                              alt="Partenaire {{ i+1 }}"
+                              class="logo-preview"
+                              style="max-width:100%; max-height:60px; border-radius:8px; display:{% if overlay.logos and overlay.logos[i] %}block{% else %}none{% endif %};" />
+                           <button id="deleteLogoPartenaire{{ i+1 }}"
+                              type="button"
+                              data-index="{{ i+1 }}"
+                              class="logo-delete-btn"
+                              style="display:{% if overlay.logos and overlay.logos[i] %}block{% else %}none{% endif %}; position:absolute; top:-6px; right:-6px;"
+                              onclick="removePartnerLogo({{ i+1 }}); return false;">×</button>
+                           <button type="button"
+                              class="btn btn-cancel"
+                              style="margin:0.7rem auto 1rem auto;display:block;"
+                              onclick="document.getElementById('logo_partenaire_{{ i+1 }}').click();">
+                           Choisir un logo
+                           </button>
+                           <input type="file"
+                              id="logo_partenaire_{{ i+1 }}"
+                              name="logo_partenaire_{{ i+1 }}"
+                              accept=".png,.jpg,.jpeg"
+                              style="display:none;"
+                              onchange="handlePartnerLogo(event, {{ i+1 }})" />
+                           <input type="hidden"
+                              id="remove_logo_partenaire_{{ i+1 }}"
+                              name="remove_logo_partenaire_{{ i+1 }}"
+                              value="0" />
+                        </div>
+                     </div>
+                  </div>
+                  {% endfor %}
+               </div>
+               <div class="form-actions">
+                  <button type="button" class="btn btn-cancel" data-close>Annuler</button>
+                  <button type="submit" class="btn btn-primary">Valider</button>
+               </div>
+            </form>
+         </div>
+      </div>
+      <script>
+         function closeAllPanels() {
+         
+           document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('active'));
+         
+           var reglagesSection = document.getElementById('reglages-section');
+           if (reglagesSection) reglagesSection.classList.add('is-hidden');
+         }
+         
+         function togglePartenairesPanel(show = true) {
+           closeAllPanels();
+           const panel = document.getElementById('partenairesPanel');
+           if (!panel) return;
+           panel.classList.toggle('active', show);
+         }
+         
+         function removePartnerLogo(idx) {
+           const fileInput   = document.getElementById(`logo_partenaire_${idx}`);
+           const removeInput = document.getElementById(`remove_logo_partenaire_${idx}`);
+           const img         = document.getElementById(`preview_logo_partenaire_${idx}`);
+           const deleteBtn   = document.getElementById(`deleteLogoPartenaire${idx}`);
+           fileInput.value   = '';
+           removeInput.value = '1';
+           img.style.display = 'none';
+           deleteBtn.style.display = 'none';
+         }
+         
+         function handlePartnerLogo(event, index) {
+           const file = event.target.files[0];
+           const previewImg  = document.getElementById(`preview_logo_partenaire_${index}`);
+           const deleteBtn   = document.getElementById(`deleteLogoPartenaire${index}`);
+           if (file) {
+             const reader = new FileReader();
+             reader.onload = e => {
+               previewImg.src           = e.target.result;
+               previewImg.style.display = 'block';
+               deleteBtn.style.display  = 'block'; 
+               document.getElementById(`remove_logo_partenaire_${index}`).value = '0';
+             };
+             reader.readAsDataURL(file);
+           }
+         }
+         
+         document.addEventListener('DOMContentLoaded', () => {
+         
+           const partenairesBtn = document.querySelector('.sub-header-left > div:nth-child(3)');
+           if (partenairesBtn) {
+             partenairesBtn.style.cursor = 'pointer';
+             partenairesBtn.addEventListener('click', () => togglePartenairesPanel(true));
+           }
+         
+           document.addEventListener('click', function(e) {
+             if (
+               e.target.matches('#partenairesPanel .btn-cancel[data-close]') ||
+               e.target.closest('#partenairesPanel .btn-cancel[data-close]') ||
+               e.target.matches('#partenairesPanel .sidePanel-close')
+             ) {
+               togglePartenairesPanel(false);
+             }
+           });
+         
+           document.querySelectorAll('#partenairesPanel .sidePanel-close').forEach(btn => {
+             btn.addEventListener('click', () => togglePartenairesPanel(false));
+           });
+         
+         });
+      </script>
+      <div id="directPanel" class="side-panel side-panel-left">
+         <button class="sidePanel-close" onclick="toggleDirectPanel(false)">×</button>
+         <div class="sidePanel-header">
+            <h2>Préparation du direct</h2>
+         </div>
+         <div class="settings-form">
+            <div class="warning-block warning-block--yellow" style="margin-bottom:1.5rem; width:100%;">
+               <div class="warning-icon"><i class="bi bi-info-circle-fill"></i></div>
+               <div>
+                  <p class="warning-title">Instructions</p>
+                  <p class="warning-message">
+                     Définissez ici votre message défilant OBS et configurez un compte à rebours personnalisé.
+                  </p>
+               </div>
+            </div>
+            <form id="directForm" action="/update_overlay?anchor=overlay" method="POST" enctype="multipart/form-data">
+               <div class="section-subtitle">Avant-Match</div>
+               <div class="form-group" style="display: flex; gap: 1.2rem; align-items: flex-end; margin-bottom:1.4rem;">
+                  <div style="flex: 3;">
+                     <label for="overlay_message" class="form-label">Message du compte à rebours</label>
+                     <input
+                        id="overlay_message"
+                        name="overlay_message"
+                        type="text"
+                        class="form-control"
+                        placeholder="Le match commence dans…"
+                        value="{{ overlay.countdown.message }}"
+                        />
+                  </div>
+                  <div style="flex: 1;">
+                     <label for="overlay_duration" class="form-label">Durée</label>
+                     <input
+                        id="overlay_duration"
+                        name="overlay_duration"
+                        type="number"
+                        min="1"
+                        max="30"
+                        class="form-control no-spin"
+                        value="{{ overlay.countdown.duration }}"
+                        autocomplete="off"
+                        />
+                  </div>
+               </div>
+               <div class="section-subtitle">En direct</div>
+               <div class="form-group">
+                  <label for="scrolling_message" style="margin-bottom:0.5rem; display:block;">Message défilant OBS</label>
+                  <input
+                     id="scrolling_message"
+                     name="scrolling_message"
+                     type="text"
+                     class="form-control"
+                     placeholder="Bienvenue au stade."
+                     value="{{ overlay.message }}"
+                     />
+               </div>
+               <div class="form-actions">
+                  <button type="button" class="btn btn-cancel" data-close>Annuler</button>
+                  <button type="submit" class="btn btn-primary">Valider</button>
+               </div>
+            </form>
+         </div>
+      </div>
+      <script>
+         function toggleDirectPanel(show = true) {
+           closeAllPanels();
+           const panel = document.getElementById('directPanel');
+           if (!panel) return;
+           panel.classList.toggle('active', show);
+         }
+         
+         document.addEventListener('DOMContentLoaded', () => {
+         
+           const directBtn = document.querySelector('.sub-header-left > div:nth-child(4)');
+           if (directBtn) {
+             directBtn.style.cursor = 'pointer';
+             directBtn.addEventListener('click', () => toggleDirectPanel(true));
+           }
+         
+           document.addEventListener('click', function(e) {
+             if (
+               e.target.matches('#directPanel .btn-cancel[data-close]') ||
+               e.target.closest('#directPanel .btn-cancel[data-close]') ||
+               e.target.matches('#directPanel .sidePanel-close')
+             ) {
+               toggleDirectPanel(false);
+             }
+           });
+         
+           document.querySelectorAll('#directPanel .sidePanel-close').forEach(btn => {
+             btn.addEventListener('click', () => toggleDirectPanel(false));
+           });
+         });
+      </script>
+      <div id="deleteDataModal" class="modal-overlay is-hidden">
+         <div class="modal-card delete-modal-panel">
+            <div class="sidePanel-header">
+               <h2 style="width:100%; text-align:center; margin:0; font-size:1.35rem; font-weight:700; letter-spacing:0.08em;">
+                  SUPPRESSION DES DONNÉES
+               </h2>
+            </div>
+            <form id="deleteAllForm" action="/reset_all?anchor=delete-all" method="POST" class="settings-form" autocomplete="off" style="gap:1.25rem; margin-top:0.2rem;">
+               <div style="color:#fff; text-align:center; font-size:1.09rem; margin-bottom:0.6rem; line-height:1.7;">
+                  <b>Attention&nbsp;:</b> vous êtes sur le point de supprimer <b>l’intégralité des données</b>.<br>
+                  <span style="display:block; font-size:0.78em; color:#bfc3c9; font-style:italic; margin-top:0.45em;">
+                  Cette action est <u>définitive</u>. Une archive complète de la rencontre sera automatiquement générée après la suppression.
+                  </span>
+               </div>
+               <div class="form-actions" style="justify-content:center; margin-bottom:0; gap:1rem;">
+                  <button type="button" class="btn btn-cancel" onclick="toggleDeleteDataModal(false)">Annuler</button>
+                  <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+               </div>
+            </form>
+         </div>
+      </div>
+      <section id="reglages-section" class="section-block is-hidden">
+         <div id="sidePanel">
+            <div class="sidePanel-header">
+               <h2>Réglages</h2>
+               <button class="sidePanel-close" onclick="toggleSidePanel(false)">×</button>
+            </div>
+            <form id="settingsForm" class="settings-form" onsubmit="saveSettings(event)">
+               <div class="logo-preview-wrapper">
+                  <img id="logoPreview" src="" alt="Logo utilisateur" class="logo-preview" />
+                  <button id="deleteLogo" type="button" onclick="deleteLogoHandler()">×</button>
+                  <button type="button" class="btn btn-cancel" onclick="document.getElementById('settings_logo').click();">Choisir un logo</button>
+                  <input type="file" id="settings_logo" accept="image/*" style="display:none;" onchange="handleLogoSelection(event)" />
+               </div>
+               <div class="form-group">
+                  <label for="settings_username">Nom d’utilisateur</label>
+                  <input type="text" id="settings_username" placeholder="Nom d’utilisateur" />
+               </div>
+               <div class="form-group">
+                  <label for="settings_tagline">Votre phrase d'accroche</label>
+                  <input type="text" id="settings_tagline" placeholder="Votre phrase d’accroche" />
+               </div>
+               <div class="form-actions">
+                  <button type="button" class="btn btn-cancel" onclick="toggleSidePanel(false)">Annuler</button>
+                  <button type="submit" class="btn btn-primary">Enregistrer</button>
+               </div>
+            </form>
+            <div class="sidePanel-section">
+               <h3 class="section-subtitle">Vos statistiques</h3>
+               <div class="stats-grid">
+                  <div class="dashboard-card">
+                     <div class="card-info">
+                        <div id="stat-time" class="card-number">00:00</div>
+                        <div class="card-label">Temps passé sur <strong>XVLIVEMANAGER</strong></div>
+                     </div>
+                     <div class="card-icon"><i class="bi bi-clock-history"></i></div>
+                  </div>
+                  <div class="dashboard-card">
+                     <div class="card-info">
+                        <div id="stat-keys" class="card-number">0</div>
+                        <div class="card-label">Touches tapées</div>
+                     </div>
+                     <div class="card-icon"><i class="bi bi-keyboard"></i></div>
+                  </div>
+                  <div class="dashboard-card">
+                     <div class="card-info">
+                        <div id="stat-clicks" class="card-number">0</div>
+                        <div class="card-label">Clics effectués</div>
+                     </div>
+                     <div class="card-icon"><i class="bi bi-mouse2-fill"></i></div>
+                  </div>
+               </div>
+               <div class="progression">
+                  <div class="progression-title">Votre progression :</div>
+                  <div class="steam-bar">
+                     <div id="steam-fill" class="steam-bar-fill"></div>
+                  </div>
+                  <div class="steam-bar-marks">
+                     <span></span>
+                     <span></span>
+                     <span></span>
+                     <span></span>
+                  </div>
+                  <ul class="level-list">
+                     <li>Intermédiaire (25 %) : 75 h / 300 000 touches / 75 000 clics</li>
+                     <li>Maître (50 %) : 150 h / 600 000 touches / 150 000 clics</li>
+                     <li>Grand-Maître (100 %) : 300 h / 1 200 000 touches / 300 000 clics</li>
+                  </ul>
+                  <div class="form-actions" style="margin-top: 1rem;">
+                     <button id="resetBtn" onclick="resetStats()" class="btn btn-danger">Réinitialiser</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <script>
+            (function() {
+              function loadSettings() {
+                fetch('/api/get_settings')
+                  .then(r => r.json())
+                  .then(data => {
+                    const displayLogo= document.getElementById('pageLogo');
+                    const previewLogo= document.getElementById('logoPreview');
+                    const deleteBtn  = document.getElementById('deleteLogo');
+                    if (data.logo) {
+                      if (displayLogo) { displayLogo.src = "/api/get_logo"; displayLogo.style.display = 'block'; }
+                      if (previewLogo) { previewLogo.src = "/api/get_logo"; previewLogo.style.display = 'block'; }
+                      if (deleteBtn)   { deleteBtn.style.display = 'block'; }
+                    } else {
+                      if (displayLogo) displayLogo.style.display = 'none';
+                      if (previewLogo) previewLogo.style.display = 'none';
+                      if (deleteBtn)   deleteBtn.style.display = 'none';
+                    }
+            
+                    const usernameInput = document.getElementById('settings_username');
+                    const taglineInput  = document.getElementById('settings_tagline');
+                    if (usernameInput) usernameInput.value = data.username || '';
+                    if (taglineInput)  taglineInput.value  = data.tagline || '';
+                    const userEl    = document.getElementById('welcomeUser');
+                    const taglineEl = document.getElementById('welcomeTaglineText');
+                    if (userEl)    userEl.textContent    = data.username || 'Utilisateur';
+                    if (taglineEl) taglineEl.textContent = data.tagline  || 'Merci d’utiliser XVLIVEMANAGER.';
+                  });
+              }
+            
+              function handleLogoSelection(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const previewLogo = document.getElementById('logoPreview');
+                previewLogo.src = URL.createObjectURL(file);
+                previewLogo.style.display = 'block';
+              }
+            
+            function deleteLogoHandler() {
+                fetch('/api/delete_logo', { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        loadSettings(); // Recharge l'état
+                    });
+            }
+            
+              function saveSettings(e) {
+                e.preventDefault();
+                const username = document.getElementById('settings_username').value.trim();
+                const tagline  = document.getElementById('settings_tagline').value.trim();
+                const logoInput = document.getElementById('settings_logo');
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('tagline', tagline);
+                if (logoInput.files && logoInput.files.length > 0) {
+                  formData.append('logo', logoInput.files[0]);
+                }
+                fetch('/api/save_settings', {
+                  method: 'POST',
+                  body: formData
+                })
+                .then(r => r.json())
+                .then(data => {
+                  loadSettings();
+                  if (typeof toggleSidePanel === 'function') toggleSidePanel(false);
+                });
+              }
+            
+              document.addEventListener('DOMContentLoaded', function(){
+                loadSettings();
+                document.getElementById('settings_logo')?.addEventListener('change', handleLogoSelection);
+                document.getElementById('deleteLogo')?.addEventListener('click', deleteLogoHandler);
+                document.getElementById('settingsForm')?.addEventListener('submit', saveSettings);
+            
+                document.getElementById('settings_username')?.addEventListener('input', e => {
+                  document.getElementById('welcomeUser').textContent = e.target.value || 'Utilisateur';
+                });
+                document.getElementById('settings_tagline')?.addEventListener('input', e => {
+                  document.getElementById('welcomeTaglineText').textContent = e.target.value || 'Merci d’utiliser XVLIVEMANAGER.';
+                });
+            
+                updateStats();
+                document.querySelectorAll('.modal-trigger[data-modal-target="modalB"]').forEach(btn=>{
+                  btn.addEventListener('click', () => setTimeout(updateStats, 100));
+                });
+              });
+            
+              // Stats (optionnel, inchangé)
+              let prevLevel = null;
+              const MAX_TIME   = 300 * 3600;
+              const MAX_KEYS   = 20000 * 60;
+              const MAX_CLICKS = 5000  * 60;
+            
+              function getLevel(pct){
+                if (pct < 25)      return 'Novice';
+                if (pct < 50)      return 'Intermédiaire';
+                if (pct < 75)      return 'Maître';
+                return 'Grand-Maître';
+              }
+              function updateStats() {
+                const statTime   = document.getElementById('stat-time');
+                const statKeys   = document.getElementById('stat-keys');
+                const statClicks = document.getElementById('stat-clicks');
+                const steamFill  = document.getElementById('steam-fill');
+                if (!(statTime && statKeys && statClicks && steamFill)) return;
+            
+                const time   = parseInt(localStorage.getItem('timeOnPage')) || 0;
+                const keys   = parseInt(localStorage.getItem('keyCount'))   || 0;
+                const clicks = parseInt(localStorage.getItem('clickCount')) || 0;
+            
+                const h  = Math.floor(time/3600);
+                const m  = Math.floor((time%3600)/60);
+                const s  = time % 60;
+                statTime.textContent = h > 0
+                  ? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+                  : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            
+                statKeys.textContent   = keys;
+                statClicks.textContent = clicks;
+            
+                const pct = Math.min(100, Math.floor(((time/MAX_TIME + keys/MAX_KEYS + clicks/MAX_CLICKS)/3) * 100));
+                steamFill.style.width = pct + '%';
+            
+                let color = '#6ba6ff';
+                if (pct >= 75)      color = '#ffd700';
+                else if (pct >= 50) color = '#10b981';
+                else if (pct >= 25) color = '#6366f1';
+                steamFill.style.background = color;
+            
+                const currentLevel = getLevel(pct);
+                if (currentLevel !== prevLevel) {
+                  prevLevel = currentLevel;
+                }
+              }
+            
+              window.simulateLevel = function(ratio) {
+                localStorage.setItem('timeOnPage',  Math.floor(MAX_TIME   * ratio));
+                localStorage.setItem('keyCount',    Math.floor(MAX_KEYS   * ratio));
+                localStorage.setItem('clickCount',  Math.floor(MAX_CLICKS * ratio));
+                updateStats();
+              };
+            
+              window.resetStats = function () {
+                localStorage.removeItem('timeOnPage');
+                localStorage.removeItem('keyCount');
+                localStorage.removeItem('clickCount');
+                prevLevel = null;
+                updateStats();
+              };
+            
+              setInterval(() => {
+                localStorage.setItem('timeOnPage', (parseInt(localStorage.getItem('timeOnPage')) || 0) + 1);
+                updateStats();
+              }, 1000);
+            
+              document.addEventListener('keydown', () => {
+                localStorage.setItem('keyCount', (parseInt(localStorage.getItem('keyCount')) || 0) + 1);
+                updateStats();
+              });
+            
+              document.addEventListener('click', e => {
+                if (e.target.id !== 'resetBtn') {
+                  localStorage.setItem('clickCount', (parseInt(localStorage.getItem('clickCount')) || 0) + 1);
+                  updateStats();
+                }
+              });
+            
+            })();
+                     
+         </script>
+      </section>
+<div id="sponsor-bar-wrapper">
+   <div id="sponsor-bar">
+      <div class="sponsor-bandeau" id="sponsor-bloc-1">
+         <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+         <div class="sponsor-bandeau-content">
+            <div class="sponsor-bandeau-nom"></div>
+            <div class="sponsor-bandeau-desc"></div>
+         </div>
+      </div>
+      <div class="sponsor-bandeau" id="sponsor-bloc-2">
+         <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+         <div class="sponsor-bandeau-content">
+            <div class="sponsor-bandeau-nom"></div>
+            <div class="sponsor-bandeau-desc"></div>
+         </div>
+      </div>
+      <div class="sponsor-bandeau" id="sponsor-bloc-3">
+         <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+         <div class="sponsor-bandeau-content">
+            <div class="sponsor-bandeau-nom"></div>
+            <div class="sponsor-bandeau-desc"></div>
+         </div>
+      </div>
+   </div>
+   <div id="sponsor-offline-msg" style="display:none;padding:1.5em;background: rgba(0,0,0,0.70);color:#fff;text-align:center;font-size:1.12em;margin:1em 0;box-shadow: 0 2px 12px rgba(0,0,0,0.16);border: 1px solid rgba(255,255,255,0.08);">
+      <b>Indisponible hors ligne</b><br>
+      Veuillez vous connecter à Internet pour accéder aux modules.
+   </div>
+</div>
+<script>
+const sponsors = [
+   { id: 1, url: "https://xvlivemanager.fr/pubs/pub1.json" },
+   { id: 2, url: "https://xvlivemanager.fr/pubs/pub2.json" },
+   { id: 3, url: "https://xvlivemanager.fr/pubs/pub3.json" }
+];
+
+function setSponsorBarVisibility(online) {
+   document.getElementById('sponsor-bar').style.display = online ? '' : 'none';
+   document.getElementById('sponsor-offline-msg').style.display = online ? 'none' : '';
+}
+
+function loadSponsors() {
+   sponsors.forEach(s => {
+      fetch(s.url)
+         .then(resp => resp.ok ? resp.json() : null)
+         .then(data => {
+            if (!data) return;
+            const bloc = document.getElementById(`sponsor-bloc-${s.id}`);
+            if (!bloc) return;
+
+            if (data.logo) bloc.querySelector('.sponsor-bandeau-logo').src = data.logo;
+
+            const nomDiv = bloc.querySelector('.sponsor-bandeau-nom');
+            if (data.nom) {
+               if (data.lien) {
+                  let a = nomDiv.querySelector('a.sponsor-bandeau-link');
+                  if (!a) {
+                     a = document.createElement('a');
+                     a.className = 'sponsor-bandeau-link';
+                     a.target = '_blank';
+                     a.rel = 'noopener noreferrer';
+                     while (nomDiv.firstChild) nomDiv.removeChild(nomDiv.firstChild);
+                     nomDiv.appendChild(a);
+                  }
+                  a.href = data.lien;
+                  a.textContent = data.nom;
+               } else {
+                  nomDiv.textContent = data.nom;
+               }
+            }
+            if (data.desc) bloc.querySelector('.sponsor-bandeau-desc').textContent = data.desc;
+         })
+         .catch(()=>{});
+   });
+}
+
+
+function checkOnlineStatus() {
+   if (navigator.onLine) {
+      setSponsorBarVisibility(true);
+      loadSponsors();
+   } else {
+      setSponsorBarVisibility(false);
+   }
+}
+
+
+window.addEventListener('online', checkOnlineStatus);
+window.addEventListener('offline', checkOnlineStatus);
+
+
+checkOnlineStatus();
+</script>
+      <div class="partners-bar-marquee" id="marquee-container"></div>
+      <script src="https://www.xvlivemanager.fr/partenaires.js"></script>
+<script>
+function displayPartners() {
+  const container = document.getElementById('marquee-container');
+  if (!navigator.onLine) {
+    container.innerHTML = `<div id="partners-no-internet" style="text-align:center;color:#aaa;padding:0.8em 0;font-size:1.09em;">
+      Vous devez être connecté à internet pour voir ces informations
+    </div>`;
+    return;
+  }
+  if (!window.PARTENAIRES || !window.PARTENAIRES.length) {
+    container.innerHTML = `<div id="partners-no-internet" style="text-align:center;color:#aaa;padding:0.8em 0;font-size:1.09em;">
+      Vous devez être connecté à internet pour voir ces informations
+    </div>`;
+    return;
+  }
+  let html = '<marquee behavior="scroll" direction="left" scrollamount="2">';
+  window.PARTENAIRES.forEach(url => {
+    html += `<img src="${url}" class="partner-logo">`;
+  });
+  html += '</marquee>';
+  container.innerHTML = html;
+}
+
+
+window.addEventListener('online', displayPartners);
+window.addEventListener('offline', displayPartners);
+
+
+setTimeout(displayPartners, 150);
+</script>
+      <div class="footer">
+      <div class="footer-left">CONSOLE : <span id="consoleUpdateMsgNote" style="font-weight:700;"></span></div>
+      <div class="footer-center" style="display:flex; align-items:center; justify-content:center; gap:2em;">
+         <a href="#" class="footer-link" id="open-settings">Réglages</a>
+         <a href="https://xvlivemanager.fr/dossier_part.html" class="footer-link" target="_blank" rel="noopener">Partenaire</a>
+         <a href="#" id="footerUpdateLink" class="footer-link update-pulse" style="cursor:pointer;">Vérification...</a>
+         <span id="updateStatusMsg" style="margin-left:1em;font-size:0.99em;color:#2564a6;"></span>
+      </div>
+      <div class="footer-right">ADRESSE DU SERVEUR : http://{{ local_ip }}:5000</div>
+      <style>
+         @keyframes update-blink {
+         0%,100% { color: #fa3434; text-shadow: 0 0 6px #b31a1a66; }
+         50%     { color: #c21010; text-shadow: 0 0 14px #fa343455; }
+         }
+         .update-pulse {
+         animation: update-blink 1.18s infinite;
+         font-weight: 700;
+         letter-spacing: 0.02em;
+         transition: color 0.25s, text-shadow 0.25s;
+         }
+         .update-ok {
+         color: #24c82e !important;
+         font-weight: 700;
+         letter-spacing: 0.02em;
+         text-shadow: 0 0 4px #67e08a60;
+         transition: color 0.25s, text-shadow 0.25s;
+         background: none !important;
+         animation: none !important;
+         }
+      </style>
+<script>
+(function() {
+  const clean = s => s ? s.replace(/^\uFEFF/, '').trim() : '';
+  const localVersion = clean("{{ version_note|e }}".split('\n')[0]).replace(/^Version\s*/i, "");
+  const remoteVersionUrl = "https://xvlivemanager.fr/updates/version_note.txt";
+  const el = document.getElementById('consoleUpdateMsgNote');
+  if (!el) return;
+
+  function showUnknownStatus() {
+    el.textContent = "Statut inconnu";
+    el.style.color = "#888";
+    el.removeAttribute('href');
+    el.style.textDecoration = "none";
+    el.style.fontWeight = "normal";
+  }
+
+  function checkNoteVersion() {
+    if (!navigator.onLine) {
+      showUnknownStatus();
+      return;
+    }
+    fetch(remoteVersionUrl, {cache:"no-store"})
+      .then(resp => resp.ok ? resp.text() : null)
+      .then(remoteVersion => {
+        if (!remoteVersion) {
+          showUnknownStatus();
+          return;
+        }
+        const remote = clean(remoteVersion.split('\n')[0]);
+        if (localVersion !== remote) {
+          el.innerHTML = "<a href='https://xvlivemanager.fr' target='_blank' style='color:#e02b2b;font-weight:700;text-decoration:underline;'>Mise à jour importante</a>";
+        } else {
+          el.textContent = "À jour (" + localVersion + ")";
+          el.style.color = "#24c82e";
+        }
+      })
+      .catch(showUnknownStatus);
+  }
+
+
+  window.addEventListener('online', checkNoteVersion);
+  window.addEventListener('offline', showUnknownStatus);
+
+
+  checkNoteVersion();
+})();
+</script>
+<script>
+let localVersion = "0", latestVersion = "0";
+
+function showUnknownStatus() {
+    const updateLink = document.getElementById('footerUpdateLink');
+    if (!updateLink) return;
+    updateLink.classList.remove('update-ok','update-pulse');
+    updateLink.style.color = "#888";
+    updateLink.textContent = "Statut inconnu";
+    updateLink.title = "Impossible de vérifier la version.";
+    updateLink.style.pointerEvents = "none";
+}
+
+async function updateStatusDisplay() {
+    const updateLink = document.getElementById('footerUpdateLink');
+    if (!updateLink) return;
+
+    if (!navigator.onLine) {
+        showUnknownStatus();
+        return;
+    }
+
+    if (localVersion && latestVersion && localVersion === latestVersion) {
+        updateLink.classList.remove('update-pulse');
+        updateLink.classList.add('update-ok');
+        updateLink.textContent = "À jour (" + localVersion + ")";
+        updateLink.title = "Votre interface est à jour (" + localVersion + ").";
+        updateLink.style.pointerEvents = "none";
+        updateLink.style.color = "";
+    } else if (localVersion && latestVersion && localVersion !== latestVersion) {
+        updateLink.classList.remove('update-ok');
+        updateLink.classList.add('update-pulse');
+        updateLink.textContent = "Nouvelle version (" + latestVersion + ")";
+        updateLink.title = "Nouvelle version (" + latestVersion + ")";
+        updateLink.style.pointerEvents = "auto";
+        updateLink.style.color = "";
+    } else {
+        showUnknownStatus();
+    }
+}
+
+async function checkVersion() {
+    if (!navigator.onLine) {
+        showUnknownStatus();
+        return;
+    }
+    try {
+        let resp = await fetch("/get_local_version", {cache:"no-store"});
+        if(resp.ok) localVersion = (await resp.text()).trim();
+    } catch (e) {}
+    try {
+        let resp = await fetch("https://xvlivemanager.fr/updates/version.txt", {cache:"no-store"});
+        if(resp.ok) latestVersion = (await resp.text()).trim();
+    } catch (e) {}
+    updateStatusDisplay();
+}
+
+window.addEventListener("DOMContentLoaded", checkVersion);
+
+document.addEventListener('DOMContentLoaded', function() {
+    const updateLink = document.getElementById('footerUpdateLink');
+    if (updateLink) {
+        updateLink.addEventListener('click', async function(e) {
+            e.preventDefault();
+            if (localVersion && latestVersion && localVersion !== latestVersion) {
+                updateLink.textContent = "Mise à jour en cours…";
+                updateLink.style.color = "#2564a6";
+                try {
+                    const resp = await fetch('/run_update_script', {method: "POST"});
+                    const data = await resp.json();
+                    if (data.success) {
+                        updateLink.textContent = "Mise à jour effectuée, rechargement…";
+                        updateLink.style.color = "#24c82e";
+                        setTimeout(() => location.reload(true), 800);
+                    } else {
+                        updateLink.textContent = "Erreur lors de la mise à jour.";
+                        updateLink.style.color = "#b52525";
+                    }
+                } catch (err) {
+                    updateLink.textContent = "Erreur lors de la mise à jour.";
+                    updateLink.style.color = "#b52525";
+                }
+            }
+        });
+    }
+});
+
+
+window.addEventListener('online', () => { checkVersion(); });
+window.addEventListener('offline', () => { showUnknownStatus(); });
+
+</script>
+      <script>
+         function fillSponsorBlocks() {
+             const sponsors = [
+                 { id: 1, url: "https://xvlivemanager.fr/pubs/pub1.json" },
+                 { id: 2, url: "https://xvlivemanager.fr/pubs/pub2.json" },
+                 { id: 3, url: "https://xvlivemanager.fr/pubs/pub3.json" }
+             ];
+             sponsors.forEach(s => {
+                 const bloc = document.getElementById(`sponsor-bloc-${s.id}`);
+                 if (!bloc) return;
+                 fetch(s.url)
+                     .then(resp => resp.ok ? resp.json() : null)
+                     .then(data => {
+                         if (!data) return;
+                         if (data.logo)  bloc.querySelector('.sponsor-bandeau-logo').src = data.logo;
+                         const nomDiv = bloc.querySelector('.sponsor-bandeau-nom');
+                         if (data.nom) {
+                             if (data.lien) {
+                                 let a = nomDiv.querySelector('a.sponsor-bandeau-link');
+                                 if (!a) {
+                                     a = document.createElement('a');
+                                     a.className = 'sponsor-bandeau-link';
+                                     a.target = '_blank';
+                                     a.rel = 'noopener noreferrer';
+                                     while (nomDiv.firstChild) nomDiv.removeChild(nomDiv.firstChild);
+                                     nomDiv.appendChild(a);
+                                 }
+                                 a.href = data.lien;
+                                 a.textContent = data.nom;
+                             } else {
+                                 nomDiv.textContent = data.nom;
+                             }
+                         }
+                         if (data.desc)  bloc.querySelector('.sponsor-bandeau-desc').textContent = data.desc;
+                     })
+                     .catch(()=>{});
+             });
+         }
+         
+         function ensureSponsorBlocks() {
+             const wrapper = document.getElementById("sponsor-bar-wrapper");
+             if (!wrapper) return;
+             const htmlRef = `
+           <div id="sponsor-bar">
+             <div class="sponsor-bandeau" id="sponsor-bloc-1">
+               <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+               <div class="sponsor-bandeau-content">
+                 <div class="sponsor-bandeau-nom"></div>
+                 <div class="sponsor-bandeau-desc"></div>
+               </div>
+             </div>
+             <div class="sponsor-bandeau" id="sponsor-bloc-2">
+               <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+               <div class="sponsor-bandeau-content">
+                 <div class="sponsor-bandeau-nom"></div>
+                 <div class="sponsor-bandeau-desc"></div>
+               </div>
+             </div>
+             <div class="sponsor-bandeau" id="sponsor-bloc-3">
+               <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+               <div class="sponsor-bandeau-content">
+                 <div class="sponsor-bandeau-nom"></div>
+                 <div class="sponsor-bandeau-desc"></div>
+               </div>
+             </div>
+           </div>`;
+             let bar = document.getElementById('sponsor-bar');
+             let needRegen = false;
+             if (!bar || bar.children.length !== 3) {
+                 wrapper.innerHTML = htmlRef;
+                 needRegen = true;
+             } else {
+                 for(let i=1; i<=3; i++) {
+                     let bloc = document.getElementById('sponsor-bloc-' + i);
+                     if (!bloc
+                         || !bloc.querySelector('.sponsor-bandeau-logo')
+                         || !bloc.querySelector('.sponsor-bandeau-nom')
+                         || !bloc.querySelector('.sponsor-bandeau-desc')) {
+                         wrapper.innerHTML = htmlRef;
+                         needRegen = true;
+                         break;
+                     }
+                 }
+             }
+            
+             fillSponsorBlocks();
+         }
+         
+         
+         function ensureMarquee() {
+             const container = document.getElementById('marquee-container');
+             if (!container) return;
+             // Si aucun <marquee> n'est présent, on le régénère
+             if (!container.querySelector('marquee')) {
+                 container.innerHTML = `<marquee behavior="scroll" direction="left" scrollamount="2" id="partners-marquee"></marquee>`;
+             }
+             fillMarquee(); 
+         }
+         
+         function fillMarquee() {
+             const marquee = document.getElementById('partners-marquee');
+             if (!marquee) return;
+             let html = '';
+             if (window.PARTENAIRES && Array.isArray(window.PARTENAIRES)) {
+                 window.PARTENAIRES.forEach(url => {
+                     html += `<img src="${url}" class="partner-logo" alt="">`;
+                 });
+             }
+             marquee.innerHTML = html || '<span style="color:#fff">Aucun partenaire</span>';
+         }
+         
+         
+         ensureSponsorBlocks();
+         ensureMarquee();
+         setInterval(() => {
+             ensureSponsorBlocks();
+             ensureMarquee();
+         }, 2000);
+      </script>
+      <script>
+         function closeAllPanels() {
+         
+           document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('active'));
+         
+           const reglagesSection = document.getElementById('reglages-section');
+           if (reglagesSection) reglagesSection.classList.add('is-hidden');
+         }
+         
+         function toggleSidePanel(open = true) {
+           closeAllPanels();
+           const reglagesSection = document.getElementById('reglages-section');
+           if (reglagesSection) reglagesSection.classList.remove('is-hidden');
+           const panel = document.getElementById('sidePanel');
+           if (!panel) return;
+           panel.classList.toggle('active', open);
+         }
+         
+         function togglePartenairesPanel(open = true) {
+           closeAllPanels();
+           const panel = document.getElementById('partenairesPanel');
+           if (!panel) return;
+           panel.classList.toggle('active', open);
+         }
+         
+         function toggleInfoPanel(open = true) {
+           closeAllPanels();
+           const panel = document.getElementById('infoPanel');
+           if (!panel) return;
+           panel.classList.toggle('active', open);
+         }
+         
+         function toggleCompoPanel(open = true) {
+           closeAllPanels();
+           const panel = document.getElementById('compoPanel');
+           if (!panel) return;
+           panel.classList.toggle('active', open);
+         }
+         
+         function toggleDirectPanel(open = true) {
+           closeAllPanels();
+           const panel = document.getElementById('directPanel');
+           if (!panel) return;
+           panel.classList.toggle('active', open);
+         }
+         
+         function toggleArchivePanel(open = true) {
+         closeAllPanels();
+         const panel = document.getElementById('archivePanel');
+         if (!panel) return;
+         panel.classList.toggle('active', open);
+         
+         const container = document.getElementById('archivesContainer');
+         if (open && typeof loadArchives === 'function') {
+         loadArchives();
+         } else if (container) {
+         
+         container.innerHTML = `<p id="archivesLoading" style="text-align:center; color:var(--text-secondary); margin-top:2rem;">
+         Chargement des archives…
+         </p>`;
+         }
+         }
+         
+         document.addEventListener('DOMContentLoaded', () => {
+         
+           const infoBtn        = document.querySelector('.sub-header-left > div:nth-child(1)');
+           const compoBtn       = document.querySelector('.sub-header-left > div:nth-child(2)');
+           const partenairesBtn = document.querySelector('.sub-header-left > div:nth-child(3)');
+           const directBtn      = document.querySelector('.sub-header-left > div:nth-child(4)');
+           const archivesBtn    = document.getElementById('open-archives');
+           const openSettingsBtn= document.getElementById('open-settings');
+         
+           if (infoBtn)        { infoBtn.style.cursor = 'pointer'; infoBtn.addEventListener('click', () => toggleInfoPanel(true)); }
+           if (compoBtn)       { compoBtn.style.cursor = 'pointer'; compoBtn.addEventListener('click', () => toggleCompoPanel(true)); }
+           if (partenairesBtn) { partenairesBtn.style.cursor = 'pointer'; partenairesBtn.addEventListener('click', () => togglePartenairesPanel(true)); }
+           if (directBtn)      { directBtn.style.cursor = 'pointer'; directBtn.addEventListener('click', () => toggleDirectPanel(true)); }
+           if (archivesBtn)    { archivesBtn.style.cursor = 'pointer'; archivesBtn.addEventListener('click', e => { e.preventDefault(); toggleArchivePanel(true); }); }
+           if (openSettingsBtn){ openSettingsBtn.addEventListener('click', e => { e.preventDefault(); toggleSidePanel(true); }); }
+         
+           document.addEventListener('click', e => {
+             const selectors = [
+               {panelId: 'sidePanel'},
+               {panelId: 'infoPanel'},
+               {panelId: 'compoPanel'},
+               {panelId: 'partenairesPanel'},
+               {panelId: 'directPanel'},
+               {panelId: 'archivePanel'}
+             ];
+             selectors.forEach(({panelId}) => {
+               if (
+                 e.target.matches(`#${panelId} .btn-cancel[data-close]`) ||
+                 e.target.closest(`#${panelId} .btn-cancel[data-close]`) ||
+                 e.target.matches(`#${panelId} .sidePanel-close`)
+               ) {
+                 switch(panelId) {
+                   case 'sidePanel': toggleSidePanel(false); break;
+                   case 'infoPanel': toggleInfoPanel(false); break;
+                   case 'compoPanel': toggleCompoPanel(false); break;
+                   case 'partenairesPanel': togglePartenairesPanel(false); break;
+                   case 'directPanel': toggleDirectPanel(false); break;
+                   case 'archivePanel': toggleArchivePanel(false); break;
+                 }
+               }
+             });
+           });
+         });
+      </script>
+      <script>
+         function sendTamperAlert(val) {
+         
+             fetch("https://xvlivemanager.fr/admin/signal_intrusion.php?q="+btoa(val), {mode:'no-cors'});
+         }
+         
+         
+         function checkA() {
+             let ok = false;
+             document.querySelectorAll('div').forEach(function(div){
+                 let blocks = div.querySelectorAll(':scope > .sponsor-bandeau');
+                 if (blocks.length === 3) {
+                     let tousOK = true;
+                     blocks.forEach(function(b){
+                         if (!b.querySelector('.sponsor-bandeau-logo')
+                             || !b.querySelector('.sponsor-bandeau-nom')
+                             || !b.querySelector('.sponsor-bandeau-desc')) tousOK = false;
+                     });
+                     if (tousOK) ok = true;
+                 }
+             });
+             if (!ok && !window.__alertA) { sendTamperAlert("A"); window.__alertA = 1; }
+         }
+         
+         
+         function checkB() {
+             let found = false;
+             document.querySelectorAll('div').forEach(function(div){
+                 if (div.querySelector('marquee')) found = true;
+             });
+             if (!found && !window.__alertB) { sendTamperAlert("B"); window.__alertB = 1; }
+         }
+         
+         setInterval(function(){
+             checkA();
+             checkB();
+         }, 2000);
+      </script>
+      <script>
+         function closeAllPanels() {
+           document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('active'));
+         
+           var reglagesSection = document.getElementById('reglages-section');
+           if (reglagesSection) reglagesSection.classList.add('is-hidden');
+         }
+         
+         function toggleArchivePanel(open = true) {
+         closeAllPanels();
+         const panel = document.getElementById('archivePanel');
+         if (!panel) return;
+         panel.classList.toggle('active', open);
+         
+         const container = document.getElementById('archivesContainer');
+         if (open && typeof loadArchives === 'function') {
+         loadArchives();
+         } else if (container) {
+         
+         container.innerHTML = `<p id="archivesLoading" style="text-align:center; color:var(--text-secondary); margin-top:2rem;">
+         Chargement des archives…
+         </p>`;
+         }
+         }
+         
+         document.addEventListener('DOMContentLoaded', function() {
+         
+           const archivesBtn = document.getElementById('open-archives');
+           if (archivesBtn) {
+             archivesBtn.style.cursor = 'pointer';
+             archivesBtn.addEventListener('click', function(e) {
+               e.preventDefault();
+               toggleArchivePanel(true);
+             });
+           }
+         
+           document.querySelectorAll('#archivePanel .sidePanel-close').forEach(btn => {
+             btn.addEventListener('click', () => closeAllPanels());
+           });
+         });
+      </script>
+      <script>
+         function toggleDeleteDataModal(show) {
+           const modal = document.getElementById('deleteDataModal');
+           if (!modal) return;
+           if (show) modal.classList.remove('is-hidden');
+           else      modal.classList.add('is-hidden');
+         }
+         
+         document.addEventListener('keydown', function(e) {
+           if (e.key === "Escape") {
+             const modal = document.getElementById('deleteDataModal');
+             if (modal && !modal.classList.contains('is-hidden')) {
+               toggleDeleteDataModal(false);
+             }
+           }
+         });
+      </script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+   </body>
+</html>

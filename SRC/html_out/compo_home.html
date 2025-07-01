@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Composition Équipe Domicile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: transparent;
+            color: #222;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #002b5c;
+        }
+        .logo {
+            display: block;
+            margin: 20px auto;
+            max-height: 80px;
+        }
+        .player-list {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 20px;
+        }
+        .player {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .player:last-child {
+            border-bottom: none;
+        }
+        .position {
+            font-weight: bold;
+            color: #002b5c;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ nom_home }}</h1>
+    {% if logo_home %}
+        <img src="{{ logo_home }}" alt="Logo Équipe Domicile" class="logo">
+    {% endif %}
+    <div class="player-list">
+        {% for i, joueur in enumerate(joueurs_home) %}
+            {% if joueur %}
+                <div class="player"><span class="position">{{ i+1 }}.</span> {{ joueur }}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,129 @@
+{
+    "date": "",
+    "heure": "",
+    "ville": "",
+    "stade": "",
+    "arbitres": {
+        "central": "",
+        "touche_1": "",
+        "touche_2": "",
+        "video": ""
+    },
+    "overlay": {
+        "last_matches": [
+            {
+                "date": "",
+                "stade": "",
+                "score": "",
+                "winner": ""
+            },
+            {
+                "date": "",
+                "stade": "",
+                "score": "",
+                "winner": ""
+            },
+            {
+                "date": "",
+                "stade": "",
+                "score": "",
+                "winner": ""
+            }
+        ],
+        "logos": [
+            "/static/logos_partners/logo_partenaire_1.png",
+            "/static/logos_partners/logo_partenaire_2.png",
+            "/static/logos_partners/logo_partenaire_3.png",
+            "/static/logos_partners/logo_partenaire_4.png",
+            "/static/logos_partners/logo_partenaire_5.png",
+            "/static/logos_partners/logo_partenaire_6.png"
+        ],
+        "message": "",
+        "countdown": {
+            "message": "",
+            "duration": "5"
+        }
+    },
+    "compo_home": {
+        "nom": "",
+        "joueurs": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+        "remplacants": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ]
+    },
+    "compo_away": {
+        "nom": "",
+        "joueurs": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+        "remplacants": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ]
+    },
+    "score": {
+        "home": "0",
+        "away": "0"
+    },
+    "buteurs": {
+        "home": [],
+        "away": []
+    },
+    "evenements": {
+        "home": [],
+        "away": []
+    },
+    "remplacants": {
+        "home": [],
+        "away": []
+    },
+    "commentaires": [],
+    "timer": {
+        "elapsed_seconds": 0,
+        "running": false,
+        "start_timestamp": null
+    }
+}

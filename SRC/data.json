@@ -1,0 +1,152 @@
+{
+  "date": "2025-04-05",
+  "heure": "20:00",
+  "ville": "Béziers",
+  "stade": "Raoul Barrière",
+  "arbitres": {
+    "central": "Prénom Nom",
+    "touche_1": "Prénom Nom",
+    "touche_2": "Prénom Nom",
+    "video": "Prénom Nom"
+  },
+  "overlay": {
+    "last_matches": [
+      {
+        "date": "01/01/2020",
+        "score": "10 - 0",
+        "opponent": "",
+        "stade": "Béziers",
+        "winner": "ASBH"
+      },
+      {
+        "date": "01/02/2020",
+        "score": "15 - 0",
+        "opponent": "",
+        "stade": "Mayol",
+        "winner": "ASBH"
+      },
+      {
+        "date": "01/03/2020",
+        "score": "20 - 0",
+        "opponent": "",
+        "stade": "Béziers",
+        "winner": "ASBH"
+      }
+    ],
+    "logos": [
+      "/static/logos_partners/logo_partenaire_1.png",
+      "/static/logos_partners/logo_partenaire_2.png",
+      "/static/logos_partners/logo_partenaire_3.png",
+      "/static/logos_partners/logo_partenaire_4.png",
+      "/static/logos_partners/logo_partenaire_5.png",
+      "/static/logos_partners/logo_partenaire_6.png"
+    ],
+    "message": "Bienvenue au Stade Raoul Barrière pour ce choc entre l'ASBH et le XV de France – Coup d’envoi à 21h, vivez le match en direct avec nous ! 🏉🔥",
+    "countdown": {
+      "message": "",
+      "duration": "5"
+    }
+  },
+  "compo_home": {
+    "nom": "TEST",
+    "joueurs": [
+      "AUPONT",
+      "RUNE",
+      "TIOD",
+      "GIRARD",
+      "GAYRAUD",
+      "FUPONT",
+      "HAMEL",
+      "DELMAS",
+      "SIMON",
+      "BLANC",
+      "LACROIX",
+      "GONTINEAC",
+      "MUMONT",
+      "COURTAUD",
+      "JAMINET"
+    ],
+    "remplacants": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "compo_away": {
+    "nom": "XV DE FRANCE",
+    "joueurs": [
+      "ALFRED",
+      "BOURGARIT",
+      "ALDEGHERI",
+      "LABOUTELEY",
+      "TAOFIFENUA",
+      "MAURER",
+      "JELONCH",
+      "MACALOU",
+      "DESROSES",
+      "HASTOY",
+      "CORDIN",
+      "MOEFANA",
+      "VINCENT",
+      "TUICUVU",
+      "BOUTHIER"
+    ],
+    "remplacants": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "score": {
+    "home": "19",
+    "away": "2"
+  },
+  "buteurs": {
+    "home": [],
+    "away": []
+  },
+  "evenements": {
+    "home": [],
+    "away": []
+  },
+  "remplacants": {
+    "home": [],
+    "away": []
+  },
+  "commentaires": [
+    "0 - Bienvenue dans l'arène ! 🏉 Aujourd'hui, c'est l'ovale qui commande.",
+    "0 - Les guerriers de l'ovale sont en place, prêts à en découdre !",
+    "0 - Un ballon, deux équipes, 80 minutes de combat intense. C'est ça, le rugby !",
+    "0 - Sous un grand ciel bleu, tout est prêt pour envoyer du jeu à la main et mettre du rythme dans cette rencontre !",
+    "1 - Le coup d'envoi vient d'être donné, c'est parti pour 40 premières minutes intenses !",
+    "1 - Premier ballon pour l'équipe locale, la bataille des rucks est lancée !",
+    "2 - Les deux équipes se jaugent en ce début de match, personne ne veut se découvrir.",
+    "3 - Premier franchissement, le match s'emballe déjà sous l'ovale !",
+    "5 - Le rythme est élevé, les deux équipes cherchent à imposer leur tempo.",
+    "7 - Petite faute de main sous la pression, mêlée ordonnée par l'arbitre.",
+    "9 - Carton jaune contre un joueur local pour faute répétée.",
+    "11 - AMROUNI : ESSAI pour l'ASBH !!! Percée fulgurante, quelle action individuelle !",
+    "0 - c'est fou !",
+    "0 - c'est fou !",
+    "0 - c'est fou !",
+    "0 - hhhhh",
+    "0 - ffff"
+  ],
+  "timer": {
+    "elapsed_seconds": 0,
+    "running": false,
+    "start_timestamp": null
+  },
+  "logo_home": "",
+  "logo_away": ""
+}

@@ -1,0 +1,41 @@
+[
+  {
+    "h": 1,
+    "id": "score",
+    "options": {
+      "borderColor": "#666666",
+      "borderWidth": 1,
+      "content": "",
+      "opacity": 1
+    },
+    "w": 2,
+    "x": null,
+    "y": null
+  },
+  {
+    "h": 1,
+    "id": "score",
+    "options": {
+      "borderColor": "#ccc",
+      "borderWidth": 1,
+      "content": "",
+      "opacity": 1
+    },
+    "w": 2,
+    "x": null,
+    "y": null
+  },
+  {
+    "h": 1,
+    "id": "last_matches",
+    "options": {
+      "borderColor": "#ccc",
+      "borderWidth": 1,
+      "content": "",
+      "opacity": 1
+    },
+    "w": 2,
+    "x": null,
+    "y": null
+  }
+]

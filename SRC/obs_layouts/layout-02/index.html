@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="fr">
+   <head>
+      <meta charset="UTF-8">
+      <title>LAYOUT 02</title>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+      <style>
+         :root {
+         --scoreboard-height: 36px;
+         --mainblock-width: 390px;
+         --sep-width: 2px;
+         --side-padding: 14px;
+         --col-padding: 12px;
+         }
+         body::before {
+         content: "";
+         position: fixed;
+         inset: 0;
+         z-index: 0;
+         background: rgba(18, 22, 35, 0.84);
+         backdrop-filter: blur(17px);
+         -webkit-backdrop-filter: blur(17px);
+         pointer-events: none;
+         }
+         #overlay-root {
+         position: relative;
+         z-index: 10;
+         }
+         html, body {
+         margin: 0; padding: 0;
+         width: 100vw; height: 100vh;
+         background: transparent;
+         font-family: Arial, sans-serif;
+         color: #fff;
+         overflow: hidden;
+         }
+         #pause-bottom-block {
+         position: fixed;
+         left: 50%;
+         bottom: 38px;
+         transform: translateX(-50%);
+         width: 800px;
+         max-width: 97vw;
+         z-index: 100;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         pointer-events: none;
+         opacity: 1;
+         transition: opacity 0.4s;
+         }
+         #pause-bottom-block.hide {
+         opacity: 0 !important;
+         pointer-events: none;
+         }
+         .pause-block-top {
+         width: 800px;
+         max-width: 97vw;
+         background: rgba(35,56,73,0.93);
+         color: #fff;
+         font-size: 16px;
+         font-weight: 700;
+         letter-spacing: 1.1px;
+         text-align: center;
+         display: flex;
+         flex-direction: column;
+         align-items: stretch;
+         justify-content: flex-start;
+         border-radius: 0;
+         margin: 0;
+         border-bottom: 2px solid #3557b8;
+         user-select: none;
+         text-transform: uppercase;
+         padding: 0 0 3px 0;
+         box-sizing: border-box;
+         }
+         .pause-infos-row {
+         width: 100%;
+         display: flex;
+         flex-direction: row;
+         justify-content: space-between;
+         align-items: flex-start;
+         margin-bottom: 25px;
+         margin-top: 10px;
+         gap: 10px;
+         }
+         .pause-infos-col {
+         flex: 1;
+         min-width: 0;
+         font-size: 13px;
+         color: #f2f2f2;
+         display: flex;
+         flex-direction: column;
+         gap: 2px;
+         padding: 0 8px;
+         max-width: 50%;
+         overflow: hidden;
+         text-align: left;
+         }
+         .pause-infos-col.right {
+         text-align: right;
+         align-items: flex-end;
+         }
+         .pause-infos-col.left {
+         text-align: left;
+         align-items: flex-start;
+         }
+         .pause-infos-title {
+         font-weight: 700;
+         font-size: 13px;
+         letter-spacing: .5px;
+         color: #51b4e6;
+         margin-bottom: 1px;
+         }
+         .pause-infos-list {
+         font-size: 13px;
+         color: #fff;
+         margin: 0 0 3px 0;
+         padding: 0;
+         list-style: none;
+         }
+         .pause-infos-list li {
+         white-space: nowrap;
+         text-overflow: ellipsis;
+         overflow: hidden;
+         }
+.pause-block-main {
+    width: 800px;
+    max-width: 97vw;
+    background: linear-gradient(120deg, #328aff 0%, #0a2991 65%, #031680 100%);
+    background-size: 400% 400%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 0;
+    box-shadow: 0 2px 10px 0 rgba(10, 30, 100, 0.09);
+    position: relative;
+    margin: 0;
+    animation: animate-gradient 20s ease-in-out infinite;
+    overflow: visible;
+}
+         .pause-blason {
+         width: 136px;
+         height: 136px;
+         border-radius: 0;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         position: absolute;
+         top: -60px;
+         z-index: 2;
+         }
+         .pause-blason.home {
+         left: -68px;
+         }
+         .pause-blason.away {
+         right: -68px;
+         }
+         .pause-blason img {
+         width: 108px;
+         height: 108px;
+         object-fit: contain;
+         display: block;
+         border-radius: 0;
+         }
+         .pause-main-content {
+         width: 100%;
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         height: 100%;
+         gap: 10px;
+         padding: 0 68px;
+         box-sizing: border-box;
+         }
+.pause-team-name {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e0e0e0;
+    text-shadow: 0 1px 6px #18225a52;
+    letter-spacing: 0.5px;
+    min-width: 130px;
+    max-width: 280px;
+    overflow: hidden;
+    white-space: normal;
+    text-overflow: unset;
+    word-break: break-word;
+    margin: 0;
+    text-align: center;
+}
+         .pause-team-name.away {
+         text-align: right;
+         }
+         @media (max-width: 900px) {
+         #pause-bottom-block, .pause-block-top, .pause-block-main {width: 97vw !important; max-width: 97vw !important;}
+         .pause-main-content {padding: 0 12vw !important;}
+         .pause-blason.home {left: -24px;}
+         .pause-blason.away {right: -24px;}
+         .pause-team-name {min-width: 70px; max-width: 130px; font-size: 14px;}
+         .pause-infos-col {font-size: 10px;}
+         .pause-infos-title {font-size: 10px;}
+         }
+         @keyframes animate-gradient {
+         0% { background-position: 0% 50%; }
+         50% { background-position: 100% 50%; }
+         100% { background-position: 0% 50%; }
+         }
+         .pause-infos-list li {
+         font-family: Arial, "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif !important;
+         }
+         .pause-score {
+         font-size: 3.1rem;
+         font-weight: 800;
+         font-family: 'Arial Black', Arial, sans-serif;
+         color: #fff;
+         letter-spacing: 0.02em;
+         text-align: center;
+         width: 100%;
+         margin: 0 0 12px 0;
+         line-height: 1.08;
+         border-bottom: 2px solid #3557b8;
+         padding-bottom: 4px;
+         box-sizing: border-box;
+         text-transform: none;
+         }
+         @media (max-width: 900px) {
+         .pause-score {
+         font-size: 2.0rem;
+         border-bottom-width: 2px;
+         margin-bottom: 7px;
+         padding-bottom: 2px;
+         }
+         }
+         .pause-infos-col.right {
+         align-items: flex-start !important;
+         text-align: left !important;
+         }
+         .pause-infos-col.right .pause-infos-title,
+         .pause-infos-col.right .pause-infos-list,
+         .pause-infos-col.right .pause-infos-list li {
+         text-align: left !important;
+         align-items: flex-start !important;
+         justify-content: flex-start !important;
+         }
+         #partners-block,
+         #partners-block-right {
+         position: fixed;
+         top: 50%;
+         transform: translateY(-50%);
+         width: 8vw;
+         height: 9vw;
+         background: none !important;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         z-index: 15;
+         box-shadow: none;
+         pointer-events: none;
+         opacity: 1;
+         }
+         #partners-block { left: 0; }
+         #partners-block-right { right: 0; }
+         #partner-logo,
+         #partner-logo-right {
+         max-width: 90%;
+         max-height: 80%;
+         object-fit: contain;
+         opacity: 0;
+         transition: opacity 0.7s cubic-bezier(.37,.59,.37,1.12);
+         filter: grayscale(40%) brightness(1.1);
+         }
+         #partner-logo.visible,
+         #partner-logo-right.visible {
+         opacity: 1;
+         }
+      </style>
+   </head>
+   <body>
+      <div id="overlay-root">
+         <div id="pause-bottom-block" class="hide">
+            <div class="pause-block-top">
+               <div class="pause-infos-row">
+                  <div class="pause-infos-col left" id="pause-infos-home"></div>
+                  <div class="pause-infos-col right" id="pause-infos-away"></div>
+               </div>
+               MI-TEMPS EN COURS
+            </div>
+            <div class="pause-block-main">
+               <div class="pause-blason home">
+                  <img id="pause-logo-home" src="/static/logo_home.png" alt="Logo équipe home">
+               </div>
+               <div class="pause-main-content">
+                  <span class="pause-team-name" id="pause-team-home">DOMICILE</span>
+                  <span class="pause-team-name" id="pause-team-away">EXTERIEUR</span>
+               </div>
+               <div class="pause-blason away">
+                  <img id="pause-logo-away" src="/static/logo_away.png" alt="Logo équipe away">
+               </div>
+            </div>
+         </div>
+         <div id="partners-block">
+            <img id="partner-logo" src="" alt="Logo partenaire">
+         </div>
+         <div id="partners-block-right">
+            <img id="partner-logo-right" src="" alt="Logo partenaire">
+         </div>
+      </div>
+<script>
+let lastTeamHome = '';
+let lastTeamAway = '';
+let lastLogoHome = '';
+let lastLogoAway = '';
+let lastInfosHome = '';
+let lastInfosAway = '';
+let lastTimerValue = null;
+let lastPauseState = false;
+
+function showPauseBottomBlock(show) {
+  const pauseBlock = document.getElementById('pause-bottom-block');
+  if (!pauseBlock) return;
+  if (show) {
+    pauseBlock.classList.remove('hide');
+    updatePauseInfos(); 
+  } else {
+    pauseBlock.classList.add('hide');
+  }
+}
+
+
+async function updatePauseBlockTeams() {
+  try {
+    const homeHtml = await fetch('/compo_home.html?' + Date.now()).then(r => r.text());
+    const awayHtml = await fetch('/compo_away.html?' + Date.now()).then(r => r.text());
+    const homeDoc = new DOMParser().parseFromString(homeHtml, 'text/html');
+    const awayDoc = new DOMParser().parseFromString(awayHtml, 'text/html');
+    const nomHome = homeDoc.querySelector('h1')?.innerText.trim() || 'DOMICILE';
+    const nomAway = awayDoc.querySelector('h1')?.innerText.trim() || 'EXTERIEUR';
+    const logoHome = '/static/logos_teams/logo_home.png';
+    const logoAway = '/static/logos_teams/logo_away.png';
+
+    if (lastTeamHome !== nomHome) {
+      document.getElementById('pause-team-home').innerText = nomHome;
+      lastTeamHome = nomHome;
+    }
+    if (lastTeamAway !== nomAway) {
+      document.getElementById('pause-team-away').innerText = nomAway;
+      lastTeamAway = nomAway;
+    }
+    if (lastLogoHome !== logoHome) {
+      document.getElementById('pause-logo-home').src = logoHome;
+      lastLogoHome = logoHome;
+    }
+    if (lastLogoAway !== logoAway) {
+      document.getElementById('pause-logo-away').src = logoAway;
+      lastLogoAway = logoAway;
+    }
+  } catch (e) {
+
+  }
+}
+
+async function detectPauseAndTogglePauseBlock() {
+  showPauseBottomBlock(true);
+}
+
+
+const EMOJI_MAPPING = {
+  essai: "🏉",
+  transformation: "🦶",
+  penalite: "🟢",
+  drop: "🔵",
+  carton_jaune: "🟨",
+  carton_rouge: "🟥",
+  blessure: "🚑",
+  remplacement: "⟷",
+  buteur: "⚡",
+  evenement: "✨"
+};
+
+function getEmojiButeur(txt) {
+  if (/essai/i.test(txt)) return EMOJI_MAPPING.essai;
+  if (/transfo|transformation/i.test(txt)) return EMOJI_MAPPING.transformation;
+  if (/p[ée]nal/i.test(txt)) return EMOJI_MAPPING.penalite;
+  if (/drop/i.test(txt)) return EMOJI_MAPPING.drop;
+  return EMOJI_MAPPING.buteur;
+}
+function getEmojiEvent(txt) {
+  if (/carton.*jaune|carton jaune|jaune|🟨/i.test(txt)) return EMOJI_MAPPING.carton_jaune;
+  if (/carton.*rouge|carton rouge|rouge|🟥/i.test(txt)) return EMOJI_MAPPING.carton_rouge;
+  if (/blessure|🚑/i.test(txt)) return EMOJI_MAPPING.blessure;
+  if (/essai/i.test(txt)) return EMOJI_MAPPING.essai;
+  return EMOJI_MAPPING.evenement;
+}
+function getEmojiRemp(txt) { return EMOJI_MAPPING.remplacement; }
+function replaceAllEmojis(txt, emoji) {
+  const EMOJI_RUGBY = /[🎯🦶🟢🔵🟨🟥🚑🔄🏉⚡✨]/g;
+  let matches = [...txt.matchAll(EMOJI_RUGBY)];
+  if (matches.length === 0) return txt;
+  if (/\([🎯🦶🟢🔵🟨🟥🚑🔄🏉⚡✨]\)/.test(txt)) {
+    return txt.replace(/\([🎯🦶🟢🔵🟨🟥🚑🔄🏉⚡✨]\)/g, '(' + emoji + ')');
+  }
+  let last = matches[matches.length - 1];
+  let before = txt.slice(0, last.index);
+  let after = txt.slice(last.index + last[0].length);
+  before = before.replace(EMOJI_RUGBY, '');
+  return before + emoji + after;
+}
+function sanitize(str) {
+  return str.normalize('NFC').replace(/[^\P{C}\n\r\t]/gu, '');
+}
+
+async function updatePauseInfos() {
+  try {
+    const scoreHtml = await fetch('/score.html?' + Date.now()).then(r => r.text());
+    const scoreDoc = new DOMParser().parseFromString(scoreHtml, 'text/html');
+    const scores = Array.from(scoreDoc.querySelectorAll('.score')).map(s => s.textContent.trim());
+    const scoreHome = scores[0] || '0';
+    const scoreAway = scores[1] || '0';
+
+    const buteursHtml = await fetch('/buteurs.html?' + Date.now()).then(r => r.text());
+    const buteursDoc = new DOMParser().parseFromString(buteursHtml, 'text/html');
+    const buteursCols = buteursDoc.querySelectorAll('.col');
+    function getButeurs(col) {
+      if (!col) return [];
+      return Array.from(col.querySelectorAll('.buteurs-list .buteur > span')).map(e => e.textContent).filter(Boolean);
+    }
+
+    const eventsHtml = await fetch('/evenements.html?' + Date.now()).then(r => r.text());
+    const eventsDoc = new DOMParser().parseFromString(eventsHtml, 'text/html');
+    const eventCols = eventsDoc.querySelectorAll('.col');
+    function getEvents(col) {
+      return Array.from(col?.querySelectorAll('.events-list .event > span') ?? []).map(e => e.textContent).filter(Boolean);
+    }
+
+    const rempHtml = await fetch('/remplacants.html?' + Date.now()).then(r => r.text());
+    const rempDoc = new DOMParser().parseFromString(rempHtml, 'text/html');
+    const rempCols = rempDoc.querySelectorAll('.col');
+    function getRemps(col) {
+      return Array.from(col?.querySelectorAll('.remp-list .remp > span') ?? []).map(e => e.textContent).filter(Boolean);
+    }
+
+    function buildList(title, arr, emojiFn) {
+      if (!arr || arr.length === 0) return '';
+      const ul = document.createElement('ul');
+      ul.className = 'pause-infos-list';
+      arr.forEach(x => {
+        const emoji = emojiFn(x);
+        let cleanText = sanitize(replaceAllEmojis(x, emoji));
+        let finalText = cleanText;
+        if (/carton.*jaune|carton jaune|jaune|🟨/i.test(x)) {
+          let joueur = x.replace(/[,.;:\-–]+/g,' ').split(/carton.*jaune|carton jaune|jaune|🟨/i)[0].trim();
+          joueur = joueur.replace(/carton.*|jaune|🟨/gi, '').trim();
+          finalText = joueur + ', CARTON JAUNE';
+        } else if (/carton.*rouge|carton rouge|rouge|🟥/i.test(x)) {
+          let joueur = x.replace(/[,.;:\-–]+/g,' ').split(/carton.*rouge|carton rouge|rouge|🟥/i)[0].trim();
+          joueur = joueur.replace(/carton.*|rouge|🟥/gi, '').trim();
+          finalText = joueur + ', CARTON ROUGE';
+        } else if (/blessure|🚑/i.test(x)) {
+          let joueur = x.split(/blessure|🚑/i)[0].trim().replace(/[,.;:\-–]+$/,'');
+          finalText = joueur + ', BLESSURE';
+        } else if (/\((pénalité|penalite|penalty|pen)[^)]*\)/i.test(x) || /[ ,](pénalité|penalite|penalty|pen)[ ,]/i.test(x)) {
+          let joueur = x.split(/\((pénalité|penalite|penalty|pen)[^)]*\)/i)[0]
+                        .replace(/[,.;:\-–]+$/,'').trim();
+          finalText = joueur + ', PÉNALITÉ';
+        } else if (/\((points)[^)]*\)/i.test(x) || /[ ,](points)[ ,]/i.test(x)) {
+          let joueur = x.replace(/^.*?’\s*/,'').split(/\((points)[^)]*\)/i)[0]
+                        .split(/(points)/i)[0]
+                        .replace(/[,.;:\-–]+$/,'').trim();
+          finalText = joueur + ', POINTS';
+        } else if (/(but|transfo|essai|drop)/i.test(x)) {
+          let m = x.match(/^([^,(]+)[\s,(]+(but|transfo|essai|drop)[^)]*/i);
+          if (m) {
+            let joueur = m[1].trim().replace(/[,.;:\-–]+$/,'');
+            let type = m[2].trim().toUpperCase();
+            if (type === 'TRANSFO') type = 'TRANSFORMATION';
+            finalText = joueur + ', ' + type;
+          } else {
+            let str = x.replace(/[\(\)🟨🟥🚑]/g, '').replace(/[,.;:\-–]+/g,' ');
+            let parts = str.split(/but|transfo|essai|drop/i);
+            if (parts.length > 1) {
+              let joueur = parts[0].trim();
+              let type = x.match(/(but|transfo|essai|drop)/i)[0].toUpperCase();
+              if (type === 'TRANSFO') type = 'TRANSFORMATION';
+              finalText = joueur + ', ' + type;
+            }
+          }
+        }
+        const li = document.createElement('li');
+        li.textContent = finalText;
+        ul.appendChild(li);
+      });
+      return `<div class="pause-infos-title">${title} :</div>${ul.outerHTML}`;
+    }
+
+    let homeHtml = `<div class="pause-score">${scoreHome}</div>`;
+    homeHtml += buildList('Buteurs', getButeurs(buteursCols[0]), getEmojiButeur);
+    homeHtml += buildList('Événements', getEvents(eventCols[0]), getEmojiEvent);
+    homeHtml += buildList('Remplacements', getRemps(rempCols[0]), getEmojiRemp);
+
+    let awayHtml = `<div class="pause-score">${scoreAway}</div>`;
+    awayHtml += buildList('Buteurs', getButeurs(buteursCols[1]), getEmojiButeur);
+    awayHtml += buildList('Événements', getEvents(eventCols[1]), getEmojiEvent);
+    awayHtml += buildList('Remplacements', getRemps(rempCols[1]), getEmojiRemp);
+
+
+    if (homeHtml !== lastInfosHome) {
+      document.getElementById('pause-infos-home').innerHTML = homeHtml || '<span style="opacity:.6;">—</span>';
+      lastInfosHome = homeHtml;
+    }
+    if (awayHtml !== lastInfosAway) {
+      document.getElementById('pause-infos-away').innerHTML = awayHtml || '<span style="opacity:.6;">—</span>';
+      lastInfosAway = awayHtml;
+    }
+  } catch (e) {
+
+  }
+}
+
+
+setInterval(updatePauseBlockTeams, 2000);
+setInterval(detectPauseAndTogglePauseBlock, 2000);
+
+
+updatePauseBlockTeams();
+detectPauseAndTogglePauseBlock();
+</script>
+
+      <script>
+         const partnersBlock = document.getElementById('partners-block');
+         const partnersBlockRight = document.getElementById('partners-block-right');
+         const partnerLogo = document.getElementById('partner-logo');
+         const partnerLogoRight = document.getElementById('partner-logo-right');
+         
+         let partnersLogos = [];
+         let currentLogoIndex = 0;
+         let logoTimeout = null;
+         
+         async function fetchPartnersLogos() {
+           try {
+             const res = await fetch('/logos_partners.html?' + Date.now());
+             const html = await res.text();
+             const doc = new DOMParser().parseFromString(html, 'text/html');
+             partnersLogos = Array.from(doc.querySelectorAll('.logo-item img')).map(img => img.src);
+             if (partnersLogos.length > 0) {
+               currentLogoIndex = 0;
+               showPartnerLogos(currentLogoIndex);
+             }
+           } catch (e) {
+             partnersLogos = [];
+           }
+         }
+         
+         function showPartnerLogos(index) {
+           if (partnersLogos.length === 0) return;
+           partnerLogo.classList.remove('visible');
+           partnerLogoRight.classList.remove('visible');
+         
+           setTimeout(() => {
+         
+             partnerLogo.src = partnersLogos[index];
+             partnerLogo.classList.add('visible');
+         
+             let indexRight = partnersLogos.length - 1 - index;
+             partnerLogoRight.src = partnersLogos[indexRight];
+             partnerLogoRight.classList.add('visible');
+           }, 120);
+         
+           clearTimeout(logoTimeout);
+           logoTimeout = setTimeout(() => {
+             let nextIndex = (index + 1) % partnersLogos.length;
+             showPartnerLogos(nextIndex);
+           }, 5000);
+         }
+         
+         function showPartnersBlocks(show) {
+           partnersBlock.style.display = show ? 'flex' : 'none';
+           partnersBlockRight.style.display = show ? 'flex' : 'none';
+           if (!show && logoTimeout) clearTimeout(logoTimeout);
+           if (show && partnersLogos.length > 0) showPartnerLogos(currentLogoIndex);
+         }
+         
+         fetchPartnersLogos().then(() => {
+           if (partnersLogos.length > 0) {
+         
+             partnerLogo.src = "";
+             partnerLogoRight.src = "";
+             partnerLogo.classList.remove('visible');
+             partnerLogoRight.classList.remove('visible');
+         
+             setTimeout(() => {
+               partnerLogo.src = partnersLogos[0];
+               partnerLogoRight.src = partnersLogos[partnersLogos.length - 1];
+               partnerLogo.classList.add('visible');
+               partnerLogoRight.classList.add('visible');
+             }, 200); 
+           }
+         });
+         setInterval(fetchPartnersLogos, 5 * 60 * 1000);
+      </script>
+   </body>
+</html>

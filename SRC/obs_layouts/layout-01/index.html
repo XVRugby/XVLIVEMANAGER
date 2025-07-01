@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="fr">
+   <head>
+      <meta charset="UTF-8">
+      <title>LAYOUT 01</title>
+      <style>
+         :root {
+         --mainblock-width: 1290px;
+         --mainblock-height: 840px;
+         --primary-blue: #51b4e6;
+         --gradient-bg: linear-gradient(120deg, #328affcc 0%, #0a2991cc 65%, #031680cc 100%);
+         --transition-duration: 0.7s;
+         }
+         body::before {
+         content: "";
+         position: fixed;
+         inset: 0;
+         z-index: 0;
+         background: rgba(18, 22, 35, 0.84);
+         backdrop-filter: blur(17px);
+         -webkit-backdrop-filter: blur(17px);
+         pointer-events: none;
+         }
+         #overlay-root {
+         position: relative;
+         z-index: 10;
+         }
+         html, body {
+         margin: 0;
+         padding: 0;
+         width: 100vw;
+         height: 100vh;
+         background: transparent;
+         font-family: Arial, sans-serif;
+         color: #fff;
+         overflow: hidden;
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         flex-direction: column;
+         }
+         .main-sep {
+         width: var(--mainblock-width);
+         height: 5px;
+         background: linear-gradient(90deg, #3557b8 0%, #1532aa 100%);
+         margin: 0 auto;
+         box-shadow: 0 1px 10px #1532aa33;
+         }
+         .teams-anim-wrapper {
+         position: relative;
+         width: var(--mainblock-width);
+         height: var(--mainblock-height);
+         margin: 0 auto;
+         overflow: hidden;
+         perspective: 1600px;
+         }
+         .team-block {
+         position: absolute;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         opacity: 0;
+         pointer-events: none;
+         transition: opacity var(--transition-duration), transform var(--transition-duration);
+         transform: translateX(80px) scale(.99) rotateY(20deg);
+         z-index: 0;
+         }
+         .team-block.active {
+         opacity: 1;
+         pointer-events: auto;
+         transform: translateX(0) scale(1) rotateY(0deg);
+         z-index: 1;
+         }
+         .team-block.hide-left {
+         opacity: 0;
+         pointer-events: none;
+         transform: translateX(-80px) scale(.98) rotateY(-14deg);
+         z-index: 0;
+         }
+         .team-block.hide-right {
+         opacity: 0;
+         pointer-events: none;
+         transform: translateX(80px) scale(.98) rotateY(14deg);
+         z-index: 0;
+         }
+         .home-team-block,
+         .away-team-block {
+         width: 100%;
+         height: 100%;
+         background: var(--gradient-bg);
+         background-size: 400% 400%;
+         display: flex;
+         flex-direction: column;
+         box-shadow: 0 8px 40px 0 rgba(10, 30, 100, 0.10);
+         overflow: visible;
+         animation: animate-gradient 20s ease-in-out infinite;
+         }
+         @keyframes animate-gradient {
+         0% { background-position: 0% 50%; }
+         50% { background-position: 100% 50%; }
+         100% { background-position: 0% 50%; }
+         }
+         .team-name-bar {
+         width: 100%;
+         text-align: center;
+         font-size: 48px;
+         font-weight: 900;
+         color: #e0e0e0;
+         text-shadow: 0 2px 14px #18328542;
+         letter-spacing: 2.5px;
+         margin: 0;
+         padding: 32px 0 18px 0;
+         text-transform: uppercase;
+         background: none;
+         }
+         .bloc-content {
+         flex: 1;
+         display: flex;
+         width: 100%;
+         height: 100%;
+         align-items: stretch;
+         box-sizing: border-box;
+         }
+         .bloc-content.away {
+         flex-direction: row-reverse;
+         }
+         .logo-col {
+         width: 440px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         height: 100%;
+         box-sizing: border-box;
+         padding-top: 0;
+         }
+         .logo-img {
+         max-width: 300px;
+         max-height: 300px;
+         object-fit: contain;
+         padding: 42px;
+         display: block;
+         }
+         .compo-col {
+         flex: 1;
+         height: 100%;
+         padding: 32px 36px 18px 36px;
+         display: flex;
+         flex-direction: column;
+         align-items: flex-start;
+         overflow: hidden;
+         position: relative;
+         justify-content: flex-start;
+         box-sizing: border-box;
+         }
+         .section-title {
+         font-size: 22px;
+         font-weight: 700;
+         color: var(--primary-blue);
+         letter-spacing: 1.4px;
+         margin: 0 0 26px 0;
+         text-transform: uppercase;
+         min-height: 34px;
+         line-height: 34px;
+         display: flex;
+         align-items: center;
+         background: none;
+         width: 100%;
+         box-sizing: border-box;
+         }
+         .compo-players-wrap {
+         width: 100%;
+         min-height: 290px;
+         max-height: 330px;
+         position: relative;
+         z-index: 1;
+         transition: min-height 0.2s, max-height 0.2s;
+         }
+         .compo-group {
+         width: 100%;
+         display: none;
+         flex-direction: column;
+         gap: 10px;
+         position: absolute;
+         top: 0;
+         left: 0;
+         opacity: 0;
+         transition: opacity 0.6s;
+         min-height: 250px;
+         box-sizing: border-box;
+         }
+         .compo-group.active {
+         display: flex;
+         opacity: 1;
+         position: static;
+         z-index: 2;
+         }
+         .player-row {
+         width: 100%;
+         display: flex;
+         align-items: center;
+         font-size: 21px;
+         font-weight: 400;
+         color: #fff;
+         letter-spacing: 0.2px;
+         background: rgba(24,38,97,0.11);
+         padding: 9px 12px 8px 0;
+         box-shadow: 0 1px 6px #0002;
+         min-width: 0;
+         }
+         .player-num {
+         width: 32px;
+         font-size: 23px;
+         font-weight: 900;
+         color: #51b4e6;
+         text-align: right;
+         margin-right: 22px;
+         letter-spacing: 1px;
+         flex-shrink: 0;
+         }
+         .player-name {
+         flex: 1;
+         text-align: left;
+         font-size: 21px;
+         font-weight: 400;
+         color: #fff;
+         overflow: hidden;
+         text-overflow: ellipsis;
+         white-space: nowrap;
+         }
+         @media (max-width: 1400px) {
+         .main-sep,
+         .teams-anim-wrapper {
+         width: 99vw !important;
+         }
+         .bloc-content {
+         flex-direction: column;
+         }
+         .bloc-content.away {
+         flex-direction: column-reverse;
+         }
+         .logo-col {
+         width: 100%;
+         height: 240px;
+         padding-top: 10px;
+         }
+         .compo-col {
+         width: 100%;
+         padding: 24px 2vw 10px 2vw;
+         }
+         .team-name-bar {
+         font-size: 28px;
+         }
+         .player-row,
+         .player-name {
+         font-size: 14px;
+         }
+         .player-num {
+         font-size: 14px;
+         }
+         .section-title {
+         font-size: 16px;
+         min-height: 24px;
+         line-height: 24px;
+         }
+         .compo-players-wrap {
+         min-height: 170px;
+         max-height: 190px;
+         }
+         }
+         #partners-block {
+         position: absolute;
+         left: 0;
+         bottom: 0;
+         width: 100%;
+         height: 100px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         pointer-events: none;
+         z-index: 30;
+         }
+         #partner-logo,
+         #partner-logo-away {
+         max-height: 72px;
+         max-width: 260px;
+         opacity: 0;
+         filter: grayscale(30%) brightness(1.15);
+         transition: opacity 0.7s cubic-bezier(.37,.59,.37,1.12);
+         margin: 0 auto;
+         display: block;
+         pointer-events: auto;
+         }
+         #partner-logo.visible,
+         #partner-logo-away.visible {
+         opacity: 1;
+         }
+         #match-start-box {
+         position: fixed;
+         top: 0;
+         right: 0;
+         display: flex;
+         align-items: center;
+         justify-content: flex-start;
+         padding: 0 26px 0 18px;
+         height: 38px;
+         background: linear-gradient(93deg, #d61b28 0%, #c92626 42%, #f86954 100%);
+         color: #fff;
+         font-weight: 700;
+         font-size: 16px;
+         box-shadow: 0 2px 10px #b1181855;
+         letter-spacing: 1px;
+         z-index: 2147483647;
+         min-width: 200px;
+         width: auto;
+         white-space: nowrap;
+         transition: width 0.2s;
+         user-select: none;
+         opacity: 0.98;
+         line-height: 38px;
+         gap: 0;
+         }
+         .start-text {
+         color: #fff;
+         font-weight: 600;
+         font-size: 16px;
+         opacity: 0.87;
+         margin: 0;
+         padding: 0;
+         line-height: 38px;
+         display: inline-block;
+         vertical-align: middle;
+         }
+         .start-timer {
+         margin-left: 13px;
+         color: #fff;
+         font-weight: 900;
+         font-size: 18px;
+         letter-spacing: 1.2px;
+         font-variant-numeric: tabular-nums;
+         padding: 0;
+         line-height: 38px;
+         display: inline-block;
+         vertical-align: middle;
+         }
+         #infos-arbitres-match {
+         background: rgba(35,56,73,0.93);
+         color: #fff;
+         display: flex;
+         justify-content: space-between;
+         align-items: stretch;
+         padding: 15px 34px 10px 34px;
+         font-size: 22px;
+         min-height: 46px;
+         margin-bottom: 0;      
+         gap: 18px;
+         margin-top: 2rem;
+         width: 1220px;
+         }
+         #central-arbitre-block {
+         background: linear-gradient(120deg, #328aff 0%, #0a2991 65%, #031680 100%);
+         background-size: 400% 400%;
+         animation: animate-gradient 20s ease-in-out infinite;
+         color: #ffd700;
+         font-weight: bold;
+         font-size: 22px;
+         text-align: center;
+         min-height: 35px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         letter-spacing: 1px;
+         padding: 10px 0 6px 0;
+         position: relative;
+         overflow: visible;
+         z-index: 1;
+         }
+         #central-arbitre-block::before {
+         content: "";
+         position: absolute;
+         left: 0; top: 0;
+         width: 100%; height: 5px;
+         border-radius: 0; 
+         background: linear-gradient(90deg, #3557b8 0%, #1532aa 100%);
+         z-index: 10;
+         pointer-events: none;
+         }
+      </style>
+   </head>
+   <body>
+      <div id="overlay-root">
+         <iframe id="countdown-iframe" src="/overlay_countdown.html" style="display:none"></iframe>
+         <div class="teams-anim-wrapper" id="teams-anim-wrapper">
+ 
+            <div class="team-block home-team-block active" id="home-block">
+               <div class="main-sep"></div>
+               <div class="team-name-bar" id="home-team-name"></div>
+               <div class="bloc-content">
+                  <div class="logo-col">
+                     <img src="/static/logos_teams/logo_home.png" alt="Logo équipe domicile" class="logo-img" id="logo-img-home"/>
+                  </div>
+                  <div class="compo-col">
+                     <div class="section-title" id="section-title-home">Titulaires</div>
+                     <div class="compo-players-wrap" id="compo-players-wrap-home"></div>
+                  </div>
+               </div>
+               <div id="partners-block">
+                  <img id="partner-logo" src="" alt="Partenaire" />
+               </div>
+            </div>
+
+            <div class="team-block away-team-block hide-right" id="away-block">
+               <div class="main-sep"></div>
+               <div class="team-name-bar" id="away-team-name"></div>
+               <div class="bloc-content away">
+                  <div class="logo-col">
+                     <img src="/static/logos_teams/logo_away.png" alt="Logo équipe extérieur" class="logo-img" id="logo-img-away"/>
+                  </div>
+                  <div class="compo-col">
+                     <div class="section-title" id="section-title-away">Titulaires</div>
+                     <div class="compo-players-wrap" id="compo-players-wrap-away"></div>
+                  </div>
+               </div>
+               <div id="partners-block">
+                  <img id="partner-logo-away" src="" alt="Partenaire" />
+               </div>
+            </div>
+         </div>
+
+         <div id="infos-block-fusion">
+            <div id="infos-arbitres-match"></div>
+            <div class="main-sep" style="margin:12px auto 6px auto;width:100%;"></div>
+            <div id="central-arbitre-block"></div>
+         </div>
+      </div>
+      <script>
+         async function fetchCompo(url) {
+           const html = await fetch(url + "?_=" + Date.now()).then(r => r.text());
+           const doc = new DOMParser().parseFromString(html, 'text/html');
+         
+           let teamName = doc.querySelector('.team-name-bar, h1, .team-name')?.innerText.trim() || '';
+         
+           const players = Array.from(doc.querySelectorAll('.player-row, .player')).map((p, i) => {
+             let num = p.querySelector('.player-num, .position')?.innerText.trim() || (i+1);
+             let name = p.querySelector('.player-name')?.innerText.trim() || p.innerText.replace(num, '').trim();
+             return { num, name };
+           });
+           return {
+             teamName,
+             titulaires: players.slice(0, 15),
+             remplacants: players.slice(15)
+           };
+         }
+         
+         function buildCompoGroups(prefix, joueurs) {
+           let html = '';
+         
+           for(let g=0;g<3;g++) {
+             html += `<div class="compo-group${g===0?' active':''}" id="${prefix}-group-tit-${g+1}">`;
+             joueurs.titulaires.slice(g*5,(g+1)*5).forEach((j, idx) => {
+               html += `<div class="player-row"><span class="player-num">${g*5+idx+1}</span><span class="player-name">${j.name}</span></div>`;
+             });
+             html += '</div>';
+           }
+         
+           for(let g=0;g<2;g++) {
+             html += `<div class="compo-group" id="${prefix}-group-remp-${g+1}">`;
+             joueurs.remplacants.slice(g*5, g===0?5:8).forEach((j, idx) => {
+               html += `<div class="player-row"><span class="player-num">${15+g*5+idx+1}</span><span class="player-name">${j.name}</span></div>`;
+             });
+             html += '</div>';
+           }
+           return html;
+         }
+         
+         let isHome = true;   
+         let groupIdx = 0;    
+         
+         let partnersHome = [], partnersAway = [];
+         let partnerLogoInterval = null;
+         const NB_PARTNERS = 6;
+         const SLIDER_TOTAL_TIME = 17500; 
+         const PARTNER_TIME = Math.round(SLIDER_TOTAL_TIME / NB_PARTNERS); 
+         
+         async function loadPartners() {
+           const html = await fetch('/logos_partners.html?_=' + Date.now()).then(r => r.text());
+           const doc = new DOMParser().parseFromString(html, 'text/html');
+           const imgs = Array.from(doc.querySelectorAll('.logos-grid .logo-item img'));
+           const urls = imgs.map(img => img.getAttribute('src'));
+           partnersHome = urls.slice(0, NB_PARTNERS);
+           partnersAway = urls.slice(0, NB_PARTNERS);
+         }
+         
+         function startPartnerSlider(isHomeTeam) {
+           clearInterval(partnerLogoInterval);
+           let idx = 0;
+           const partnerLogo = isHomeTeam
+             ? document.getElementById('partner-logo')
+             : document.getElementById('partner-logo-away');
+           const partners = isHomeTeam ? partnersHome : partnersAway;
+           if (!partners.length) return;
+           partnerLogo.src = partners[0] || '';
+           partnerLogo.classList.add('visible');
+           partnerLogoInterval = setInterval(() => {
+             idx = (idx + 1) % partners.length;
+             partnerLogo.classList.remove('visible');
+             setTimeout(() => {
+               partnerLogo.src = partners[idx];
+               partnerLogo.classList.add('visible');
+             }, 100);
+           }, PARTNER_TIME);
+         }
+         
+         function showGroup(isHomeTeam, group) {
+           const prefix = isHomeTeam ? 'home' : 'away';
+           const groups = [
+             document.getElementById(`${prefix}-group-tit-1`),
+             document.getElementById(`${prefix}-group-tit-2`),
+             document.getElementById(`${prefix}-group-tit-3`),
+             document.getElementById(`${prefix}-group-remp-1`),
+             document.getElementById(`${prefix}-group-remp-2`)
+           ];
+           groups.forEach((g, idx) => g && g.classList.toggle('active', idx === group));
+           document.getElementById(`section-title-${prefix}`).textContent = group < 3 ? 'Titulaires' : 'Remplaçants';
+         }
+         
+         function resetAllGroups() {
+           ['home', 'away'].forEach(prefix => {
+             for (let i = 1; i <= 3; i++) {
+               document.getElementById(`${prefix}-group-tit-${i}`)?.classList.remove('active');
+             }
+             for (let i = 1; i <= 2; i++) {
+               document.getElementById(`${prefix}-group-remp-${i}`)?.classList.remove('active');
+             }
+           });
+         }
+         
+         function switchTeam() {
+           resetAllGroups();
+           const homeBlock = document.getElementById('home-block');
+           const awayBlock = document.getElementById('away-block');
+           if (isHome) {
+             homeBlock.classList.remove('active');
+             homeBlock.classList.add('hide-left');
+             awayBlock.classList.remove('hide-right', 'hide-left');
+             awayBlock.classList.add('active');
+             startPartnerSlider(false); 
+           } else {
+             awayBlock.classList.remove('active');
+             awayBlock.classList.add('hide-right');
+             homeBlock.classList.remove('hide-left', 'hide-right');
+             homeBlock.classList.add('active');
+             startPartnerSlider(true); 
+           }
+           isHome = !isHome;
+           groupIdx = 0;
+           showGroup(isHome, groupIdx);
+         }
+         
+         function nextSliderStep() {
+           if (groupIdx < 4) {
+             groupIdx++;
+             showGroup(isHome, groupIdx);
+           } else {
+             switchTeam();
+           }
+         }
+         
+         window.addEventListener('DOMContentLoaded', async () => {
+           await updateCompos();
+           await loadPartners();
+           showGroup(true, 0);
+           startPartnerSlider(true);
+           setInterval(nextSliderStep, 3500);
+         });
+         
+         async function updateCompos() {
+           const home = await fetchCompo('/compo_home.html');
+           document.getElementById('home-team-name').textContent = home.teamName || 'Équipe domicile';
+           document.getElementById('compo-players-wrap-home').innerHTML = buildCompoGroups('home', home);
+         
+           const away = await fetchCompo('/compo_away.html');
+           document.getElementById('away-team-name').textContent = away.teamName || 'Équipe extérieure';
+           document.getElementById('compo-players-wrap-away').innerHTML = buildCompoGroups('away', away);
+         
+           showGroup(isHome, groupIdx);
+         }
+         
+         function updateCentralArbitreBlock() {
+         const iframe = document.getElementById("countdown-iframe");
+         if (!iframe) return;
+         let doc = null;
+         try {
+           doc = iframe.contentDocument || iframe.contentWindow.document;
+         } catch (e) {
+           return;
+         }
+         if (!doc) return;
+         const message = doc.getElementById("message")?.innerText.trim() || "Le match commence dans :";
+         let time = doc.getElementById("countdown")?.innerText.trim() || "--:--";
+         
+         document.getElementById('central-arbitre-block').innerHTML =
+           `${message}&nbsp;<span style="margin-left:6px;color:#fff;">${time}</span>`;
+         }
+         
+         document.getElementById("countdown-iframe").addEventListener("load", () => {
+         updateCentralArbitreBlock();
+         setInterval(updateCentralArbitreBlock, 1000);
+         });
+         
+         setInterval(updateCompos, 30000);
+         
+      </script>
+      <script>
+         async function loadMatchInfos() {
+           const html = await fetch('/infos_match.html?_=' + Date.now()).then(r => r.text());
+           const doc = new DOMParser().parseFromString(html, 'text/html');
+         
+           function getInfoByLabel(label) {
+             const blocks = doc.querySelectorAll('.info-block');
+             for (const block of blocks) {
+               const lbl = block.querySelector('.info-label');
+               if (lbl && lbl.textContent.trim().toLowerCase().includes(label.toLowerCase())) {
+                 const txt = block.innerText.split(':');
+                 return txt.length > 1 ? txt.slice(1).join(':').trim() : '';
+               }
+             }
+             return '';
+           }
+         
+           const date  = getInfoByLabel('Date');
+           const heure = getInfoByLabel('Heure');
+           const stade = getInfoByLabel('Stade');
+           const ville = getInfoByLabel('Ville');
+         
+           const central = doc.querySelector('.info-block.central')?.innerText.split(':')[1]?.trim() || '';
+           const touches = Array.from(doc.querySelectorAll('.info-block.touche'));
+           const juge1 = touches[0]?.innerText.split(':')[1]?.trim() || '';
+           const juge2 = touches[1]?.innerText.split(':')[1]?.trim() || '';
+           const video = doc.querySelector('.info-block.video')?.innerText.split(':')[1]?.trim() || '';
+         
+         let rows = [];
+         const infosLeft = [
+           date && `<span style="font-weight:600;color:#51b4e6;text-transform: uppercase;">Date :</span> ${date}`,
+           heure && `<span style="font-weight:600;color:#51b4e6;text-transform: uppercase;">Heure :</span> ${heure}`,
+           stade && `<span style="font-weight:600;color:#51b4e6;text-transform: uppercase;">Stade :</span> ${stade}`,
+           ville && `<span style="font-weight:600;color:#51b4e6;text-transform: uppercase;">Ville :</span> ${ville}`
+         ].filter(Boolean);
+         
+         const infosRight = [
+           central && `<span style="font-weight:600;color:#51b4e6;text-transform: uppercase;">Arb.cent :</span> <span style="color:#fff;">${central}</span>`,
+           juge1 && `<span style="font-weight:600;color:#51b4e6;text-transform: uppercase;">Arb. tc 1 :</span> ${juge1}`,
+           juge2 && `<span style="font-weight:600;color:#51b4e6;text-transform: uppercase;">Arb. tc 2 :</span> ${juge2}`,
+           video && `<span style="font-weight:600;color:#51b4e6;text-transform: uppercase;">Arb. vid :</span> ${video}`
+         ].filter(Boolean);
+         
+         const maxRows = Math.max(infosLeft.length, infosRight.length);
+         
+         for (let i = 0; i < maxRows; i++) {
+           rows.push(`
+             <div class="infos-row">
+               <div class="infos-cell">${infosLeft[i] || ''}</div>
+               <div class="infos-cell">${infosRight[i] || ''}</div>
+             </div>
+           `);
+         }
+         
+         document.getElementById('infos-block-fusion').innerHTML = `
+           <div id="infos-arbitres-match" class="infos-grid">
+             ${rows.join('')}
+           </div>
+           <div id="central-arbitre-block"></div>
+         `;
+         
+           let centralHtml = central
+             ? `<span style="margin-left:6px;color:#fff;"></span>`
+             : '';
+         
+           document.getElementById('infos-block-fusion').innerHTML = `
+             <div id="infos-arbitres-match">
+               <div class="infos-col-left">${left}</div>
+               <div class="infos-col-right">${right}</div>
+             </div>
+             <div id="central-arbitre-block">${centralHtml}</div>
+           `;
+         }
+         window.addEventListener('DOMContentLoaded', () => {
+           loadMatchInfos();
+         });
+      </script>
+   </body>
+</html>
