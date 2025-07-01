@@ -18,7 +18,7 @@ XVLIVEMANAGER is an advanced, free, and open-source platform designed to manage 
 ## Installation
 
 1. Download the latest version from the [releases page](https://github.com/XVRugby/XVLIVEMANAGER/releases) or the official website.
-2. Unzip the files in a folder on your computer.
+2. Launch the .exe installer or if you downloaded the ZIP file, unzip it and double-click on creer_raccourci.bat to create a shortcut.
 3. Follow the documentation to configure OBS Studio integration and start your first match.
 
 ## Documentation
