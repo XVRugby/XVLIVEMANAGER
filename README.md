@@ -1,5 +1,48 @@
 # XVLIVEMANAGER
 
+XVLIVEMANAGER est une plateforme avancée, gratuite et open source, conçue pour gérer et diffuser des matchs de rugby, du niveau amateur au niveau professionnel.
+
+## Fonctionnalités
+
+- Gestion de match en direct : tableau d’affichage, minuteur, compositions d’équipes, remplacements, buteurs, événements
+- Intégration OBS Studio : incrustation graphique automatisée, mises à jour en temps réel
+- Statistiques et rapports de match détaillés
+- Interface moderne et intuitive
+- Gratuit pour tous les clubs, sans publicité, sans inscription
+
+## Démo
+
+- Site officiel : [https://xvlivemanager.fr](https://xvlivemanager.fr)
+- Démo en ligne : [https://demo.xvlivemanager.fr](https://demo.xvlivemanager.fr)
+
+## Installation
+
+1. Téléchargez la dernière version depuis la [page des releases](https://github.com/XVRugby/XVLIVEMANAGER/releases) ou le site officiel.
+2. Lancez l’installateur `.exe` ou, si vous avez téléchargé le fichier ZIP, décompressez-le puis double-cliquez sur `creer_raccourci.bat` pour créer un raccourci.
+3. Suivez la documentation pour configurer l’intégration OBS Studio et débuter votre premier match.
+
+## Documentation
+
+La documentation complète est disponible sur le [site officiel](https://xvlivemanager.fr).
+
+## Contribution
+
+Les contributions sont les bienvenues !  
+Si vous souhaitez aider à traduire la plateforme, ajouter des fonctionnalités ou signaler des bugs, ouvrez une issue ou soumettez une pull request.
+
+**Nous recherchons également des volontaires pour traduire la plateforme en anglais et dans d’autres langues. Contact : [contact@xvlivemanager.fr](mailto:contact@xvlivemanager.fr)**
+
+## Licence
+
+Ce projet est sous licence MIT – voir le fichier [LICENSE](LICENSE) pour plus de détails.
+
+## Contact
+
+- Email : [contact@xvlivemanager.fr](mailto:contact@xvlivemanager.fr)
+- Site web : [https://xvlivemanager.fr](https://xvlivemanager.fr)
+
+# XVLIVEMANAGER
+
 XVLIVEMANAGER is an advanced, free, and open-source platform designed to manage and broadcast rugby matches, from amateur to professional level.
 
 ## Features
