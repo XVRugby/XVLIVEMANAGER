@@ -1882,189 +1882,272 @@ document.addEventListener('DOMContentLoaded', function () {
          Indisponible hors ligne. Veuillez vous connecter à Internet pour accéder à la galerie d'interfaces.
       </div>
       <div id="interfaces-gallery" class="layouts-grid" style="display:grid;grid-template-columns:1fr;gap:2.2rem;"></div>
-      <script>
-         const INTERFACES_URL = "https://xvlivemanager.fr/interfaces.json";
-         
-         function closeAllPanels() {
-           document.querySelectorAll('.side-panel').forEach(function(panel) {
-             panel.classList.remove('active');
-           });
-         }
-         
-         function toggleLayoutsPanel(show) {
-           var panel = document.getElementById('layoutsPanel');
-           if (!panel) return;
-           if (show) {
-             closeAllPanels(); 
-             panel.classList.add('active');
-           } else {
-             panel.classList.remove('active');
-           }
-         }
-         
-         function renderInterfaces(interfaces) {
-           const gallery = document.getElementById('interfaces-gallery');
-           gallery.innerHTML = '';
-           interfaces.forEach(function(layout) {
-             const block = document.createElement('div');
-             block.className = "sub-block";
-             block.style = "margin-bottom:1.5rem;padding:1.3rem 1rem 1.1rem 1rem;background:rgba(40,40,40,0.30);box-shadow:0 3px 14px 0 rgba(0,0,0,0.09);border:none;";
-         
-             const inputId = `file_${layout.id}`;
-             const btnId = `btn_import_${layout.id}`;
-             block.innerHTML = `
-               <div style="display:flex;align-items:center;gap:0.7em;margin-bottom:0.7rem;">
-                 <span style="color:#fff;font-size:1.03em;font-weight:700;padding:2.5px 10px 3.5px 10px;letter-spacing:0.01em;">
-                   ${layout.name}
-                 </span>
-               </div>
-               <div style="width:360px;max-width:100%;height:202px;margin:0 auto 1.2rem auto;position:relative;overflow:hidden;background:#18191b;box-shadow:0 6px 18px 0 rgba(15,12,9,0.07);display:flex;align-items:center;justify-content:center;">
-                 <img src="${layout.image}"
-                   alt="Aperçu ${layout.name}"
-                   style="max-width:100%;max-height:100%;object-fit:contain;display:block;background:#18191b;">
-                 <a href="${layout.zip}"
-                    target="_blank"
-                    style="position:absolute;bottom:12px;right:16px;z-index:2;background:rgba(30,30,30,0.85);color:#fff;padding:7px 18px;border-radius:5px;text-decoration:none;font-weight:600;font-size:1em;box-shadow:0 2px 8px rgba(0,0,0,0.19);transition:background .18s;">
-                    Télécharger le pack ZIP
-                 </a>
-               </div>
-               <div style="margin-top:0.5rem;color:#c1c7d2;">${layout.description || ""}</div>
-               <form class="replace-layouts-form"
-                 action="/replace-layouts"
-                 method="post"
-                 enctype="multipart/form-data"
-                 style="display:flex;flex-direction:row;align-items:center;justify-content:center;gap:1.15rem;padding:0.2rem 0 0.7rem 0;margin-top:0.2rem;flex-wrap:wrap;">
-                 <input type="file" id="${inputId}" name="layouts_zip" accept=".zip" required style="display:none;">
-                 <button type="button"
-                   class="btn btn-cancel"
-                   id="${btnId}"
-                   style="display:block;max-width:160px;width:100%;padding:0.55rem 1.2rem;font-size:0.96rem;font-weight:600;border-radius:4px;margin:0;letter-spacing:0.03em;"
-                   onclick="document.getElementById('${inputId}').click();">
-                   Importer
-                 </button>
-                 <button type="submit"
-                   class="btn btn-primary"
-                   style="display:block;max-width:160px;width:100%;padding:0.55rem 1.2rem;font-size:0.96rem;font-weight:700;border-radius:4px;margin:0;letter-spacing:0.03em;">
-                   Installer
-                 </button>
-                 <div class="replace-layout-break" style="flex-basis:100%;height:0;"></div>
-               </form>
-             `;
-             gallery.appendChild(block);
-         
-             setTimeout(function() {
-               const input = document.getElementById(inputId);
-               const btn = document.getElementById(btnId);
-               if (input && btn) {
-                 input.addEventListener('change', function() {
-                   if (input.files && input.files.length > 0) {
-                     btn.textContent = input.files[0].name;
-                   } else {
-                     btn.textContent = "Importer";
-                   }
-                 });
+<script>
+   const INTERFACES_URL = "https://xvlivemanager.fr/interfaces.json";
+   
+   const ZIP_MAPPING = {
+     "pro-league": "Pro_League.zip",
+     "liga-style": "Liga_Style.zip",
+     "tea-time": "Tea_Time.zip",
+     "top-15": "TOP15.zip",
+     "bundes-style": "Bundes_Style.zip",
+     "score-vision": "Score_Vision.zip",
+     "afc-xv": "AFC_XV.zip"
+   };
+   
+   function expectedZipFileName(layoutId) {
+     return ZIP_MAPPING[layoutId] || "";
+   }
+   
+   function showLayoutError(form, message) {
+     var breakDiv = form.querySelector('.replace-layout-break');
+     var info = form.querySelector('.replace-layout-info');
+     if (!info) {
+       info = document.createElement('div');
+       info.className = 'replace-layout-info';
+       if (breakDiv && breakDiv.nextSibling) {
+         form.insertBefore(info, breakDiv.nextSibling);
+       } else {
+         form.appendChild(info);
+       }
+     }
+     info.textContent = message;
+     info.style.color = "#ff5252";
+     info.style.margin = "1.1rem auto 0 auto";
+     info.style.textAlign = "center";
+     info.style.width = "100%";
+     info.style.fontWeight = "600";
+     info.style.fontSize = "1em";
+   }
+   
+   function closeAllPanels() {
+     document.querySelectorAll('.side-panel').forEach(function(panel) {
+       panel.classList.remove('active');
+     });
+   }
+   
+   function toggleLayoutsPanel(show) {
+     var panel = document.getElementById('layoutsPanel');
+     if (!panel) return;
+     if (show) {
+       closeAllPanels();
+       panel.classList.add('active');
+     } else {
+       panel.classList.remove('active');
+     }
+   }
+   
+   function updateInstalledLabels() {
+   
+     let installedId = localStorage.getItem('obs_layout_installed');
+     if (!installedId) {
+       installedId = 'pro-league';
+       localStorage.setItem('obs_layout_installed', installedId);
+     }
+     document.querySelectorAll('.layouts-grid .sub-block').forEach(block => {
+       const layoutId = block.getAttribute('data-layout-id');
+       const titleBlock = block.querySelector('div[style*="align-items:center"]');
+       if (!titleBlock) return;
+       let label = block.querySelector('.installed-label');
+       if (!label) {
+         label = document.createElement('span');
+         label.className = 'installed-label';
+         titleBlock.appendChild(label);
+       }
+       if (installedId && layoutId && installedId === layoutId) {
+         label.textContent = "— pack installé";
+         label.style.color = "#12e39c";
+         label.style.fontWeight = "700";
+         label.style.fontSize = "1em";
+       } else {
+         label.textContent = "";
+       }
+     });
+   }
+   
+   function renderInterfaces(interfaces) {
+     const gallery = document.getElementById('interfaces-gallery');
+     gallery.innerHTML = '';
+     interfaces.forEach(function(layout) {
+       const block = document.createElement('div');
+       block.className = "sub-block";
+       block.setAttribute('data-layout-id', String(layout.id));
+       block.style = "margin-bottom:1.5rem;padding:1.3rem 1rem 1.1rem 1rem;background:rgba(40,40,40,0.30);box-shadow:0 3px 14px 0 rgba(0,0,0,0.09);border:none;";
+       const inputId = `file_${layout.id}`;
+       const btnId = `btn_import_${layout.id}`;
+       block.innerHTML = `
+         <div style="display:flex;align-items:center;gap:0.7em;margin-bottom:0.7rem;">
+           <span style="color:#fff;font-size:1.03em;font-weight:700;padding:2.5px 10px 3.5px 10px;letter-spacing:0.01em;">
+             ${layout.name}
+           </span>
+         </div>
+         <div style="width:360px;max-width:100%;height:202px;margin:0 auto 1.2rem auto;position:relative;overflow:hidden;background:#18191b;box-shadow:0 6px 18px 0 rgba(15,12,9,0.07);display:flex;align-items:center;justify-content:center;">
+           <img src="${layout.image}"
+             alt="Aperçu ${layout.name}"
+             style="max-width:100%;max-height:100%;object-fit:contain;display:block;background:#18191b;">
+           <a href="${layout.zip}"
+              target="_blank"
+              style="position:absolute;bottom:12px;right:16px;z-index:2;background:rgba(30,30,30,0.85);color:#fff;padding:7px 18px;border-radius:5px;text-decoration:none;font-weight:600;font-size:1em;box-shadow:0 2px 8px rgba(0,0,0,0.19);transition:background .18s;">
+              Télécharger le pack ZIP
+           </a>
+         </div>
+         <div style="margin-top:0.5rem;color:#c1c7d2;">${layout.description || ""}</div>
+         <form class="replace-layouts-form"
+           action="/replace-layouts"
+           method="post"
+           enctype="multipart/form-data"
+           style="display:flex;flex-direction:row;align-items:center;justify-content:center;gap:1.15rem;padding:0.2rem 0 0.7rem 0;margin-top:0.2rem;flex-wrap:wrap;">
+           <input type="file" id="${inputId}" name="layouts_zip" accept=".zip" required style="display:none;">
+           <button type="button"
+             class="btn btn-cancel"
+             id="${btnId}"
+             style="display:block;max-width:160px;width:100%;padding:0.55rem 1.2rem;font-size:0.96rem;font-weight:600;border-radius:4px;margin:0;letter-spacing:0.03em;"
+             onclick="document.getElementById('${inputId}').click();">
+             Importer
+           </button>
+           <button type="submit"
+             class="btn btn-primary"
+             style="display:block;max-width:160px;width:100%;padding:0.55rem 1.2rem;font-size:0.96rem;font-weight:700;border-radius:4px;margin:0;letter-spacing:0.03em;">
+             Installer
+           </button>
+           <div class="replace-layout-break" style="flex-basis:100%;height:0;"></div>
+         </form>
+       `;
+       gallery.appendChild(block);
+   
+       setTimeout(function() {
+         const input = document.getElementById(inputId);
+         const btn = document.getElementById(btnId);
+         if (input && btn) {
+           input.addEventListener('change', function() {
+             if (input.files && input.files.length > 0) {
+               btn.textContent = input.files[0].name;
+             } else {
+               btn.textContent = "Importer";
+             }
+   
+             const file = input.files && input.files[0];
+             if (file) {
+               const expected = expectedZipFileName(layout.id);
+               const fileName = file.name;
+               if (fileName !== expected) {
+                 showLayoutError(input.closest('form'), 
+                   "Erreur : Vous devez importer exactement le fichier " + expected + " (Fichier choisi : " + fileName + ")");
+                 input.value = '';
+                 btn.textContent = "Importer";
                }
-             }, 100);
-           });
-         
-           document.querySelectorAll('.replace-layouts-form').forEach(function(form) {
-             form.addEventListener('submit', function(e) {
-               e.preventDefault();
-               var submitBtn = form.querySelector('button[type="submit"]');
-               submitBtn.disabled = true;
-               submitBtn.textContent = "Installation...";
-               var formData = new FormData(form);
-               fetch(form.action, {
-                 method: 'POST',
-                 body: formData
-               })
-               .then(response => response.text())
-               .then(text => {
-                 var breakDiv = form.querySelector('.replace-layout-break');
-                 var info = form.querySelector('.replace-layout-info');
-                 if (!info) {
-                   info = document.createElement('div');
-                   info.className = 'replace-layout-info';
-                   if (breakDiv && breakDiv.nextSibling) {
-                     form.insertBefore(info, breakDiv.nextSibling);
-                   } else {
-                     form.appendChild(info);
-                   }
-                 }
-                 info.textContent = text;
-                 info.style.color = text.toLowerCase().includes("succès") ? "#20c997" : "#ff5252";
-                 info.style.margin = "1.1rem auto 0 auto";
-                 info.style.textAlign = "center";
-                 info.style.width = "100%";
-                 info.style.fontWeight = "600";
-                 info.style.fontSize = "1em";
-                 submitBtn.disabled = false;
-                 submitBtn.textContent = "Installer";
-               })
-               .catch(() => {
-                 var breakDiv = form.querySelector('.replace-layout-break');
-                 var info = form.querySelector('.replace-layout-info');
-                 if (!info) {
-                   info = document.createElement('div');
-                   info.className = 'replace-layout-info';
-                   if (breakDiv && breakDiv.nextSibling) {
-                     form.insertBefore(info, breakDiv.nextSibling);
-                   } else {
-                     form.appendChild(info);
-                   }
-                 }
-                 info.textContent = "Erreur lors de l'installation du pack ZIP.";
-                 info.style.color = "#ff5252";
-                 info.style.margin = "1.1rem auto 0 auto";
-                 info.style.textAlign = "center";
-                 info.style.width = "100%";
-                 info.style.fontWeight = "600";
-                 info.style.fontSize = "1em";
-                 submitBtn.disabled = false;
-                 submitBtn.textContent = "Installer";
-               });
-             });
+             }
            });
          }
-         
-         function showOffline() {
-           document.getElementById('interfaces-gallery').style.display = "none";
-           document.getElementById('offline-message').style.display = "";
-         }
-         function showGallery() {
-           document.getElementById('interfaces-gallery').style.display = "";
-           document.getElementById('offline-message').style.display = "none";
-         }
-         
-         function loadGallery() {
-           if (!navigator.onLine) { showOffline(); return; }
-           fetch(INTERFACES_URL + '?' + Date.now())
-             .then(resp => {
-               if (!resp.ok) throw new Error('offline');
-               return resp.json();
+         const form = block.querySelector('.replace-layouts-form');
+         if (form) {
+           form.addEventListener('submit', function(e) {
+             e.preventDefault();
+             var submitBtn = form.querySelector('button[type="submit"]');
+             submitBtn.disabled = true;
+             submitBtn.textContent = "Installation...";
+             const layoutId = block.getAttribute('data-layout-id');
+   
+             const inputFile = form.querySelector('input[type="file"]');
+             const file = inputFile && inputFile.files[0];
+             if (file) {
+               const expected = expectedZipFileName(layoutId);
+               const fileName = file.name;
+               if (fileName !== expected) {
+                 showLayoutError(form, 
+                   "Erreur : Vous devez importer exactement le fichier " + expected + " (Fichier choisi : " + fileName + ")");
+                 submitBtn.disabled = false;
+                 submitBtn.textContent = "Installer";
+                 return;
+               }
+             }
+             var formData = new FormData(form);
+             fetch(form.action, {
+               method: 'POST',
+               body: formData
              })
-             .then(data => { showGallery(); renderInterfaces(data); })
-             .catch(showOffline);
-         }
-         window.addEventListener('DOMContentLoaded', loadGallery);
-         window.addEventListener('online', loadGallery);
-         window.addEventListener('offline', showOffline);
-         
-         document.addEventListener('DOMContentLoaded', function() {
-           var btn = document.getElementById('btnOpenLayouts');
-           if (btn) {
-             btn.style.cursor = 'pointer';
-             btn.addEventListener('click', function() {
-               toggleLayoutsPanel(true);
-             });
-           }
-           document.querySelectorAll('.sidePanel-close, .btn-cancel[data-close]').forEach(function(el){
-             el.addEventListener('click', function(){
-               toggleLayoutsPanel(false);
+             .then(response => response.text())
+             .then(text => {
+               if (layoutId && /(succ[eè]s|réussi|installé|ok)/i.test(text)) {
+                 localStorage.setItem('obs_layout_installed', layoutId);
+                 updateInstalledLabels();
+               }
+               var breakDiv = form.querySelector('.replace-layout-break');
+               var info = form.querySelector('.replace-layout-info');
+               if (!info) {
+                 info = document.createElement('div');
+                 info.className = 'replace-layout-info';
+                 if (breakDiv && breakDiv.nextSibling) {
+                   form.insertBefore(info, breakDiv.nextSibling);
+                 } else {
+                   form.appendChild(info);
+                 }
+               }
+   info.textContent = text;
+   const isSuccess = /(succ[eè]s|réussi|installé|ok)/i.test(text);
+   info.style.color = isSuccess ? "#20c997" : "#ff5252";
+   info.style.margin = "1.1rem auto 0 auto";
+   info.style.textAlign = "center";
+   info.style.width = "100%";
+   info.style.fontWeight = "600";
+   info.style.fontSize = "1em";
+   submitBtn.disabled = false;
+   submitBtn.textContent = "Installer";
+   
+   if (isSuccess) {
+     setTimeout(() => {
+       if (info && info.parentNode) {
+         info.parentNode.removeChild(info);
+       }
+     }, 2000);
+   }
              });
            });
-         });
-      </script>
+         }
+       }, 100);
+     });
+     updateInstalledLabels();
+   }
+   
+   function showOffline() {
+     document.getElementById('interfaces-gallery').style.display = "none";
+     document.getElementById('offline-message').style.display = "";
+   }
+   function showGallery() {
+     document.getElementById('interfaces-gallery').style.display = "";
+     document.getElementById('offline-message').style.display = "none";
+   }
+   
+   function loadGallery() {
+     if (!navigator.onLine) { showOffline(); return; }
+     fetch(INTERFACES_URL + '?' + Date.now())
+       .then(resp => {
+         if (!resp.ok) throw new Error('offline');
+         return resp.json();
+       })
+       .then(data => { showGallery(); renderInterfaces(data); })
+       .catch(showOffline);
+   }
+   window.addEventListener('DOMContentLoaded', loadGallery);
+   window.addEventListener('online', loadGallery);
+   window.addEventListener('offline', showOffline);
+   
+   document.addEventListener('DOMContentLoaded', function() {
+     var btn = document.getElementById('btnOpenLayouts');
+     if (btn) {
+       btn.style.cursor = 'pointer';
+       btn.addEventListener('click', function() {
+         toggleLayoutsPanel(true);
+       });
+     }
+     document.querySelectorAll('.sidePanel-close, .btn-cancel[data-close]').forEach(function(el){
+       el.addEventListener('click', function(){
+         toggleLayoutsPanel(false);
+       });
+     });
+   });
+</script>
+
       <div id="infoPanel" class="side-panel side-panel-left">
          <button class="sidePanel-close" onclick="toggleInfoPanel(false)">×</button>
          <div class="sidePanel-header">
