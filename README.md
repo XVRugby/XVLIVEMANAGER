@@ -34,7 +34,10 @@ Si vous souhaitez aider à traduire la plateforme, ajouter des fonctionnalités 
 
 ## Licence
 
-Ce projet est sous licence MIT – voir le fichier [LICENSE](LICENSE) pour plus de détails.
+© XVLIVEMANAGER.  
+Tous droits réservés.
+
+Aucune partie de ce logiciel ne peut être utilisée, copiée, modifiée ou distribuée sans l'autorisation écrite expresse de l'auteur.
 
 ## Contact
 
@@ -61,7 +64,7 @@ XVLIVEMANAGER is an advanced, free, and open-source platform designed to manage 
 ## Installation
 
 1. Download the latest version from the [releases page](https://github.com/XVRugby/XVLIVEMANAGER/releases) or the official website.
-2. Launch the .exe installer or if you downloaded the ZIP file, unzip it and double-click on creer_raccourci.bat to create a shortcut.
+2. Launch the `.exe` installer or if you downloaded the ZIP file, unzip it and double-click on `creer_raccourci.bat` to create a shortcut.
 3. Follow the documentation to configure OBS Studio integration and start your first match.
 
 ## Documentation
@@ -77,7 +80,10 @@ If you wish to help translate the platform, add features, or report bugs, please
 
 ## License
 
-This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
+© XVLIVEMANAGER.  
+All rights reserved.
+
+No part of this software may be used, copied, modified, or distributed without the express written permission of the author.
 
 ## Contact
 
