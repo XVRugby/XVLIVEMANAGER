@@ -30,8 +30,6 @@ La documentation complète est disponible sur le [site officiel](https://xvlivem
 Les contributions sont les bienvenues !  
 Si vous souhaitez aider à traduire la plateforme, ajouter des fonctionnalités ou signaler des bugs, ouvrez une issue ou soumettez une pull request.
 
-**Nous recherchons également des volontaires pour traduire la plateforme en anglais et dans d’autres langues. Contact : [contact@xvlivemanager.fr](mailto:contact@xvlivemanager.fr)**
-
 ## Licence
 
 © XVLIVEMANAGER.  
@@ -76,8 +74,6 @@ XVLIVEMANAGER is an advanced, free, and open-source platform designed to manage 
 Contributions are welcome!  
 If you wish to help translate the platform, add features, or report bugs, please open an issue or submit a pull request.
 
-**We are also looking for volunteers to help translate the platform into English and other languages. Contact: contact@xvlivemanager.fr**
-
 ## License
 
 © XVLIVEMANAGER.  
@@ -91,7 +87,3 @@ No part of this software may be used, copied, modified, or distributed without t
 - Website: [https://xvlivemanager.fr](https://xvlivemanager.fr)
 
 ---
-
-**Note:**  
-Currently, only the French version is available.  
-An English version will be released very soon!
