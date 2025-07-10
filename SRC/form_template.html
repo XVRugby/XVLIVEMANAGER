@@ -33,77 +33,93 @@
                <strong data-i18n="liveManagement">Gestion du direct :</strong>
                <span id="obs-state-container" style="display: flex; gap: 0.75rem; margin-left: 0.75rem;"></span>
             </div>
-            <script>
-               function updateOBSStates() {
-                 fetch("/obs/interface", { headers: { "X-Requested-With": "XMLHttpRequest" } })
-                   .then(res => res.json())
-                   .then(data => {
-                     const container = document.getElementById("obs-state-container");
-                     container.innerHTML = "";
-               
-                     const lang = localStorage.getItem("lang") || "fr";
-               
-               const translations = {
-               "AVANT-MATCH": "PRE-MATCH",
-               "RÉSUMÉ": "HIGHLIGHTS",
-               "1RE MI-TEMPS": "1ST HALF",
-               "RÉSUMÉ DU MATCH": "MATCH SUMMARY",
-               "MATCH EN DIRECT": "LIVE MATCH",
-               "RÉSUMÉ 1RE MI-TEMPS": "HIGHLIGHTS 1ST HALF",
-               "RÉSUMÉ DU MATCH EN DIRECT": "LIVE MATCH SUMMARY"
-               };
-               
-                     data.states.forEach(item => {
-                       const wrapper = document.createElement("span");
-                       wrapper.className = "obs-state-item";
-                       wrapper.style.display = "inline-flex";
-                       wrapper.style.alignItems = "center";
-                       wrapper.style.gap = "0.35rem";
-                       wrapper.style.cursor = "pointer";
-               
-                       const indicator = document.createElement("span");
-                       indicator.className = "status-indicator";
-                       indicator.style.width = "12px";
-                       indicator.style.height = "12px";
-                       indicator.style.display = "inline-block";
-                       indicator.style.borderRadius = "50%";
-                       indicator.style.backgroundColor = item.visible ? "#10b981" : "#ef4444";
-                       indicator.style.transition = "background 0.15s";
-               
-                       const label = document.createElement("span");
-                       const original = item.label.trim();
-                       const translated = (lang === "en" && translations[original.toUpperCase()]) 
-                                          ? translations[original.toUpperCase()] 
-                                          : original;
-               
-                       label.textContent = translated;
-                       label.style.fontSize = "0.8rem";
-                       label.style.color = item.visible ? "var(--text-white)" : "#6c6774";
-               
-                       wrapper.appendChild(indicator);
-                       wrapper.appendChild(label);
-               
-                       wrapper.onclick = () => {
-                         indicator.style.opacity = "0.5";
-                         setTimeout(() => indicator.style.opacity = "1", 150);
-                         toggleOBS(item.name);
-                       };
-               
-                       container.appendChild(wrapper);
-                     });
-                   });
-               }
-               
-               function toggleOBS(name) {
-                 fetch("/obs/toggle/" + encodeURIComponent(name), { method: "POST" })
-                   .then(() => setTimeout(updateOBSStates, 150));
-               }
-               
-               document.addEventListener("DOMContentLoaded", () => {
-                 updateOBSStates();
-                 setInterval(updateOBSStates, 2000);
-               });
-            </script>
+<script>
+   function updateOBSStates() {
+     fetch("/obs/interface", { headers: { "X-Requested-With": "XMLHttpRequest" } })
+       .then(res => res.json())
+       .then(data => {
+         const container = document.getElementById("obs-state-container");
+         container.innerHTML = "";
+
+         const lang = localStorage.getItem("lang") || "fr";
+
+         const translations = {
+           en: {
+             "AVANT-MATCH": "PRE-MATCH",
+             "RÉSUMÉ": "HIGHLIGHTS",
+             "1RE MI-TEMPS": "1ST HALF",
+             "RÉSUMÉ DU MATCH": "MATCH SUMMARY",
+             "MATCH EN DIRECT": "LIVE MATCH",
+             "RÉSUMÉ 1RE MI-TEMPS": "HIGHLIGHTS 1ST HALF",
+             "RÉSUMÉ DU MATCH EN DIRECT": "LIVE MATCH SUMMARY"
+           },
+           es: {
+             "AVANT-MATCH": "PREVIA",
+             "RÉSUMÉ": "RESUMEN",
+             "1RE MI-TEMPS": "1ª PARTE",
+             "RÉSUMÉ DU MATCH": "RESUMEN DEL PARTIDO",
+             "MATCH EN DIRECT": "PARTIDO EN DIRECTO",
+             "RÉSUMÉ 1RE MI-TEMPS": "RESUMEN 1ª PARTE",
+             "RÉSUMÉ DU MATCH EN DIRECT": "RESUMEN EN DIRECTO"
+           }
+         };
+
+         data.states.forEach(item => {
+           const wrapper = document.createElement("span");
+           wrapper.className = "obs-state-item";
+           wrapper.style.display = "inline-flex";
+           wrapper.style.alignItems = "center";
+           wrapper.style.gap = "0.35rem";
+           wrapper.style.cursor = "pointer";
+
+           const indicator = document.createElement("span");
+           indicator.className = "status-indicator";
+           indicator.style.width = "12px";
+           indicator.style.height = "12px";
+           indicator.style.display = "inline-block";
+           indicator.style.borderRadius = "50%";
+           indicator.style.backgroundColor = item.visible ? "#10b981" : "#ef4444";
+           indicator.style.transition = "background 0.15s";
+
+           const label = document.createElement("span");
+           const original = item.label.trim().toUpperCase();
+           let translated = item.label;
+
+           if (lang === "en" && translations.en[original]) {
+             translated = translations.en[original];
+           } else if (lang === "es" && translations.es[original]) {
+             translated = translations.es[original];
+           }
+
+           label.textContent = translated;
+           label.style.fontSize = "0.8rem";
+           label.style.color = item.visible ? "var(--text-white)" : "#6c6774";
+
+           wrapper.appendChild(indicator);
+           wrapper.appendChild(label);
+
+           wrapper.onclick = () => {
+             indicator.style.opacity = "0.5";
+             setTimeout(() => indicator.style.opacity = "1", 150);
+             toggleOBS(item.name);
+           };
+
+           container.appendChild(wrapper);
+         });
+       });
+   }
+
+   function toggleOBS(name) {
+     fetch("/obs/toggle/" + encodeURIComponent(name), { method: "POST" })
+       .then(() => setTimeout(updateOBSStates, 150));
+   }
+
+   document.addEventListener("DOMContentLoaded", () => {
+     updateOBSStates();
+     setInterval(updateOBSStates, 2000);
+   });
+</script>
+
             <div class="icon-block" title="Arrêter le serveur" data-i18n-title="shutdownTitle">
                <button id="shutdown-server-btn" class="stop-server-btn">
                <i class="bi bi-power"></i> <span data-i18n="stopServerBtn">Stop serveur</span>
@@ -620,6 +636,7 @@ function toEmbedUrl(url) {
                   <div style="display:flex;flex-direction:row;justify-content:center;gap:0.85em;">
                      <button id="fr-opt" class="lang-opt" type="button" aria-pressed="false" data-lang="fr">Français</button>
                      <button id="en-opt" class="lang-opt" type="button" aria-pressed="false" data-lang="en">English</button>
+	             <button id="es-opt" class="lang-opt" type="button" aria-pressed="false" data-lang="es">Español</button>
                   </div>
                   <div style="font-size:0.97em;color:#bfc5cf;margin-top:1.3em;text-align:center;width:100%;" data-i18n="langSectionDesc">
                      Sélectionnez votre langue pour l’interface XVLIVEMANAGER.
@@ -1925,6 +1942,7 @@ function toEmbedUrl(url) {
       <script>
          const INTERFACES_URL_FR = "https://xvlivemanager.fr/interfaces.json";
          const INTERFACES_URL_EN = "https://xvlivemanager.fr/interfaces-en.json";
+         const INTERFACES_URL_ES = "https://xvlivemanager.fr/interfaces-es.json";
          
          const ZIP_MAPPING = {
            "pro-league": "Pro_League.zip",
@@ -2172,7 +2190,9 @@ function toEmbedUrl(url) {
          }
          
          function getInterfacesUrl() {
-           return (window.lang === 'en') ? INTERFACES_URL_EN : INTERFACES_URL_FR;
+           if (window.lang === 'en') return INTERFACES_URL_EN;
+           if (window.lang === 'es') return INTERFACES_URL_ES;
+           return INTERFACES_URL_FR;
          }
          
          function loadGallery() {
@@ -3022,101 +3042,116 @@ function toEmbedUrl(url) {
             <span data-i18n="offlineMsg">Veuillez vous connecter à Internet pour accéder aux modules.</span>
          </div>
       </div>
-      <script>
-         const sponsors_fr = [
-            { id: 1, url: "https://xvlivemanager.fr/pubs/pub1.json" },
-            { id: 2, url: "https://xvlivemanager.fr/pubs/pub2.json" },
-            { id: 3, url: "https://xvlivemanager.fr/pubs/pub3.json" }
-         ];
-         const sponsors_en = [
-            { id: 1, url: "https://xvlivemanager.fr/pubs/pub4.json" },
-            { id: 2, url: "https://xvlivemanager.fr/pubs/pub5.json" },
-            { id: 3, url: "https://xvlivemanager.fr/pubs/pub6.json" }
-         ];
-         
-         function getCurrentLang() {
-         
-            return localStorage.getItem('lang') === 'en' ? 'en' : 'fr';
+<script>
+   const sponsors_fr = [
+      { id: 1, url: "https://xvlivemanager.fr/pubs/pub1.json" },
+      { id: 2, url: "https://xvlivemanager.fr/pubs/pub2.json" },
+      { id: 3, url: "https://xvlivemanager.fr/pubs/pub3.json" }
+   ];
+   const sponsors_en = [
+      { id: 1, url: "https://xvlivemanager.fr/pubs/pub4.json" },
+      { id: 2, url: "https://xvlivemanager.fr/pubs/pub5.json" },
+      { id: 3, url: "https://xvlivemanager.fr/pubs/pub6.json" }
+   ];
+   const sponsors_es = [
+      { id: 1, url: "https://xvlivemanager.fr/pubs/pub7.json" },
+      { id: 2, url: "https://xvlivemanager.fr/pubs/pub8.json" },
+      { id: 3, url: "https://xvlivemanager.fr/pubs/pub9.json" }
+   ];
+
+   function getCurrentLang() {
+      const lang = localStorage.getItem('lang');
+      if (lang === 'en') return 'en';
+      if (lang === 'es') return 'es';
+      return 'fr';
+   }
+   function getCurrentSponsors() {
+      const lang = getCurrentLang();
+      if (lang === "en") return sponsors_en;
+      if (lang === "es") return sponsors_es;
+      return sponsors_fr;
+   }
+
+   function setSponsorBarVisibility(online) {
+      document.getElementById('sponsor-bar').style.display = online ? '' : 'none';
+      document.getElementById('sponsor-offline-msg').style.display = online ? 'none' : '';
+   }
+
+   function clearSponsorBlocks() {
+      for (let i = 1; i <= 3; i++) {
+         const bloc = document.getElementById(`sponsor-bloc-${i}`);
+         if (bloc) {
+            const img = bloc.querySelector('.sponsor-bandeau-logo');
+            if (img) img.src = "";
+            const nomDiv = bloc.querySelector('.sponsor-bandeau-nom');
+            if (nomDiv) nomDiv.innerHTML = "";
+            const descDiv = bloc.querySelector('.sponsor-bandeau-desc');
+            if (descDiv) descDiv.textContent = "";
          }
-         function getCurrentSponsors() {
-            return getCurrentLang() === "en" ? sponsors_en : sponsors_fr;
-         }
-         
-         function setSponsorBarVisibility(online) {
-            document.getElementById('sponsor-bar').style.display = online ? '' : 'none';
-            document.getElementById('sponsor-offline-msg').style.display = online ? 'none' : '';
-         }
-         
-         function clearSponsorBlocks() {
-            for (let i = 1; i <= 3; i++) {
-               const bloc = document.getElementById(`sponsor-bloc-${i}`);
-               if (bloc) {
-                  const img = bloc.querySelector('.sponsor-bandeau-logo');
-                  if (img) img.src = "";
-                  const nomDiv = bloc.querySelector('.sponsor-bandeau-nom');
-                  if (nomDiv) nomDiv.innerHTML = "";
-                  const descDiv = bloc.querySelector('.sponsor-bandeau-desc');
-                  if (descDiv) descDiv.textContent = "";
-               }
-            }
-         }
-         
-         function loadSponsors() {
-            clearSponsorBlocks();
-            const sponsors = getCurrentSponsors();
-            sponsors.forEach(s => {
-               fetch(s.url)
-                  .then(resp => resp.ok ? resp.json() : null)
-                  .then(data => {
-                     if (!data) return;
-                     const bloc = document.getElementById(`sponsor-bloc-${s.id}`);
-                     if (!bloc) return;
-         
-                     if (data.logo) bloc.querySelector('.sponsor-bandeau-logo').src = data.logo;
-         
-                     const nomDiv = bloc.querySelector('.sponsor-bandeau-nom');
-                     if (data.nom) {
-                        if (data.lien) {
-                           let a = nomDiv.querySelector('a.sponsor-bandeau-link');
-                           if (!a) {
-                              a = document.createElement('a');
-                              a.className = 'sponsor-bandeau-link';
-                              a.target = '_blank';
-                              a.rel = 'noopener noreferrer';
-                              while (nomDiv.firstChild) nomDiv.removeChild(nomDiv.firstChild);
-                              nomDiv.appendChild(a);
-                           }
-                           a.href = data.lien;
-                           a.textContent = data.nom;
-                        } else {
-                           nomDiv.textContent = data.nom;
-                        }
+      }
+   }
+
+   function loadSponsors() {
+      clearSponsorBlocks();
+      const sponsors = getCurrentSponsors();
+      sponsors.forEach(s => {
+         fetch(s.url)
+            .then(resp => resp.ok ? resp.json() : null)
+            .then(data => {
+               if (!data) return;
+               const bloc = document.getElementById(`sponsor-bloc-${s.id}`);
+               if (!bloc) return;
+
+               if (data.logo) bloc.querySelector('.sponsor-bandeau-logo').src = data.logo;
+
+               const nomDiv = bloc.querySelector('.sponsor-bandeau-nom');
+               if (data.nom) {
+                  if (data.lien) {
+                     let a = nomDiv.querySelector('a.sponsor-bandeau-link');
+                     if (!a) {
+                        a = document.createElement('a');
+                        a.className = 'sponsor-bandeau-link';
+                        a.target = '_blank';
+                        a.rel = 'noopener noreferrer';
+                        while (nomDiv.firstChild) nomDiv.removeChild(nomDiv.firstChild);
+                        nomDiv.appendChild(a);
                      }
-                     if (data.desc) bloc.querySelector('.sponsor-bandeau-desc').textContent = data.desc;
-                  })
-                  .catch(()=>{});
-            });
-         }
-         
-         function checkOnlineStatus() {
-            if (navigator.onLine) {
-               setSponsorBarVisibility(true);
-               loadSponsors();
-            } else {
-               setSponsorBarVisibility(false);
-               clearSponsorBlocks();
-            }
-         }
-         
-         window.addEventListener('online', checkOnlineStatus);
-         window.addEventListener('offline', checkOnlineStatus);
-         
-         window.addEventListener('storage', function(e) {
-            if (e.key === 'lang') checkOnlineStatus();
-         });
-         
-         document.addEventListener('DOMContentLoaded', checkOnlineStatus);
-      </script>
+                     a.href = data.lien;
+                     a.textContent = data.nom;
+                  } else {
+                     nomDiv.textContent = data.nom;
+                  }
+               }
+               if (data.desc) bloc.querySelector('.sponsor-bandeau-desc').textContent = data.desc;
+            })
+            .catch(()=>{});
+      });
+   }
+
+   function setSponsorBarVisibility(online) {
+      document.getElementById('sponsor-bar').style.display = online ? '' : 'none';
+      document.getElementById('sponsor-offline-msg').style.display = online ? 'none' : '';
+   }
+
+   function checkOnlineStatus() {
+      if (navigator.onLine) {
+         setSponsorBarVisibility(true);
+         loadSponsors();
+      } else {
+         setSponsorBarVisibility(false);
+         clearSponsorBlocks();
+      }
+   }
+
+   window.addEventListener('online', checkOnlineStatus);
+   window.addEventListener('offline', checkOnlineStatus);
+
+   window.addEventListener('storage', function(e) {
+      if (e.key === 'lang') checkOnlineStatus();
+   });
+
+   document.addEventListener('DOMContentLoaded', checkOnlineStatus);
+</script>
       <div class="partners-bar-marquee" id="marquee-container"></div>
       <script src="https://www.xvlivemanager.fr/partenaires.js"></script>
       <script>
@@ -3314,170 +3349,180 @@ function toEmbedUrl(url) {
          window.addEventListener('offline', () => { showUnknownStatus(); });
          
       </script>
-      <script>
-         const sponsors_fr = [
-            { id: 1, url: "https://xvlivemanager.fr/pubs/pub1.json" },
-            { id: 2, url: "https://xvlivemanager.fr/pubs/pub2.json" },
-            { id: 3, url: "https://xvlivemanager.fr/pubs/pub3.json" }
-         ];
-         const sponsors_en = [
-            { id: 1, url: "https://xvlivemanager.fr/pubs/pub4.json" },
-            { id: 2, url: "https://xvlivemanager.fr/pubs/pub5.json" },
-            { id: 3, url: "https://xvlivemanager.fr/pubs/pub6.json" }
-         ];
-         
-         function getCurrentLang() {
-            return localStorage.getItem('lang') === 'en' ? 'en' : 'fr';
-         }
-         function getCurrentSponsors() {
-            return getCurrentLang() === "en" ? sponsors_en : sponsors_fr;
-         }
-         
-         function ensureSponsorBlocks() {
-             const wrapper = document.getElementById("sponsor-bar-wrapper");
-             if (!wrapper) return;
-             const lang = getCurrentLang();
-             const currentBar = document.getElementById('sponsor-bar');
-         
-             const prevLang = currentBar ? currentBar.getAttribute('data-lang') : null;
-         
-             let needRegen = false;
-             if (!currentBar || currentBar.children.length !== 3 || prevLang !== lang) {
-                 const htmlRef = `
-                <div id="sponsor-bar" data-lang="${lang}">
-                  <div class="sponsor-bandeau" id="sponsor-bloc-1">
-                    <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
-                    <div class="sponsor-bandeau-content">
-                      <div class="sponsor-bandeau-nom"></div>
-                      <div class="sponsor-bandeau-desc"></div>
-                    </div>
+<script>
+   const sponsors_fr = [
+      { id: 1, url: "https://xvlivemanager.fr/pubs/pub1.json" },
+      { id: 2, url: "https://xvlivemanager.fr/pubs/pub2.json" },
+      { id: 3, url: "https://xvlivemanager.fr/pubs/pub3.json" }
+   ];
+   const sponsors_en = [
+      { id: 1, url: "https://xvlivemanager.fr/pubs/pub4.json" },
+      { id: 2, url: "https://xvlivemanager.fr/pubs/pub5.json" },
+      { id: 3, url: "https://xvlivemanager.fr/pubs/pub6.json" }
+   ];
+   const sponsors_es = [
+      { id: 1, url: "https://xvlivemanager.fr/pubs/pub7.json" },
+      { id: 2, url: "https://xvlivemanager.fr/pubs/pub8.json" },
+      { id: 3, url: "https://xvlivemanager.fr/pubs/pub9.json" }
+   ];
+
+   function getCurrentLang() {
+      const lang = localStorage.getItem('lang');
+      if (lang === 'en') return 'en';
+      if (lang === 'es') return 'es';
+      return 'fr';
+   }
+   function getCurrentSponsors() {
+      const lang = getCurrentLang();
+      if (lang === "en") return sponsors_en;
+      if (lang === "es") return sponsors_es;
+      return sponsors_fr;
+   }
+
+   function ensureSponsorBlocks() {
+       const wrapper = document.getElementById("sponsor-bar-wrapper");
+       if (!wrapper) return;
+       const lang = getCurrentLang();
+       const currentBar = document.getElementById('sponsor-bar');
+
+       const prevLang = currentBar ? currentBar.getAttribute('data-lang') : null;
+
+       let needRegen = false;
+       if (!currentBar || currentBar.children.length !== 3 || prevLang !== lang) {
+           const htmlRef = `
+          <div id="sponsor-bar" data-lang="${lang}">
+            <div class="sponsor-bandeau" id="sponsor-bloc-1">
+              <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+              <div class="sponsor-bandeau-content">
+                <div class="sponsor-bandeau-nom"></div>
+                <div class="sponsor-bandeau-desc"></div>
+              </div>
+            </div>
+            <div class="sponsor-bandeau" id="sponsor-bloc-2">
+              <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+              <div class="sponsor-bandeau-content">
+                <div class="sponsor-bandeau-nom"></div>
+                <div class="sponsor-bandeau-desc"></div>
+              </div>
+            </div>
+            <div class="sponsor-bandeau" id="sponsor-bloc-3">
+              <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+              <div class="sponsor-bandeau-content">
+                <div class="sponsor-bandeau-nom"></div>
+                <div class="sponsor-bandeau-desc"></div>
+              </div>
+            </div>
+          </div>`;
+           wrapper.innerHTML = htmlRef;
+           needRegen = true;
+       } else {
+           for(let i=1; i<=3; i++) {
+               let bloc = document.getElementById('sponsor-bloc-' + i);
+               if (!bloc
+                   || !bloc.querySelector('.sponsor-bandeau-logo')
+                   || !bloc.querySelector('.sponsor-bandeau-nom')
+                   || !bloc.querySelector('.sponsor-bandeau-desc')) {
+                   needRegen = true;
+                   break;
+               }
+           }
+           if (needRegen) {
+               const htmlRef = `
+              <div id="sponsor-bar" data-lang="${lang}">
+                <div class="sponsor-bandeau" id="sponsor-bloc-1">
+                  <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+                  <div class="sponsor-bandeau-content">
+                    <div class="sponsor-bandeau-nom"></div>
+                    <div class="sponsor-bandeau-desc"></div>
                   </div>
-                  <div class="sponsor-bandeau" id="sponsor-bloc-2">
-                    <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
-                    <div class="sponsor-bandeau-content">
-                      <div class="sponsor-bandeau-nom"></div>
-                      <div class="sponsor-bandeau-desc"></div>
-                    </div>
+                </div>
+                <div class="sponsor-bandeau" id="sponsor-bloc-2">
+                  <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+                  <div class="sponsor-bandeau-content">
+                    <div class="sponsor-bandeau-nom"></div>
+                    <div class="sponsor-bandeau-desc"></div>
                   </div>
-                  <div class="sponsor-bandeau" id="sponsor-bloc-3">
-                    <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
-                    <div class="sponsor-bandeau-content">
-                      <div class="sponsor-bandeau-nom"></div>
-                      <div class="sponsor-bandeau-desc"></div>
-                    </div>
+                </div>
+                <div class="sponsor-bandeau" id="sponsor-bloc-3">
+                  <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
+                  <div class="sponsor-bandeau-content">
+                    <div class="sponsor-bandeau-nom"></div>
+                    <div class="sponsor-bandeau-desc"></div>
                   </div>
-                </div>`;
-                 wrapper.innerHTML = htmlRef;
-                 needRegen = true;
-             } else {
-                 for(let i=1; i<=3; i++) {
-                     let bloc = document.getElementById('sponsor-bloc-' + i);
-                     if (!bloc
-                         || !bloc.querySelector('.sponsor-bandeau-logo')
-                         || !bloc.querySelector('.sponsor-bandeau-nom')
-                         || !bloc.querySelector('.sponsor-bandeau-desc')) {
-                         needRegen = true;
-                         break;
-                     }
-                 }
-                 if (needRegen) {
-         
-                     const htmlRef = `
-                    <div id="sponsor-bar" data-lang="${lang}">
-                      <div class="sponsor-bandeau" id="sponsor-bloc-1">
-                        <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
-                        <div class="sponsor-bandeau-content">
-                          <div class="sponsor-bandeau-nom"></div>
-                          <div class="sponsor-bandeau-desc"></div>
-                        </div>
-                      </div>
-                      <div class="sponsor-bandeau" id="sponsor-bloc-2">
-                        <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
-                        <div class="sponsor-bandeau-content">
-                          <div class="sponsor-bandeau-nom"></div>
-                          <div class="sponsor-bandeau-desc"></div>
-                        </div>
-                      </div>
-                      <div class="sponsor-bandeau" id="sponsor-bloc-3">
-                        <img src="https://xvlivemanager.fr/pubs/logo_home.png" alt="Logo club" class="sponsor-bandeau-logo">
-                        <div class="sponsor-bandeau-content">
-                          <div class="sponsor-bandeau-nom"></div>
-                          <div class="sponsor-bandeau-desc"></div>
-                        </div>
-                      </div>
-                    </div>`;
-                     wrapper.innerHTML = htmlRef;
-                 }
-             }
-         
-             fillSponsorBlocks();
-         }
-         
-         function fillSponsorBlocks() {
-             const sponsors = getCurrentSponsors();
-             sponsors.forEach(s => {
-                 const bloc = document.getElementById(`sponsor-bloc-${s.id}`);
-                 if (!bloc) return;
-                 fetch(s.url)
-                     .then(resp => resp.ok ? resp.json() : null)
-                     .then(data => {
-                         if (!data) return;
-                         if (data.logo)  bloc.querySelector('.sponsor-bandeau-logo').src = data.logo;
-                         const nomDiv = bloc.querySelector('.sponsor-bandeau-nom');
-                         if (data.nom) {
-                             if (data.lien) {
-                                 let a = nomDiv.querySelector('a.sponsor-bandeau-link');
-                                 if (!a) {
-                                     a = document.createElement('a');
-                                     a.className = 'sponsor-bandeau-link';
-                                     a.target = '_blank';
-                                     a.rel = 'noopener noreferrer';
-                                     while (nomDiv.firstChild) nomDiv.removeChild(nomDiv.firstChild);
-                                     nomDiv.appendChild(a);
-                                 }
-                                 a.href = data.lien;
-                                 a.textContent = data.nom;
-                             } else {
-                                 nomDiv.textContent = data.nom;
-                             }
-                         }
-                         if (data.desc)  bloc.querySelector('.sponsor-bandeau-desc').textContent = data.desc;
-                     })
-                     .catch(()=>{});
-             });
-         }
-         
-         function ensureMarquee() {
-             const container = document.getElementById('marquee-container');
-             if (!container) return;
-             if (!container.querySelector('marquee')) {
-                 container.innerHTML = `<marquee behavior="scroll" direction="left" scrollamount="2" id="partners-marquee"></marquee>`;
-             }
-             fillMarquee();
-         }
-         function fillMarquee() {
-             const marquee = document.getElementById('partners-marquee');
-             if (!marquee) return;
-             let html = '';
-             if (window.PARTENAIRES && Array.isArray(window.PARTENAIRES)) {
-                 window.PARTENAIRES.forEach(url => {
-                     html += `<img src="${url}" class="partner-logo" alt="">`;
-                 });
-             }
-             marquee.innerHTML = html || `<span style="color:#fff">${translations[lang]?.noPartner || 'Aucun partenaire'}</span>`;
-         }
-         
-         ensureSponsorBlocks();
-         ensureMarquee();
-         setInterval(() => {
-             ensureSponsorBlocks();
-             ensureMarquee();
-         }, 2000);
-         
-         window.addEventListener('storage', function(e) {
-             if (e.key === 'lang') ensureSponsorBlocks();
-         });
-      </script>
+                </div>
+              </div>`;
+               wrapper.innerHTML = htmlRef;
+           }
+       }
+
+       fillSponsorBlocks();
+   }
+
+   function fillSponsorBlocks() {
+       const sponsors = getCurrentSponsors();
+       sponsors.forEach(s => {
+           const bloc = document.getElementById(`sponsor-bloc-${s.id}`);
+           if (!bloc) return;
+           fetch(s.url)
+               .then(resp => resp.ok ? resp.json() : null)
+               .then(data => {
+                   if (!data) return;
+                   if (data.logo)  bloc.querySelector('.sponsor-bandeau-logo').src = data.logo;
+                   const nomDiv = bloc.querySelector('.sponsor-bandeau-nom');
+                   if (data.nom) {
+                       if (data.lien) {
+                           let a = nomDiv.querySelector('a.sponsor-bandeau-link');
+                           if (!a) {
+                               a = document.createElement('a');
+                               a.className = 'sponsor-bandeau-link';
+                               a.target = '_blank';
+                               a.rel = 'noopener noreferrer';
+                               while (nomDiv.firstChild) nomDiv.removeChild(nomDiv.firstChild);
+                               nomDiv.appendChild(a);
+                           }
+                           a.href = data.lien;
+                           a.textContent = data.nom;
+                       } else {
+                           nomDiv.textContent = data.nom;
+                       }
+                   }
+                   if (data.desc)  bloc.querySelector('.sponsor-bandeau-desc').textContent = data.desc;
+               })
+               .catch(()=>{});
+       });
+   }
+
+   function ensureMarquee() {
+       const container = document.getElementById('marquee-container');
+       if (!container) return;
+       if (!container.querySelector('marquee')) {
+           container.innerHTML = `<marquee behavior="scroll" direction="left" scrollamount="2" id="partners-marquee"></marquee>`;
+       }
+       fillMarquee();
+   }
+   function fillMarquee() {
+       const marquee = document.getElementById('partners-marquee');
+       if (!marquee) return;
+       let html = '';
+       if (window.PARTENAIRES && Array.isArray(window.PARTENAIRES)) {
+           window.PARTENAIRES.forEach(url => {
+               html += `<img src="${url}" class="partner-logo" alt="">`;
+           });
+       }
+       marquee.innerHTML = html || `<span style="color:#fff">${translations[lang]?.noPartner || 'Aucun partenaire'}</span>`;
+   }
+
+   ensureSponsorBlocks();
+   ensureMarquee();
+   setInterval(() => {
+       ensureSponsorBlocks();
+       ensureMarquee();
+   }, 2000);
+
+   window.addEventListener('storage', function(e) {
+       if (e.key === 'lang') ensureSponsorBlocks();
+   });
+</script>
       <script>
          function closeAllPanels() {
          
@@ -3687,6 +3732,7 @@ function toEmbedUrl(url) {
              langSectionDesc: "Sélectionnez votre langue pour l’interface XVLIVEMANAGER.",
              frLabel: "Français",
              enLabel: "English",
+             esLabel: "Español",
              welcomeUser: "Utilisateur",
              welcomeTaglineText: "Merci d'utiliser XVLIVEMANAGER",
          liveManagement: "Gestion du direct :",
@@ -4165,8 +4211,9 @@ function toEmbedUrl(url) {
            en: {
              langSectionTitle: "Language",
              langSectionDesc: "Select your language for the XVLIVEMANAGER interface.",
-             frLabel: "French",
+             frLabel: "Français",
              enLabel: "English",
+             esLabel: "Español",
              welcomeUser: "User",
              welcomeTaglineText: "Thank you for using XVLIVEMANAGER",
          liveManagement: "Live management:",
@@ -4638,76 +4685,556 @@ function toEmbedUrl(url) {
              cementMixerDefense: "We brought out the cement mixer in defense!",
              maulLikeSteamroller: "The maul is moving like a steamroller!",
              shedFellDogRan: "The shed has fallen and the dog has run off!",
+          },
+           es: {
+langSectionTitle: "Idioma",
+langSectionDesc: "Seleccione su idioma para la interfaz de XVLIVEMANAGER.",
+frLabel: "Francés",
+enLabel: "Inglés",
+esLabel: "Español",
+welcomeUser: "Usuario",
+welcomeTaglineText: "Gracias por utilizar XVLIVEMANAGER",
+
+liveManagement: "Gestión en directo:",
+shutdownTitle: "Detener el servidor",
+stopServerBtn: "Detener el servidor",
+shutdownConfirm: "¿Realmente desea detener el servidor de XVLIVEMANAGER?",
+shutdownSuccess: "El servidor se detendrá…",
+shutdownFail: "¡Error al detener el servidor!",
+shutdownError: "Servidor detenido",
+obsDescription: "Vea la escena activa en OBS en tiempo real.",
+stopLocalServer: "Detener el servidor local",
+mainInfo: "Información principal",
+teamCompositions: "Alineaciones",
+addPartners: "Añadir patrocinadores",
+livePreparation: "Preparación del directo",
+layouts: "Interfaces",
+deleteData: "Eliminar datos",
+matchArchives: "Archivos de partidos",
+timer: "Cronómetro",
+manageEveryMoment: "Gestione cada momento del partido con precisión, fluidez y rapidez.",
+serverError: "Error del servidor",
+matchScore: "Marcador",
+home: "Local",
+away: "Visitante",
+videoStream: "Transmisión de vídeo",
+pasteEmbedUrl: "Pegue la URL de inserción de su plataforma y haga clic en \"Cargar\".",
+embedUrl: "URL de inserción",
+loadBtn: "Cargar",
+pleaseEnterUrl: "Por favor, introduzca una URL.",
+obsOnly: "Solo para OBS Studio",
+optimalIntegration: "Compatibilidad e integración óptimas.",
+meetingControl: "Gestión del partido",
+masterEveryMoment: "Domine cada momento del partido: anotadores, gestión de eventos, sustituciones y comentarios, todo en tiempo real.",
+scorersList: "Lista de anotadores",
+keyMoments: "Momentos clave",
+lineupRotation: "Rotación de alineación",
+dragScorer: "Arrastre un jugador al tipo de anotación para registrarla.",
+homeTeam: "Equipo local",
+essai: "Ensayo",
+transformation: "Transformación",
+drop: "Drop goal",
+pénalité: "Golpe de castigo",
+awayTeam: "Equipo visitante",
+viewScorersList: "Ver la lista de anotadores",
+fullScorersList: "Lista completa de anotadores",
+scorersHistory: "Consulte el historial completo de anotadores en tiempo real.<br>(Esta tabla se actualiza automáticamente con cada acción)",
+homeTeamCaps: "EQUIPO LOCAL",
+awayTeamCaps: "EQUIPO VISITANTE",
+dragDataError: "Error en los datos arrastrados",
+updateScoreError: "Error al actualizar el marcador o el cronómetro.",
+updateScorersError: "Error al actualizar los anotadores.",
+dragEvent: "Arrastre un jugador al tipo de evento para registrarlo.",
+viewEventsList: "Ver la lista de eventos",
+fullEventsList: "Lista completa de eventos clave",
+eventsHistory: "Consulte el historial completo de eventos en tiempo real.<br>(Esta tabla se actualiza automáticamente con cada acción)",
+carton_jaune: "Tarjeta amarilla",
+carton_rouge: "Tarjeta roja",
+blessure: "Lesión",
+missingElements: "Faltan elementos para eventos de arrastrar y soltar.",
+updateEventsError: "Error al actualizar los eventos.",
+getMinuteError: "No se pudo obtener el minuto.",
+mainIntroDesc: "Arrastre un titular sobre un suplente para registrar el cambio.",
+buteursTitleHome: "Equipo local",
+rempLabel: "Suplentes",
+buteursTitleAway: "Equipo visitante",
+showRemplacantsBtn: "Mostrar lista de sustituciones",
+mainIntroTitle: "Lista completa de sustituciones",
+rempHomeTeam: "EQUIPO LOCAL",
+rempAwayTeam: "EQUIPO VISITANTE",
+rempHistoryDesc: "Consulte el historial de sustituciones en tiempo real.<br>(Esta tabla se actualiza automáticamente con cada acción)",
+wrongTeamAlert: "Arrastre un titular del equipo correcto.",
+timerFail: "Fallo en timer_value",
+rempUpdateFail: "Fallo en update_remplacants",
+rempUpdateErr: "Error al actualizar los suplentes.",
+minuteFail: "No se pudo obtener el minuto.",
+rempSubmitUpdateErr: "Error al actualizar los suplentes.",
+toggleComments: "Mostrar feed de comentarios",
+commentsTitle: "Feed de comentarios",
+commentsDesc: "Elija un comentario predefinido y arrástrelo al área central para enviarlo automáticamente. También puede introducir un mensaje manual.",
+tabAccueil: "Introducción",
+tabMeteo: "Clima",
+tabFirstHalf: "1ª parte",
+tabHalftime: "Descanso",
+tabSecondHalf: "2ª parte",
+tabEnd: "Final del partido",
+tabReferee: "Árbitro",
+tabYourTeam: "Su equipo",
+tabOpponent: "Oponente",
+tabExpressions: "Expresiones",
+predefinedCommentsTitle: "Comentarios predefinidos",
+dropHere: "Soltar aquí",
+livePreviewTitle: "Vista previa en directo",
+hoverToPreview: "Pase el ratón sobre un comentario para previsualizarlo.",
+customTextPlaceholder: "Mensaje personalizado…",
+showComments: "Mostrar feed de comentarios",
+hideComments: "Ocultar feed de comentarios",
+
+archives_header: "Archivos de partidos",
+archives_loading: "Cargando archivos…",
+no_archive: "Ningún archivo disponible.",
+archive_summary: "Resumen de",
+archive_content: "Incluye fecha, lugar, alineación, marcador, eventos…",
+archive_consult: "Ver",
+archive_delete_btn: "Eliminar",
+archive_delete_confirm: "¿Eliminar este resumen?",
+archive_load_fail: "Error al cargar.",
+
+interfaces_header: "Interfaces",
+interfaces_instructions_title: "Instrucciones",
+interfaces_instructions_msg: "<b>Un paquete ZIP de interfaz</b> incluye todas las pantallas utilizadas durante el partido: pre-partido, resumen del descanso, resumen completo y partido en directo.",
+interfaces_offline_msg: "No disponible sin conexión. Conéctese a Internet para acceder a la galería de interfaces.",
+cancel_btn: "Cancelar",
+interface_pack_installed: "— paquete instalado",
+download_zip: "Descargar paquete ZIP",
+import_btn: "Importar",
+install_btn: "Instalar",
+installing: "Instalando...",
+import_error: "Error: Debe importar el archivo exacto ",
+import_error_2: " (Archivo seleccionado: ",
+import_error_end: ")",
+offlineTitle: "No disponible sin conexión",
+offlineMsg: "Conéctese a Internet para acceder a los módulos.",
+
+mainInfo: "Información principal",
+instructionsTitle: "Instrucciones",
+instructionsMsg: "Por favor, complete los siguientes campos con los datos exactos del partido: fecha, hora, lugar y nombres de los árbitros.",
+matchDetails: "Detalles del partido",
+dateLabel: "Fecha",
+timeLabel: "Hora",
+cityLabel: "Ciudad",
+stadiumLabel: "Estadio",
+cityPlaceholder: "Ciudad",
+stadiumPlaceholder: "Estadio",
+referees: "Árbitros",
+refCentral: "Árbitro principal",
+refCentralPlaceholder: "Árbitro principal",
+refTouch1: "Juez de línea 1",
+refTouch1Placeholder: "Juez de línea 1",
+refTouch2: "Juez de línea 2",
+refTouch2Placeholder: "Juez de línea 2",
+refTMO: "TMO",
+refTMOPlaceholder: "TMO",
+cancelBtn: "Cancelar",
+validateBtn: "Validar",
+
+teamLineups: "Alineaciones",
+lineupsInstructions: "Por favor, rellene los campos para cada equipo: seleccione un logotipo, introduzca el nombre del equipo y complete los titulares y suplentes.",
+homeTeam: "Equipo local",
+chooseLogoBtn: "Elegir logotipo",
+noLogoHome: "Sin logotipo",
+teamNameLabel: "Nombre del equipo",
+teamNamePlaceholder: "Francia",
+playerNamePlaceholder: "Nombre del jugador",
+poste_1_label: "1 – Pilar izquierdo",
+poste_2_label: "2 – Talonador",
+poste_3_label: "3 – Pilar derecho",
+poste_4_label: "4 – Segunda línea",
+poste_5_label: "5 – Segunda línea",
+poste_6_label: "6 – Flanker ciego",
+poste_7_label: "7 – Flanker abierto",
+poste_8_label: "8 – Número 8",
+poste_9_label: "9 – Medio de melé",
+poste_10_label: "10 – Apertura",
+poste_11_label: "11 – Ala izquierda",
+poste_12_label: "12 – Centro interior",
+poste_13_label: "13 – Centro exterior",
+poste_14_label: "14 – Ala derecha",
+poste_15_label: "15 – Zaguero",
+
+substitutes: "Suplentes",
+substituteLabel_1: "Suplente 1",
+substituteLabel_2: "Suplente 2",
+substituteLabel_3: "Suplente 3",
+substituteLabel_4: "Suplente 4",
+substituteLabel_5: "Suplente 5",
+substituteLabel_6: "Suplente 6",
+substituteLabel_7: "Suplente 7",
+substituteLabel_8: "Suplente 8",
+
+addPartnersTitle: "Añadir patrocinadores",
+partnersInstructions: "Importe los logotipos de sus 6 patrocinadores a continuación.<br>Se mostrará una vista previa y puede eliminar cada logotipo con la cruz.",
+partnerLabel_1: "Patrocinador 1",
+partnerLabel_2: "Patrocinador 2",
+partnerLabel_3: "Patrocinador 3",
+partnerLabel_4: "Patrocinador 4",
+partnerLabel_5: "Patrocinador 5",
+partnerLabel_6: "Patrocinador 6",
+yourPartners: "Sus patrocinadores",
+
+livePrepTitle: "Preparación del directo",
+livePrepInstructions: "Configure aquí su mensaje desplazable de OBS y un contador personalizado.",
+preMatch: "Pre-partido",
+countdownMsgLabel: "Mensaje de cuenta atrás",
+countdownMsgPlaceholder: "El partido comienza en…",
+durationLabel: "Duración",
+liveLabel: "Directo",
+obsScrollLabel: "Mensaje desplazable OBS",
+obsScrollPlaceholder: "Bienvenidos al estadio.",
+
+deleteDataTitle: "ELIMINACIÓN DE DATOS",
+deleteDataWarning: "<b>Atención&nbsp;:</b> está a punto de eliminar <b>todos los datos</b>.<br><span style=\"display:block; font-size:0.78em; color:#bfc3c9; font-style:italic; margin-top:0.45em;\">Esta acción es <u>permanente</u>. Se generará automáticamente un archivo completo del partido tras la eliminación.</span>",
+confirmDeleteBtn: "Confirmar eliminación",
+
+settingsTitle: "Configuración",
+usernameLabel: "Nombre de usuario",
+usernamePlaceholder: "Nombre de usuario",
+taglineLabel: "Su eslogan",
+taglinePlaceholder: "Su eslogan",
+saveBtn: "Guardar",
+
+yourStatsTitle: "Sus estadísticas",
+timeSpentLabel: "Tiempo en <strong>XVLIVEMANAGER</strong>",
+keysTypedLabel: "Teclas pulsadas",
+clicksLabel: "Clics realizados",
+progressionTitle: "Su progreso:",
+levelNovice: "Principiante",
+levelIntermediate: "Intermedio (25%): 75 h / 300.000 teclas / 75.000 clics",
+levelMaster: "Experto (50%): 150 h / 600.000 teclas / 150.000 clics",
+levelGrandmaster: "Gran Maestro (100%): 300 h / 1.200.000 teclas / 300.000 clics",
+levelIntermediateShort: "Intermedio",
+levelMasterShort: "Experto",
+levelGrandmasterShort: "Gran Maestro",
+resetBtn: "Reiniciar",
+defaultUser: "Usuario",
+defaultTagline: "Gracias por utilizar XVLIVEMANAGER.",
+partnersNoInternet: "Debe estar conectado a internet para ver esta información",
+
+footerSettings: "Configuración",
+footerHelp: "Ayuda",
+footerPartner: "Patrocinador",
+footerUpdate: "Comprobando...",
+serverAddress: "DIRECCIÓN DEL SERVIDOR:",
+unknownStatus: "Estado desconocido",
+importantUpdate: "Actualización importante",
+upToDate: "Actualizado",
+unknownStatusTitle: "No se pudo verificar la versión.",
+upToDateTitle: "Su interfaz está actualizada",
+newVersion: "Nueva versión",
+newVersionTitle: "Nueva versión",
+updateInProgress: "Actualizando…",
+updateDone: "Actualización completada, recargando…",
+updateError: "Error durante la actualización.",
+noPartner: "Sin patrocinador",
+loadingArchives: "Cargando archivos…",
+
+sectionWelcome: "Bienvenida y ambiente",
+sectionWeather: "Condiciones meteorológicas",
+sectionFirstHalf: "Primera parte",
+sectionHalftime: "Descanso",
+sectionSecondHalf: "Segunda parte",
+sectionEnd: "Fin del partido",
+sectionReferee: "Árbitro",
+sectionActionYou: "Su acción",
+sectionActionOpponent: "Acción del oponente",
+sectionExpression: "Expresión",
+hoverPreview: "Pase el ratón sobre un comentario para previsualizarlo.",
+
+arenaWelcome: "¡Bienvenidos a la arena! Hoy, el protagonista es el rugby.",
+fieldReady: "El campo está listo, la afición está impaciente, ¡el rugby toma el protagonismo!",
+ovalWarriors: "Los guerreros ovalados están listos, preparados para la batalla.",
+ballTeams80mn: "Un balón, dos equipos, 80 minutos de combate intenso. ¡Así es el rugby!",
+todayCourage: "Hoy es cuestión de coraje, solidaridad y juego espectacular.",
+vibrateWithUs: "¡Viva la pasión de este gran momento de rugby junto a nosotros!",
+kickoffShow: "Comienza el partido y el espectáculo ovalado está en marcha.",
+titansPrepare: "Los titanes del juego se preparan para rugir en el campo.",
+everyPassCounts: "Cada pase cuenta, cada placaje emociona—¡viva el rugby!",
+fullStadium: "Estadio lleno, emociones garantizadas—¡a jugar al rugby!",
+energyPowerHeart: "Energía, fuerza y corazón—¡ese es el espíritu del rugby!",
+scrumForms: "Se forma la melé, la tensión sube, ¿están listos para la batalla?",
+neverGiveUp: "Aquí nadie se rinde; luchamos hasta el final—bienvenidos al combate del rugby.",
+spectacularTriesAhead: "Ensayos espectaculares a la vista—¡prepárense!",
+whistleAboutToBlow: "El árbitro está a punto de pitar, los jugadores listos—¡comienza la acción!",
+journeyToSolidarity: "Un viaje al corazón de la solidaridad, la fuerza y la pasión—¡viva el rugby!",
+blueSky: "Bajo un cielo azul despejado, todo está listo para un rugby rápido y técnico.",
+perfectPitch: "El campo está perfecto, el sol brilla… ¡se espera un espectáculo ofensivo!",
+dryField: "El terreno está seco, las piernas ligeras—perfecto para que los tres cuartos demuestren su velocidad.",
+fineRainAdapt: "A pesar de la lluvia fina, el partido no se detiene. Habrá que adaptarse al balón resbaladizo y cerrar las líneas.",
+slipperyBall: "Cuidado, hoy el balón parece jabón… ¡los delanteros tendrán que asegurar cada posesión!",
+mudIsOut: "¡Barro en el campo, terreno pesado! Solo los más duros sobrevivirán a este desafío físico.",
+windArrives: "El viento sopla fuerte. Los pateadores necesitarán nervios de acero para los golpes de castigo.",
+trickyWind: "Con este viento traicionero, la posición en el campo será clave. ¡Atentos a los botes imprevisibles!",
+coldBites: "El frío se nota, el terreno está blando… ¡un partido para guerreros!",
+winterWeather: "Con este tiempo invernal, olvídense del juego bonito. Hoy es rugby puro, duro, el que forja campeones.",
+rainWindMud: "Bajo la lluvia, el viento y el barro… eso también es rugby, ¡por eso nos apasiona este deporte!",
+toughConditions: "Condiciones difíciles, pero los grandes jugadores brillan con mal tiempo.",
+cloudsGather: "El cielo se oscurece, nubes amenazantes… ¡pero prepárense para un festival de contraataques!",
+morningDrizzle: "La llovizna matinal da paso a una brisa ligera—perfecto para pases largos y precisos.",
+thermoDrops: "Baja la temperatura, los músculos se tensan—¡cada melé será una batalla mental!",
+dewOnPitch: "Un poco de rocío sobre el campo, promete sprints explosivos desde el primer balón.",
+hotSunEndurance: "Hace calor—la resistencia será clave, ¡esperen duelos constantes!",
+wetPitchTrajectories: "El césped mojado complica las trayectorias—cada recepción será un reto.",
+gustsSweep: "Ráfagas de viento cruzan el campo—el arte del pateo marcará la diferencia.",
+distantThunder: "Trueno lejano, pero los delanteros no se achican—la batalla en los rucks será épica.",
+heatRises: "Sube la temperatura, ¡las sustituciones serán cruciales para mantener el ritmo!",
+freshBreeze: "Una brisa fresca sopla, ¡los balones altos marcarán el ritmo de esta batalla aérea!",
+
+kickoffStart: "¡Comienza el partido! Primeros 40 minutos de acción intensa.",
+firstBallRuck: "Primer balón en juego, ¡comienza la lucha en los rucks!",
+teamsSizingUp: "Los equipos se estudian en los primeros minutos, nadie quiere descubrir sus cartas.",
+firstBreak: "¡Primera ruptura de la defensa—esto ya se calienta!",
+highTempo: "El ritmo es muy alto, ambos intentan imponer su juego.",
+fierceBattle: "Contienda feroz, nadie cede terreno.",
+forwardsLongPlay: "Los delanteros encadenan fases largas, la defensa resiste.",
+handlingErrorScrum: "Pequeño error de manejo bajo presión, melé concedida por el árbitro.",
+simulatedScrum: "Melé simulada, la batalla continúa en los rucks.",
+wellPlayedLineout: "Touche bien ejecutada, balón rápidamente en juego.",
+lineoutAttack: "Balón asegurado en la touche—¡comienza un nuevo ataque!",
+firstBigMoment: "¡Primer gran momento, la afición se hace oír!",
+wingBreak: "Ruptura espectacular por la banda—¡se juega a toda velocidad!",
+paceChange: "Cambio de ritmo inesperado, la defensa se sorprende.",
+lightningCounter: "Contraataque relámpago, ¡todo el estadio en pie!",
+clearingKick: "Patada de despeje alivia la presión defensiva.",
+impeccableDefense: "Defensa impecable, no dejan huecos.",
+highForwardsPress: "Delanteros presionando alto, el rival retrocede.",
+constantPressure: "Presión constante—el medio de melé busca una fisura.",
+defensiveCover: "Cobertura defensiva perfecta, ni un punto concedido.",
+passImprecision: "Imprecisión en el pase, el balón sale fuera.",
+virtualTimeout: "Tiempo muerto virtual por lesión—¡se reanuda rápido!",
+tightScore: "El marcador sigue igualado—cada acción cuenta en esta primera parte tan tensa.",
+packOrganizes: "La delantera se coloca—¡se avecina potencia en la touche!",
+breakThroughMiddle: "Ruptura por el centro—los delanteros aprietan bajo presión.",
+oppoDefenseStrong: "La defensa rival se mantiene firme, cada placaje frena el avance.",
+flyhalfFix: "El apertura fija la línea, buscando un hueco.",
+newLineout: "Nueva touche, lanzamiento perfectamente ejecutado.",
+tryInMinds: "Todos piensan en el ensayo, pero la melé se va a formar.",
+yellowCardComing: "¡Tarjeta amarilla inminente—la batalla física sube de nivel!",
+tacticalKick: "Patada táctica para aliviar la presión cerca de la zona de marca.",
+hookerRelance: "El talonador inicia la contra—¡sorpresa general y caos!",
+crowdElectric: "La afición está de pie, ¡el ambiente es eléctrico antes del reinicio!",
+halftimeWhistle: "¡Y llega el descanso! 40 minutos de rugby de alta intensidad.",
+engagedFirstHalf: "Primera parte muy disputada, ambos equipos han ofrecido un gran espectáculo.",
+highIntensityFewChances: "Muchísima intensidad pero pocas ocasiones claras en este inicio.",
+tightScoreNothingDone: "El marcador ajustado, ¡todo por decidir en este partido!",
+halftimeAdvantageButWork: "Lideramos al descanso, pero queda mucho trabajo.",
+oppoDifferenceBeforeBreak: "El rival hizo la diferencia justo antes del descanso.",
+rainComplicatesPasses: "La lluvia dificulta los pases, pero el compromiso es total.",
+crowdHereAtmosphere: "El público llena las gradas, ambiente magnífico al descanso.",
+coachesAdjustSecondHalf: "Los entrenadores tendrán que ajustar para marcar la diferencia en la segunda parte.",
+matchWideOpen: "El partido sigue totalmente abierto—todo por decidir en la segunda parte.",
+expectFastRestart: "Se espera un reinicio muy intenso tras esta primera parte.",
+halftimeEpicBattle: "Descanso tras una batalla tremenda, ¡cada metro costó sudor!",
+noTriesForwardBattle: "Todavía sin ensayos, pero la batalla en la delantera es feroz.",
+noInchGivenTension: "Nadie cede terreno—¡la tensión sigue al máximo!",
+halftimeGoallessUncertainty: "Sin puntos al descanso, pero todo sigue abierto.",
+firstHalfDefensive: "Primera parte marcada por la disciplina defensiva y el compromiso físico.",
+crowdBuzzedElectric: "La afición ha vibrado en cada jugada—¡el ambiente es eléctrico!",
+fewPenaltiesFluentRef: "Pocas infracciones, muestra de arbitraje fluido y controlado.",
+defensiveLocksStrong: "Las defensas han estado sólidas, ¡veremos si abren la llave tras el descanso!",
+coachesObserveAdjust: "Los entrenadores observan y preparan sus movimientos.",
+breakdownBattlesFatigue: "Las luchas en los rucks marcan el ritmo, ¡ya se nota el cansancio!",
+kickingDrawsField: "La estrategia de pateo marca el territorio, pero nadie ha sumado aún.",
+trylessFirstHalfPromise: "Primera parte sin ensayos, ¡pero se promete mucho para la segunda!",
+scrumSceneCombative: "La melé ha sido el escenario de muchos duelos—¡símbolo del espíritu combativo!",
+backsOnAlert: "Los tres cuartos atentos, listos para aprovechar cualquier hueco.",
+seeYouSecondHalf: "Nos vemos al inicio de la segunda parte para un final apasionante.",
+secondHalfKickoff: "Empieza la segunda parte—¡40 minutos para marcar la diferencia!",
+ourTeamBetterIntent: "Nuestro equipo sale del vestuario con mejores intenciones.",
+oppoWantsGap: "El rival sale decidido a ampliar la ventaja.",
+quickLineout: "Touche rápida, queremos mantener la presión.",
+scrumKnockOn: "Melé concedida—el árbitro pita un avant.",
+ballStolen: "Balón robado en el suelo—¡gran iniciativa!",
+carrierPressure: "Presión sobre el portador—no pasa nada por este canal.",
+breakAttempt: "Intento de ruptura—gran secuencia ofensiva.",
+wingBreakDefOpens: "Ruptura por la banda—¡por fin se abre la defensa!",
+defensesHold: "Las defensas resisten pese a los ataques repetidos.",
+defenseBarricaded: "Defensa atrincherada—no encuentran huecos.",
+pressureResumes: "La presión vuelve a la línea de ensayo—defensa heroica.",
+subFreshImpact: "Sustitución—piernas frescas al campo.",
+quickPenalty: "Golpe rápido—el árbitro deja seguir la acción.",
+edgeKickTime: "Patada a la banda para agotar el tiempo.",
+stratLineout: "Touche estratégica en campo rival—¡ojo a la jugada!",
+hitsGetHarder: "Los contactos se vuelven cada vez más duros—ya se nota el cansancio.",
+firstCramps: "Aparecen los primeros calambres, señal del esfuerzo físico.",
+everyBallLikeFinal: "Cada balón se lucha como si fuera una final—¡máxima intensidad!",
+moneyTime: "Llega el money time—cada decisión cuenta en este final.",
+lastChance: "Última oportunidad antes del pitido final—¡todo se decide ahora!",
+lastTackle: "Último placaje decisivo—la victoria se juega en segundos.",
+subsBringEnergy: "Entran los suplentes para aportar energía ofensiva.",
+backlineCombo: "La línea de tres cuartos conecta—¡se abre una ocasión!",
+strongScrumPush: "Melé sólida, retrocede un metro al rival en cada empuje.",
+scrumhalfPlaysQuick: "El medio de melé juega rápido—el ala se lanza al ataque.",
+yellowForHighTackle: "Tarjeta amarilla por placaje alto—¡quedamos con 14!",
+shortHandedDefense: "Defensa en inferioridad organizada—¡reforzando con diez hombres!",
+counterattackIgnites: "Contraataque relámpago desde la zona de marca—¡explosión en la grada!",
+penaltyForTouch: "Golpe jugado a la touche—¡gran oportunidad cerca de la línea!",
+pinballArea: "Pinball en la zona de peligro—¡espectacular pero sin puntos!",
+clockTicks: "El reloj avanza, ¡hay que acelerar para evitar la prórroga!",
+finalWhistleEnd: "Pitido final, se termina el partido.",
+logicalVictory: "Victoria lógica tras un gran trabajo colectivo.",
+oppoDeservedWin: "Victoria merecida del rival tras un partido bien controlado.",
+tightMatchCongrats: "Partido ajustado hasta el final, enhorabuena a ambos equipos.",
+defeatDespiteEffort: "Derrota pese a un gran esfuerzo.",
+frustratingMatch: "Partido frustrante, mucho trabajo para poca recompensa.",
+teamNeverGaveUp: "El equipo nunca se rindió pese al resultado.",
+totalCommitment: "Compromiso total de los jugadores hoy.",
+finalWhistleMeetingEnds: "Pitido final, ¡se termina el encuentro!",
+undisputedVictory: "Victoria indiscutible tras un partido dominante.",
+bitterDefeat: "Derrota amarga a pesar de un esfuerzo notable.",
+narrowVictory: "Victoria por la mínima tras un duelo igualado.",
+breathlessEnd: "Final de infarto, ¡enhorabuena a ambos equipos!",
+teamConfidence: "El equipo gana confianza y se prepara para el siguiente reto.",
+oppoWinsEfficiently: "El rival gana lógicamente gracias a su gran eficacia.",
+backToLockerRoomPositive: "Volvemos al vestuario con sensaciones positivas para el próximo desafío.",
+scoreReflectsCommitment: "El marcador refleja el compromiso de los jugadores hasta el final.",
+thanksSupporters: "Gracias a los aficionados por su pasión, ¡hasta pronto!",
+spiritNeverFailed: "Pese a la derrota, ¡el espíritu nunca falló!",
+crowdVibrated: "La grada vibró, ¡este ambiente quedará en la memoria!",
+nextMeetingFix: "Próximo partido para corregir los errores de hoy.",
+refEndsDebate: "El árbitro pone fin a las discusiones, ¡felicitaciones a los ganadores!",
+ruggedShowEnd: "Telón para un espectáculo duro y apasionante.",
+seeNextMatch: "Nos vemos en el próximo partido para remontar.",
+thanksForFollowing: "Gracias a todos por seguir la transmisión, ¡hasta pronto!",
+
+refPenaltyForUs: "El árbitro nos concede un golpe de castigo.",
+penaltyAgainstOpp: "Golpe contra el rival por fuera de juego.",
+simplePenaltyNoCard: "Golpe simple tras revisión de vídeo, sin tarjeta.",
+yellowRepeated: "Tarjeta amarilla por reiteración de faltas.",
+yellowAntiPlayOpp: "Tarjeta amarilla al rival—antijuego.",
+straightRedUs: "¡Roja directa! El equipo queda con 14.",
+redOppDangerous: "Roja al rival por juego peligroso.",
+ourPlayerInjured: "Nuestro jugador abandona el campo lesionado.",
+oppPlayerInjured: "Un jugador rival abandona el campo lesionado.",
+refVideoTry: "El árbitro pide al TMO revisar el ensayo.",
+refVideoDispute: "El árbitro pide revisión de vídeo por una acción controvertida.",
+videoTryAwarded: "Tras revisión, el árbitro concede el ensayo.",
+videoTryRefused: "Tras revisión, el ensayo es anulado.",
+scrumKnockOnSlippery: "Melé concedida—avant sobre este balón resbaladizo.",
+refDiscussionCaptains: "Charla entre árbitro y capitanes para calmar los ánimos.",
+timeOff: "Tiempo detenido.",
+timeBackOn: "Tiempo reanudado.",
+
+tryCollective: "¡ENSAYO! Gran jugada colectiva, pura potencia.",
+tryIndividual: "¡ENSAYO! ¡Qué ruptura individual!",
+tryInterception: "Ensayo de intercepción—¡gran lectura de juego!",
+conversionSuccess: "Transformación acertada, sumamos dos puntos más.",
+conversionMissed: "Transformación fallada, pasa fuera de los palos.",
+penaltySuccess: "Golpe acertado, se amplía la diferencia.",
+penaltyMissed: "Golpe fallado—pena en un momento clave.",
+dropGoalSuccess: "¡DROP GOAL! Tres puntos más en el marcador.",
+dropGoalMissed: "Intento de drop, pero queda corto.",
+tryAfterPhases: "Ensayo tras varias fases de juego.",
+tryInterceptionOpp: "Ensayo del rival tras una intercepción.",
+conversionSuccessOpp: "Transformación rival acertada.",
+conversionMissedOpp: "Transformación rival fallada.",
+penaltySuccessOpp: "Golpe rival acertado por manos en el ruck.",
+penaltyMissedOpp: "Golpe rival fallado—el balón se va fuera.",
+dropGoalSuccessOpp: "Drop rival acertado, suma tres puntos.",
+dropGoalMissedOpp: "Drop rival fallado.",
+
+fliesChangedDonkey: "¡Las moscas cambiaron de burro!",
+slapBoxOpen: "¡Se abrió la caja de bofetadas!",
+endOfFairCowpats: "¡Al final de la feria se cuentan las boñigas!",
+shedFellDog: "¡Se cayó la caseta sobre el perro!",
+pigInCorn: "¡El cerdo está en el maíz!",
+niceMaul: "¡Qué buen maul!",
+bigHit: "¡Recibió un golpe enorme!",
+helmetShotChest: "¡Golpe de casco en pleno pecho!",
+fellLikePancake: "¡Cayó como una tortita mal volteada!",
+tackleShookStands: "¡Ese placaje hizo temblar las gradas!",
+foldedLikeNapkin: "¡Lo doblaron como una servilleta!",
+slapBoxAgain: "¡Se abrió de nuevo la caja de bofetadas!",
+tractorPassed: "¡Le pasó un tractor por encima!",
+fierceRucks: "¡Duro en los rucks!",
+shedFellDogRepeat: "¡Se volvió a caer la caseta sobre el perro!",
+sweptByTackle: "¡Se lo llevó la marea en ese placaje!",
+stuckLikePostit: "¡Quedó pegado como un post-it a su rival!",
+oldSchoolHits: "¡Hoy se pega como en los viejos tiempos!",
+pigInCornRepeat: "¡Otra vez el cerdo en el maíz!",
+cementMixerDefense: "¡Sacamos la mezcladora en defensa!",
+maulLikeSteamroller: "¡El maul avanza como una apisonadora!",
+shedFellDogRan: "¡Se cayó la caseta y el perro salió corriendo!",
          
            }
          };
       </script>
-      <script>
-         let lang = localStorage.getItem('lang') || 'fr';
-         
-         function switchLang(newLang) {
-           lang = newLang;
-           localStorage.setItem('lang', lang);
-           location.reload(); 
-         }
-         
-         function applyTranslations() {
-           document.querySelectorAll('[data-i18n]').forEach(el => {
-             const key = el.getAttribute('data-i18n');
-             if (translations[lang] && translations[lang][key]) {
-               el.innerHTML = translations[lang][key];
-             }
-           });
-         
-           document.querySelectorAll('[data-i18n-title]').forEach(el => {
-             const key = el.getAttribute('data-i18n-title');
-             if (translations[lang] && translations[lang][key]) {
-               el.title = translations[lang][key];
-             }
-           });
-         }
-         
-         function updateSwitchBtn() {
-           document.getElementById('fr-opt').className = 'lang-opt' + (lang === 'fr' ? ' selected' : '');
-           document.getElementById('en-opt').className = 'lang-opt' + (lang === 'en' ? ' selected' : '');
-         }
-         
-         document.addEventListener('DOMContentLoaded', () => {
-           document.getElementById('fr-opt').addEventListener('click', () => switchLang('fr'));
-           document.getElementById('en-opt').addEventListener('click', () => switchLang('en'));
-           applyTranslations();
-           updateSwitchBtn();
-         });
-      </script>
-      <script>
-         function applyInputPlaceholders() {
-           document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-             const key = el.getAttribute('data-i18n-placeholder');
-             el.placeholder = (translations[window.lang] && translations[window.lang][key]) 
-               ? translations[window.lang][key] 
-               : el.placeholder;
-           });
-         }
-         
-         window.addEventListener('storage', function(e) {
-           if (e.key === 'lang') {
-             window.lang = localStorage.getItem('lang') || 'fr';
-             applyInputPlaceholders();
-           }
-         });
-         
-         Object.defineProperty(window, 'lang', {
-           get() {
-             return localStorage.getItem('lang') || 'fr';
-           },
-           set(val) {
-             localStorage.setItem('lang', val);
-             applyInputPlaceholders();
-           }
-         });
-         
-         document.addEventListener('DOMContentLoaded', applyInputPlaceholders);
-         
-      </script>
+<script>
+   let lang = localStorage.getItem('lang') || 'fr';
+   
+   function switchLang(newLang) {
+     lang = newLang;
+     localStorage.setItem('lang', lang);
+     location.reload(); 
+   }
+   
+   function applyTranslations() {
+     document.querySelectorAll('[data-i18n]').forEach(el => {
+       const key = el.getAttribute('data-i18n');
+       if (translations[lang] && translations[lang][key]) {
+         el.innerHTML = translations[lang][key];
+       }
+     });
+   
+     document.querySelectorAll('[data-i18n-title]').forEach(el => {
+       const key = el.getAttribute('data-i18n-title');
+       if (translations[lang] && translations[lang][key]) {
+         el.title = translations[lang][key];
+       }
+     });
+   }
+   
+   function updateSwitchBtn() {
+     document.getElementById('fr-opt').className = 'lang-opt' + (lang === 'fr' ? ' selected' : '');
+     document.getElementById('en-opt').className = 'lang-opt' + (lang === 'en' ? ' selected' : '');
+     document.getElementById('es-opt').className = 'lang-opt' + (lang === 'es' ? ' selected' : '');
+   }
+   
+   document.addEventListener('DOMContentLoaded', () => {
+     document.getElementById('fr-opt').addEventListener('click', () => switchLang('fr'));
+     document.getElementById('en-opt').addEventListener('click', () => switchLang('en'));
+     document.getElementById('es-opt').addEventListener('click', () => switchLang('es'));
+     applyTranslations();
+     updateSwitchBtn();
+   });
+</script>
+<script>
+   function applyInputPlaceholders() {
+     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+       const key = el.getAttribute('data-i18n-placeholder');
+       el.placeholder = (translations[window.lang] && translations[window.lang][key]) 
+         ? translations[window.lang][key] 
+         : el.placeholder;
+     });
+   }
+   
+   window.addEventListener('storage', function(e) {
+     if (e.key === 'lang') {
+       window.lang = localStorage.getItem('lang') || 'fr';
+       applyInputPlaceholders();
+     }
+   });
+   
+   Object.defineProperty(window, 'lang', {
+     get() {
+       return localStorage.getItem('lang') || 'fr';
+     },
+     set(val) {
+       localStorage.setItem('lang', val);
+       applyInputPlaceholders();
+     }
+   });
+   
+   document.addEventListener('DOMContentLoaded', applyInputPlaceholders);
+</script>
    </body>
 </html>
