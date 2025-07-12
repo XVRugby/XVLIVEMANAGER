@@ -1,43 +1,132 @@
-CONDITIONS DíUTILISATION ñ XVLIVEMANAGER
+CONDITIONS D‚ÄôUTILISATION ‚Äì XVLIVEMANAGER
 ========================================
 
-IMPORTANT : Lisez attentivement ce document avant díinstaller ou díutiliser XVLIVEMANAGER.
-En installant, copiant ou utilisant ce logiciel, vous acceptez díÍtre liÈ par les prÈsentes conditions.
+IMPORTANT : Lisez attentivement ce document avant d‚Äôinstaller ou d‚Äôutiliser XVLIVEMANAGER.
+En installant, copiant ou utilisant ce logiciel, vous acceptez d‚Äô√™tre li√© par les pr√©sentes conditions.
 
-1. D…FINITIONS
+1. D√âFINITIONS
 --------------
-´ Logiciel ª dÈsigne líensemble des fichiers, programmes, scripts, documents et ressources fournis sous le nom XVLIVEMANAGER.
+¬´ Logiciel ¬ª d√©signe l‚Äôensemble des fichiers, programmes, scripts, documents et ressources fournis sous le nom XVLIVEMANAGER.
 
-2. DROIT DíUSAGE
+2. DROIT D‚ÄôUSAGE
 ----------------
-Vous Ítes autorisÈ ‡ installer, utiliser et exploiter librement le Logiciel, sans limitation de poste ou de nombre díinstallations, pour tous vos besoins, dans le respect des lois en vigueur et de la destination du Logiciel.
+Vous √™tes autoris√© √† installer, utiliser et exploiter librement le Logiciel, sans limitation de poste ou de nombre d‚Äôinstallations, pour tous vos besoins, dans le respect des lois en vigueur et de la destination du Logiciel.
 
 3. RESTRICTIONS
 ---------------
-Vous vous engagez ‡ ne pas :
-  ï distribuer, louer, prÍter, cÈder ou transfÈrer le Logiciel ‡ des tiers ‡ des fins commerciales sans autorisation prÈalable de líauteur,
-  ï modifier, dÈcompiler, dÈsassembler ou crÈer une úuvre dÈrivÈe ‡ partir du Logiciel sans autorisation Ècrite,
-  ï utiliser le Logiciel ‡ des fins illÈgales ou non conformes ‡ sa destination.
+Vous vous engagez √† ne pas :
+  ‚Ä¢ distribuer, louer, pr√™ter, c√©der ou transf√©rer le Logiciel √† des tiers √† des fins commerciales sans autorisation pr√©alable de l‚Äôauteur,
+  ‚Ä¢ modifier, d√©compiler, d√©sassembler ou cr√©er une ≈ìuvre d√©riv√©e √† partir du Logiciel sans autorisation √©crite,
+  ‚Ä¢ utiliser le Logiciel √† des fins ill√©gales ou non conformes √† sa destination.
 
-4. PROPRI…T… INTELLECTUELLE
+4. PROPRI√âT√â INTELLECTUELLE
 ---------------------------
-Le Logiciel et tous ses ÈlÈments (code source, graphismes, documentation, marques dÈposÈes, etc.) restent la propriÈtÈ exclusive de líauteur, PEREZ Romain. Toute utilisation non autorisÈe constitue une contrefaÁon sanctionnÈe par le Code de la propriÈtÈ intellectuelle.
+Le Logiciel et tous ses √©l√©ments (code source, graphismes, documentation, marques d√©pos√©es, etc.) restent la propri√©t√© exclusive de l‚Äôauteur, PEREZ Romain. Toute utilisation non autoris√©e constitue une contrefa√ßon sanctionn√©e par le Code de la propri√©t√© intellectuelle.
 
-5. MISES ¿ JOUR ET SUPPORT
+5. MISES √Ä JOUR ET SUPPORT
 --------------------------
-Les mises ‡ jour, correctifs et services díassistance peuvent faire líobjet díaccords ou conditions complÈmentaires. Aucune obligation de fournir un support níest garantie par le prÈsent document.
+Les mises √† jour, correctifs et services d‚Äôassistance peuvent faire l‚Äôobjet d‚Äôaccords ou conditions compl√©mentaires. Aucune obligation de fournir un support n‚Äôest garantie par le pr√©sent document.
 
-6. GARANTIE LIMIT…E
+6. GARANTIE LIMIT√âE
 -------------------
-Le Logiciel est fourni ´ en líÈtat ª, sans aucune garantie expresse ou implicite. Líauteur ne garantit pas quíil rÈpondra ‡ tous vos besoins ni quíil fonctionnera sans interruption ni erreur.
+Le Logiciel est fourni ¬´ en l‚Äô√©tat ¬ª, sans aucune garantie expresse ou implicite. L‚Äôauteur ne garantit pas qu‚Äôil r√©pondra √† tous vos besoins ni qu‚Äôil fonctionnera sans interruption ni erreur.
 
-7. LIMITATION DE RESPONSABILIT…
+7. LIMITATION DE RESPONSABILIT√â
 -------------------------------
-En aucun cas, líauteur ne pourra Ítre tenu responsable des dommages indirects, incidentels ou spÈciaux, y compris la perte de donnÈes, de bÈnÈfices ou toute autre perte Èconomique rÈsultant de líutilisation ou de líincapacitÈ ‡ utiliser le Logiciel.
+En aucun cas, l‚Äôauteur ne pourra √™tre tenu responsable des dommages indirects, incidentels ou sp√©ciaux, y compris la perte de donn√©es, de b√©n√©fices ou toute autre perte √©conomique r√©sultant de l‚Äôutilisation ou de l‚Äôincapacit√© √† utiliser le Logiciel.
 
 8. LOI APPLICABLE
 -----------------
-Ce document est rÈgi par le droit franÁais. En cas de litige, les tribunaux franÁais seront seuls compÈtents.
+Ce document est r√©gi par le droit fran√ßais. En cas de litige, les tribunaux fran√ßais seront seuls comp√©tents.
 
 ------------------------------------------
-© 2025 XVLIVEMANAGER. Tous droits rÈservÈs.
+¬© 2025 XVLIVEMANAGER. Tous droits r√©serv√©s.
+
+TERMS OF USE ‚Äì XVLIVEMANAGER
+============================
+
+IMPORTANT: Read this document carefully before installing or using XVLIVEMANAGER.
+By installing, copying, or using this software, you agree to be bound by these terms.
+
+1. DEFINITIONS
+--------------
+"Software" refers to all files, programs, scripts, documents, and resources provided under the name XVLIVEMANAGER.
+
+2. RIGHT OF USE
+---------------
+You are authorized to install, use, and operate the Software freely, without limitation on devices or number of installations, for all your needs, in compliance with applicable laws and the intended purpose of the Software.
+
+3. RESTRICTIONS
+---------------
+You agree not to:
+  ‚Ä¢ distribute, rent, lend, assign, or transfer the Software to third parties for commercial purposes without prior authorization from the author,
+  ‚Ä¢ modify, decompile, disassemble, or create derivative works from the Software without written authorization,
+  ‚Ä¢ use the Software for illegal purposes or in a manner inconsistent with its intended use.
+
+4. INTELLECTUAL PROPERTY
+------------------------
+The Software and all its elements (source code, graphics, documentation, trademarks, etc.) remain the exclusive property of the author, PEREZ Romain. Any unauthorized use constitutes infringement punishable under intellectual property law.
+
+5. UPDATES AND SUPPORT
+----------------------
+Updates, patches, and support services may be subject to additional agreements or conditions. No obligation to provide support is guaranteed by this document.
+
+6. LIMITED WARRANTY
+-------------------
+The Software is provided "as is," without any express or implied warranty. The author does not warrant that it will meet all your needs or that it will function without interruption or error.
+
+7. LIMITATION OF LIABILITY
+--------------------------
+In no event shall the author be liable for indirect, incidental, or special damages, including loss of data, profits, or any other economic loss resulting from the use or inability to use the Software.
+
+8. APPLICABLE LAW
+-----------------
+This document is governed by French law. In the event of a dispute, only French courts shall have jurisdiction.
+
+------------------------------------------
+¬© 2025 XVLIVEMANAGER. All rights reserved.
+
+
+CONDICIONES DE USO ‚Äì XVLIVEMANAGER
+==================================
+
+IMPORTANTE: Lea atentamente este documento antes de instalar o utilizar XVLIVEMANAGER.
+Al instalar, copiar o utilizar este software, usted acepta quedar vinculado por las presentes condiciones.
+
+1. DEFINICIONES
+---------------
+¬´Software¬ª se refiere al conjunto de archivos, programas, scripts, documentos y recursos proporcionados bajo el nombre XVLIVEMANAGER.
+
+2. DERECHO DE USO
+-----------------
+Usted est√° autorizado a instalar, utilizar y operar libremente el Software, sin limitaci√≥n de equipos o n√∫mero de instalaciones, para todas sus necesidades, de conformidad con las leyes aplicables y la finalidad del Software.
+
+3. RESTRICCIONES
+----------------
+Usted se compromete a no:
+  ‚Ä¢ distribuir, alquilar, prestar, ceder o transferir el Software a terceros con fines comerciales sin la autorizaci√≥n previa del autor,
+  ‚Ä¢ modificar, descompilar, desensamblar o crear una obra derivada a partir del Software sin autorizaci√≥n escrita,
+  ‚Ä¢ utilizar el Software con fines ilegales o de forma contraria a su finalidad.
+
+4. PROPIEDAD INTELECTUAL
+------------------------
+El Software y todos sus elementos (c√≥digo fuente, gr√°ficos, documentaci√≥n, marcas registradas, etc.) siguen siendo propiedad exclusiva del autor, PEREZ Romain. Cualquier uso no autorizado constituye una infracci√≥n sancionada por la ley de propiedad intelectual.
+
+5. ACTUALIZACIONES Y SOPORTE
+----------------------------
+Las actualizaciones, correcciones y servicios de asistencia pueden estar sujetos a acuerdos o condiciones adicionales. Este documento no garantiza ninguna obligaci√≥n de soporte.
+
+6. GARANT√çA LIMITADA
+--------------------
+El Software se proporciona "tal cual", sin ninguna garant√≠a expresa o impl√≠cita. El autor no garantiza que satisfaga todas sus necesidades ni que funcione sin interrupciones ni errores.
+
+7. LIMITACI√ìN DE RESPONSABILIDAD
+-------------------------------
+En ning√∫n caso el autor ser√° responsable de da√±os indirectos, incidentales o especiales, incluyendo la p√©rdida de datos, beneficios o cualquier otra p√©rdida econ√≥mica derivada del uso o la imposibilidad de utilizar el Software.
+
+8. LEY APLICABLE
+----------------
+Este documento se rige por la legislaci√≥n francesa. En caso de litigio, √∫nicamente los tribunales franceses ser√°n competentes.
+
+------------------------------------------
+¬© 2025 XVLIVEMANAGER. Todos los derechos reservados.
