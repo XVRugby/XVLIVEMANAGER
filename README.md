@@ -42,6 +42,8 @@ Aucune partie de ce logiciel ne peut être utilisée, copiée, modifiée ou dist
 - Email : [contact@xvlivemanager.fr](mailto:contact@xvlivemanager.fr)
 - Site web : [https://xvlivemanager.fr](https://xvlivemanager.fr)
 
+---
+
 # XVLIVEMANAGER
 
 XVLIVEMANAGER is an advanced, free, and open-source platform designed to manage and broadcast rugby matches, from amateur to professional level.
@@ -87,3 +89,47 @@ No part of this software may be used, copied, modified, or distributed without t
 - Website: [https://xvlivemanager.fr](https://xvlivemanager.fr)
 
 ---
+
+# XVLIVEMANAGER
+
+XVLIVEMANAGER es una plataforma avanzada, gratuita y de código abierto, diseñada para gestionar y retransmitir partidos de rugby, desde el nivel amateur hasta el profesional.
+
+## Funcionalidades
+
+- Gestión de partidos en directo: marcador, cronómetro, alineaciones de equipos, sustituciones, goleadores, eventos del partido
+- Integración con OBS Studio: superposición gráfica automatizada, actualizaciones en tiempo real
+- Estadísticas e informes de partido detallados
+- Interfaz moderna e intuitiva
+- Gratis para todos los clubes, sin publicidad, sin registro
+
+## Demo
+
+- Sitio oficial: [https://xvlivemanager.fr](https://xvlivemanager.fr)
+- Demo en línea: [https://demo.xvlivemanager.fr](https://demo.xvlivemanager.fr)
+
+## Instalación
+
+1. Descargue la última versión desde la [página de lanzamientos](https://github.com/XVRugby/XVLIVEMANAGER/releases) o el sitio oficial.
+2. Ejecute el instalador `.exe` o, si ha descargado el archivo ZIP, descomprímalo y haga doble clic en `creer_raccourci.bat` para crear un acceso directo.
+3. Siga la documentación para configurar la integración con OBS Studio y comenzar su primer partido [https://xvlivemanager.fr/guide-installation](https://xvlivemanager.fr/guide-installation).
+
+## Documentación
+
+La documentación completa está disponible en el [sitio oficial](https://xvlivemanager.fr).
+
+## Contribución
+
+¡Las contribuciones son bienvenidas!  
+Si desea ayudar a traducir la plataforma, añadir funcionalidades o informar de errores, abra una issue o envíe una pull request.
+
+## Licencia
+
+© XVLIVEMANAGER.  
+Todos los derechos reservados.
+
+Ninguna parte de este software puede ser utilizada, copiada, modificada o distribuida sin la autorización expresa y por escrito del autor.
+
+## Contacto
+
+- Email: [contact@xvlivemanager.fr](mailto:contact@xvlivemanager.fr)
+- Sitio web: [https://xvlivemanager.fr](https://xvlivemanager.fr)
