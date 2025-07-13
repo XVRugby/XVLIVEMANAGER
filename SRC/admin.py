@@ -1363,7 +1363,6 @@ def delete_event(team, index):
 
 @app.route("/update_remplacants", methods=["POST"])
 def update_remplacants():
-
     data  = read_json(ADMIN_DATA)
     histor= read_json(REMPLACANTS)  
 
@@ -1379,7 +1378,16 @@ def update_remplacants():
         if not (m and out and inn):
             return
 
-        # Correction ici : ne plus modifier les listes !
+        joueurs = data[f"compo_{team}"]["joueurs"]
+        remplacants = data[f"compo_{team}"]["remplacants"]
+
+        if out in joueurs:
+            joueurs.remove(out)
+            remplacants.append(out)
+        if inn in remplacants:
+            remplacants.remove(inn)
+            joueurs.append(inn)
+
         entry = f"{m}' {out} 🔁 {inn}"
         if entry not in histor[team]:
             histor[team].append(entry)
@@ -1390,8 +1398,8 @@ def update_remplacants():
     histor["home"] = list(dict.fromkeys(histor["home"]))
     histor["away"] = list(dict.fromkeys(histor["away"]))
 
-    # On NE MODIFIE PLUS ADMIN_DATA ICI !
-    write_json(REMPLACANTS,  histor)
+    write_json(ADMIN_DATA, data)      
+    write_json(REMPLACANTS, histor)
 
     with open(os.path.join(HTML_OUT_DIR, "remplacants.html"), "w", encoding="utf-8") as f:
         f.write(generate_remplacants_html(histor))
