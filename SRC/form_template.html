@@ -1210,127 +1210,211 @@ function toEmbedUrl(url) {
                   </div>
                </div>
             </div>
-            <script>
-               document.addEventListener('DOMContentLoaded', () => {
-                 const form = document.getElementById('remplacants');
-               
-                 document.querySelectorAll('#home-tit button, #away-tit button').forEach(btn => {
-                   btn.setAttribute('draggable', 'true');
-                   btn.addEventListener('dragstart', e => {
-                     const payload = { team: btn.dataset.team, player: btn.dataset.player };
-                     e.dataTransfer.setData('text/plain', JSON.stringify(payload));
-                     e.dataTransfer.effectAllowed = 'move';
-                   });
-                 });
-               
-                 document.querySelectorAll('.repl-btn').forEach(repBtn => {
-                   repBtn.addEventListener('dragover', e => e.preventDefault());
-                   repBtn.addEventListener('drop', e => {
-                     e.preventDefault();
-                     let payload;
-                     try {
-                       payload = JSON.parse(e.dataTransfer.getData('text/plain'));
-                     } catch {
-                       return alert(translations[lang]?.dragDataError || 'Erreur dans les données du drag');
-                     }
-                     const tgt = e.currentTarget;
-                     if (!payload || payload.team !== tgt.dataset.team) {
-                       return alert(translations[lang]?.wrongTeamAlert || 'Glissez un titulaire de la bonne équipe.');
-                     }
-                     const t   = payload.team;
-                     const src = document.querySelector(`#${t}-tit button[data-player="${payload.player}"]`);
-                     document.getElementById(`${t}-tit`).replaceChild(tgt, src);
-                     document.getElementById(`${t}-remp-zone`).appendChild(src);
-               
-                     fetch('/timer_value', { credentials: 'same-origin' })
-                       .then(r => {
-                         if (!r.ok) throw new Error(translations[lang]?.timerFail || 'Échec timer_value');
-                         return r.json();
-                       })
-                       .then(data => {
-                         const minute = data.minute != null ? String(data.minute) : '';
-                         document.getElementById(`remp_min_${t}`).value = minute;
-                         document.getElementById(`remp_out_${t}`).value = payload.player;
-                         document.getElementById(`remp_in_${t}`).value  = tgt.dataset.player;
-               
-                         fetch(form.action, {
-                           method: form.method,
-                           credentials: 'same-origin',
-                           body: new FormData(form)
-                         })
-                         .then(resp => {
-                           if (!resp.ok) throw new Error(translations[lang]?.rempUpdateFail || 'Échec update_remplacants');
-               
-                           const iframe = document.getElementById('remplacants-frame');
-                           if (iframe) iframe.src = '/remplacants.html?t=' + Date.now();
-               
-                           const iframeModal = document.getElementById('remplacants-frame-modal');
-                           const modal = document.getElementById('remplacants-modal');
-                           if (modal && iframeModal && modal.classList.contains('show')) {
-                             iframeModal.src = '/remplacants.html?t=' + Date.now();
-                           }
-                         })
-                         .catch(err => {
-                           console.error(err);
-                           alert(translations[lang]?.rempUpdateErr || 'Erreur lors de la mise à jour des remplaçants.');
-                         });
-                       })
-                       .catch(() => {
-                         alert(translations[lang]?.minuteFail || 'Impossible de récupérer la minute.');
-                       });
-                   });
-                 });
-               
-                 form.addEventListener('submit', e => {
-                   e.preventDefault();
-                   fetch(form.action, {
-                     method: form.method,
-                     credentials: 'same-origin',
-                     body: new FormData(form)
-                   })
-                   .then(resp => {
-                     if (!resp.ok) throw new Error(translations[lang]?.rempUpdateFail || 'Échec update_remplacants');
-                     const iframe = document.getElementById('remplacants-frame');
-                     if (iframe) iframe.src = '/remplacants.html?t=' + Date.now();
-                     const iframeModal = document.getElementById('remplacants-frame-modal');
-                     const modal = document.getElementById('remplacants-modal');
-                     if (modal && iframeModal && modal.classList.contains('show')) {
-                       iframeModal.src = '/remplacants.html?t=' + Date.now();
-                     }
-                   })
-                   .catch(err => {
-                     console.error(err);
-                     alert(translations[lang]?.rempSubmitUpdateErr || 'Erreur mise à jour des remplaçants.');
-                   });
-                 });
-               
-                 const btn = document.getElementById('show-remplacants-iframe');
-                 const modal = document.getElementById('remplacants-modal');
-                 const iframeModal = document.getElementById('remplacants-frame-modal');
-                 const closeBtn = document.getElementById('remplacants-close-btn');
-                 const bg = modal ? modal.querySelector('.buteurs-modal-bg') : null;
-                 if(btn && modal && iframeModal && closeBtn && bg) {
-                   btn.addEventListener('click', function() {
-                     iframeModal.src = '/remplacants.html?t=' + Date.now();
-                     modal.classList.add('show');
-                   });
-                   closeBtn.addEventListener('click', function() {
-                     modal.classList.remove('show');
-                     iframeModal.src = '';
-                   });
-                   bg.addEventListener('click', function() {
-                     modal.classList.remove('show');
-                     iframeModal.src = '';
-                   });
-                   window.addEventListener('keydown', function(e){
-                     if(e.key === 'Escape') {
-                       modal.classList.remove('show');
-                       iframeModal.src = '';
-                     }
-                   });
-                 }
-               });
-            </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('remplacants');
+  const homeTitZone = document.getElementById('home-tit');
+  const awayTitZone = document.getElementById('away-tit');
+  const homeRempZone = document.getElementById('home-remp-zone');
+  const awayRempZone = document.getElementById('away-remp-zone');
+
+
+  function makeTitulaireBtn(team, player) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `status-btn ${team}-btn`;
+    btn.setAttribute('draggable', 'true');
+    btn.dataset.team = team;
+    btn.dataset.player = player;
+    btn.style.width = btn.style.minWidth = btn.style.maxWidth = "120px";
+    btn.style.whiteSpace = "nowrap";
+    btn.style.overflow = "hidden";
+    btn.style.textOverflow = "ellipsis";
+    btn.textContent = player;
+    btn.addEventListener('dragstart', onDragStart);
+    return btn;
+  }
+
+  function makeRempBtn(team, player) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `status-btn ${team}-btn repl-btn`;
+    btn.setAttribute('draggable', 'false');
+    btn.dataset.team = team;
+    btn.dataset.player = player;
+    btn.tabIndex = 0;
+    btn.style.width = btn.style.minWidth = btn.style.maxWidth = "120px";
+    btn.style.textAlign = "center";
+    btn.style.whiteSpace = "nowrap";
+    btn.style.overflow = "hidden";
+    btn.style.textOverflow = "ellipsis";
+    btn.textContent = player;
+    return btn;
+  }
+
+  function onDragStart(e) {
+    const btn = e.target.closest('button[data-player]');
+    if (!btn) return;
+    const payload = { team: btn.dataset.team, player: btn.dataset.player };
+    e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+
+  function refreshTitDrag() {
+    document.querySelectorAll('#home-tit button, #away-tit button').forEach(btn => {
+      btn.setAttribute('draggable', 'true');
+      btn.removeEventListener('dragstart', onDragStart);
+      btn.addEventListener('dragstart', onDragStart);
+    });
+  }
+
+
+  function onDropRempZone(e, team) {
+    e.preventDefault();
+    let payload;
+    try {
+      payload = JSON.parse(e.dataTransfer.getData('text/plain'));
+    } catch {
+      alert('Erreur dans les données du drag');
+      return;
+    }
+    if (payload.team !== team) {
+      alert('Glissez un titulaire de la bonne équipe.');
+      return;
+    }
+
+    const titZone = document.getElementById(`${team}-tit`);
+    const rempZone = document.getElementById(`${team}-remp-zone`);
+    const titBtn = titZone.querySelector('button[data-player="' + payload.player + '"]');
+    if (!titBtn) return;
+    // On cible le remplaçant le plus proche de la souris (sinon on prend le premier)
+    let rempBtn = null;
+    if (e.target.classList.contains('repl-btn')) rempBtn = e.target;
+    else rempBtn = rempZone.querySelector('.repl-btn');
+    if (!rempBtn) return;
+
+
+    const joueurIn  = rempBtn.dataset.player;
+    const joueurOut = payload.player;
+
+
+    titZone.removeChild(titBtn);
+    rempZone.removeChild(rempBtn);
+
+
+    const nouveauRemp = makeRempBtn(team, joueurOut); // devient remplaçant
+    const nouveauTit  = makeTitulaireBtn(team, joueurIn); // devient titulaire
+
+
+    rempZone.appendChild(nouveauRemp);
+    titZone.appendChild(nouveauTit);
+
+
+    refreshTitDrag();
+
+
+    fetch('/timer_value', { credentials: 'same-origin' })
+      .then(r => r.json())
+      .then(data => {
+        const minute = data.minute != null ? String(data.minute) : '';
+        document.getElementById(`remp_min_${team}`).value = minute;
+        document.getElementById(`remp_out_${team}`).value = joueurOut;
+        document.getElementById(`remp_in_${team}`).value  = joueurIn;
+        fetch(form.action, {
+          method: form.method,
+          credentials: 'same-origin',
+          body: new FormData(form)
+        })
+        .then(resp => {
+          if (!resp.ok) throw new Error();
+          const iframe = document.getElementById('remplacants-frame');
+          if (iframe) iframe.src = '/remplacants.html?t=' + Date.now();
+          const iframeModal = document.getElementById('remplacants-frame-modal');
+          const modal = document.getElementById('remplacants-modal');
+          if (modal && iframeModal && modal.classList.contains('show')) {
+            iframeModal.src = '/remplacants.html?t=' + Date.now();
+          }
+        })
+        .catch(() => {
+          alert('Erreur lors de la mise à jour des remplaçants.');
+        });
+      })
+      .catch(() => {
+        alert('Impossible de récupérer la minute.');
+      });
+  }
+
+
+  homeRempZone.addEventListener('dragover', function(e) {
+    // Autorise le drop uniquement sur un bouton remplaçant
+    if (e.target.classList.contains('repl-btn')) e.preventDefault();
+  });
+  homeRempZone.addEventListener('drop', function(e) {
+    onDropRempZone(e, 'home');
+  });
+  awayRempZone.addEventListener('dragover', function(e) {
+    if (e.target.classList.contains('repl-btn')) e.preventDefault();
+  });
+  awayRempZone.addEventListener('drop', function(e) {
+    onDropRempZone(e, 'away');
+  });
+
+
+  refreshTitDrag();
+
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    fetch(form.action, {
+      method: form.method,
+      credentials: 'same-origin',
+      body: new FormData(form)
+    })
+    .then(resp => {
+      if (!resp.ok) throw new Error();
+      const iframe = document.getElementById('remplacants-frame');
+      if (iframe) iframe.src = '/remplacants.html?t=' + Date.now();
+      const iframeModal = document.getElementById('remplacants-frame-modal');
+      const modal = document.getElementById('remplacants-modal');
+      if (modal && iframeModal && modal.classList.contains('show')) {
+        iframeModal.src = '/remplacants.html?t=' + Date.now();
+      }
+    })
+    .catch(() => {
+      alert('Erreur mise à jour des remplaçants.');
+    });
+  });
+
+
+  const btn = document.getElementById('show-remplacants-iframe');
+  const modal = document.getElementById('remplacants-modal');
+  const iframeModal = document.getElementById('remplacants-frame-modal');
+  const closeBtn = document.getElementById('remplacants-close-btn');
+  const bg = modal ? modal.querySelector('.buteurs-modal-bg') : null;
+  if(btn && modal && iframeModal && closeBtn && bg) {
+    btn.addEventListener('click', function() {
+      iframeModal.src = '/remplacants.html?t=' + Date.now();
+      modal.classList.add('show');
+    });
+    closeBtn.addEventListener('click', function() {
+      modal.classList.remove('show');
+      iframeModal.src = '';
+    });
+    bg.addEventListener('click', function() {
+      modal.classList.remove('show');
+      iframeModal.src = '';
+    });
+    window.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') {
+        modal.classList.remove('show');
+        iframeModal.src = '';
+      }
+    });
+  }
+});
+</script>
+
             <script>
                document.addEventListener('DOMContentLoaded', function() {
                  document.querySelectorAll('.tabbed-card .tab-btn').forEach(btn => {
