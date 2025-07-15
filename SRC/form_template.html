@@ -3243,13 +3243,13 @@ document.addEventListener('DOMContentLoaded', function() {
            const container = document.getElementById('marquee-container');
          if (!navigator.onLine) {
            container.innerHTML = `<div id="partners-no-internet" style="text-align:center;color:#aaa;padding:0.8em 0;font-size:1.09em;">
-             ${translations[lang]?.partnersNoInternet || 'Vous devez être connecté à internet pour voir ces informations'}
+             ${translations[lang]?.partnersNoInternet || ''}
            </div>`;
            return;
          }
          if (!window.PARTENAIRES || !window.PARTENAIRES.length) {
            container.innerHTML = `<div id="partners-no-internet" style="text-align:center;color:#aaa;padding:0.8em 0;font-size:1.09em;">
-             ${translations[lang]?.partnersNoInternet || 'Vous devez être connecté à internet pour voir ces informations'}
+             ${translations[lang]?.partnersNoInternet || ''}
            </div>`;
            return;
          }
@@ -3271,6 +3271,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="footer-center" style="display:flex; align-items:center; justify-content:center; gap:2em;">
          <a href="#" class="footer-link" id="open-settings" data-i18n="footerSettings">Réglages</a>
          <a href="https://xvlivemanager.fr/liens-xvlm" class="footer-link" target="_blank" rel="noopener" data-i18n="footerHelp">Aide</a>
+         <a href="https://xvlivemanager.fr/forum/" class="footer-link" target="_blank" rel="noopener" data-i18n="footerForum">Forum</a>
          <a href="https://xvlivemanager.fr/dossier-partenaire" class="footer-link" target="_blank" rel="noopener" data-i18n="footerPartner">Partenaire</a>
          <a href="#" id="footerUpdateLink" class="footer-link update-pulse" style="cursor:pointer;" data-i18n="footerUpdate">Vérification...</a>
          <span id="updateStatusMsg" style="margin-left:1em;font-size:0.99em;color:#2564a6;"></span>
@@ -3327,7 +3328,7 @@ document.addEventListener('DOMContentLoaded', function() {
                  }
          const remote = clean(remoteVersion.split('\n')[0]);
          if (localVersion !== remote) {
-           el.innerHTML = `<a href='https://xvlivemanager.fr' target='_blank' style='color:#e02b2b;font-weight:700;text-decoration:underline;'>${translations[lang]?.importantUpdate || "Mise à jour importante"}</a>`;
+           el.innerHTML = `<a href='https://xvlivemanager.fr/mises-a-jour' target='_blank' style='color:#e02b2b;font-weight:700;text-decoration:underline;'>${translations[lang]?.importantUpdate || "Mise à jour importante"}</a>`;
          } else {
            el.textContent = (translations[lang]?.upToDate || "À jour") + " (" + localVersion + ")";
            el.style.color = "#24c82e";
@@ -4051,9 +4052,10 @@ document.addEventListener('DOMContentLoaded', function() {
              levelIntermediateShort: "Intermédiaire",
              levelMasterShort: "Maître",
              levelGrandmasterShort: "Grand-Maître",
-             partnersNoInternet: "Vous devez être connecté à internet pour voir ces informations",
+             partnersNoInternet: "",
              footerSettings: "Réglages",
              footerHelp: "Aide",
+             footerForum: "Forum",
              footerPartner: "Partenaire",
              footerUpdate: "Vérification...",
              serverAddress: "ADRESSE DU SERVEUR :",
@@ -4530,9 +4532,10 @@ document.addEventListener('DOMContentLoaded', function() {
              levelIntermediateShort: "Intermediate",
              levelMasterShort: "Master",
              levelGrandmasterShort: "Grandmaster",
-             partnersNoInternet: "You must be connected to the internet to view this information",
+             partnersNoInternet: "",
              footerSettings: "Settings",
              footerHelp: "Help",
+             footerForum: "Forum",
              footerPartner: "Partner",
              footerUpdate: "Checking...",
              serverAddress: "SERVER ADDRESS:",
@@ -5002,10 +5005,11 @@ levelGrandmasterShort: "Gran Maestro",
 resetBtn: "Reiniciar",
 defaultUser: "Usuario",
 defaultTagline: "Gracias por utilizar XVLIVEMANAGER.",
-partnersNoInternet: "Debe estar conectado a internet para ver esta información",
+partnersNoInternet: "",
 
 footerSettings: "Configuración",
 footerHelp: "Ayuda",
+footerForum: "Foro",
 footerPartner: "Patrocinador",
 footerUpdate: "Comprobando...",
 serverAddress: "DIRECCIÓN DEL SERVIDOR:",
