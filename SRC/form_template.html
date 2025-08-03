@@ -609,6 +609,37 @@ function toEmbedUrl(url) {
                            
             </script>
             <div class="section-subtitle obs-subtitle" style="margin-top:2.2em;">
+               <i class="bi bi-translate" style="color:#bf2a3c"></i>
+               <span data-i18n="langSectionTitle">Langue</span>
+            </div>
+            <div class="dashboard-card obs-card" style="background:rgba(0,0,0,0.20);text-align:center;box-shadow:0 1px 7px rgba(0,0,0,0.06);padding:1.1em 1em 1.2em 1em;">
+               <div style="display:flex;flex-direction:column;align-items:center;">
+                  <div style="display:flex;flex-direction:row;justify-content:center;gap:0.85em;">
+                     <button id="fr-opt" class="lang-opt" type="button" aria-pressed="false" data-lang="fr">Français</button>
+                     <button id="en-opt" class="lang-opt" type="button" aria-pressed="false" data-lang="en">English</button>
+	             <button id="es-opt" class="lang-opt" type="button" aria-pressed="false" data-lang="es">Español</button>
+                  </div>
+                  <div style="font-size:0.97em;color:#bfc5cf;margin-top:1.3em;text-align:center;width:100%;" data-i18n="langSectionDesc">
+                     Sélectionnez votre langue pour l’interface XVLIVEMANAGER.
+                  </div>
+               </div>
+            </div>
+<div class="section-subtitle obs-subtitle" style="margin-top:2.2em;">
+  <i class="bi bi-megaphone-fill" style="color:#bf2a3c"></i>
+  <span data-i18n="forum_title">Forum</span>
+</div>
+
+<div class="dashboard-card obs-card" style="background:rgba(0,0,0,0.20); box-shadow:0 1px 7px rgba(0,0,0,0.06); padding:1.25em 1em 1em 1em;">
+  <div style="display:flex; flex-direction:column; align-items:center;">
+    <div style="font-size:0.98em; color:#d4d8de; margin-bottom:1.2em; text-align:center;" data-i18n="forum_description">
+      Retrouvez toute la communauté, posez vos questions ou partagez vos idées sur notre espace dédié.
+    </div>
+    <a href="https://forum.xvlivemanager.fr/" target="_blank" class="btn btn-primary btn-sm" style="margin-top:0;" data-i18n="access_forum">
+      Accéder au forum
+    </a>
+  </div>
+</div>
+      <div class="section-subtitle obs-subtitle" style="margin-top:2.2em;">
                <i class="bi bi-lightning-fill" style="color:#bf2a3c"></i>
                <span data-i18n="obsOnly">Seulement pour OBS Studio</span>
             </div>
@@ -627,22 +658,6 @@ function toEmbedUrl(url) {
                  img.addEventListener('mouseout',function(){ this.style.transform="none"; });
                });
             </script>
-            <div class="section-subtitle obs-subtitle" style="margin-top:2.2em;">
-               <i class="bi bi-translate" style="color:#bf2a3c"></i>
-               <span data-i18n="langSectionTitle">Langue</span>
-            </div>
-            <div class="dashboard-card obs-card" style="background:rgba(0,0,0,0.20);text-align:center;box-shadow:0 1px 7px rgba(0,0,0,0.06);padding:1.1em 1em 1.2em 1em;">
-               <div style="display:flex;flex-direction:column;align-items:center;">
-                  <div style="display:flex;flex-direction:row;justify-content:center;gap:0.85em;">
-                     <button id="fr-opt" class="lang-opt" type="button" aria-pressed="false" data-lang="fr">Français</button>
-                     <button id="en-opt" class="lang-opt" type="button" aria-pressed="false" data-lang="en">English</button>
-	             <button id="es-opt" class="lang-opt" type="button" aria-pressed="false" data-lang="es">Español</button>
-                  </div>
-                  <div style="font-size:0.97em;color:#bfc5cf;margin-top:1.3em;text-align:center;width:100%;" data-i18n="langSectionDesc">
-                     Sélectionnez votre langue pour l’interface XVLIVEMANAGER.
-                  </div>
-               </div>
-            </div>
          </aside>
          <main class="main-content">
             <div class="main-intro-block">
@@ -4291,6 +4306,9 @@ document.addEventListener('DOMContentLoaded', function() {
              cementMixerDefense: "On a sorti la bétonneuse en défense !",
              maulLikeSteamroller: "La cocotte avance comme un rouleau compresseur !",
              shedFellDogRan: "La cabane est tombée et le chien est parti en courant !",
+             forum_title: "Forum",
+             forum_description: "Retrouvez toute la communauté, posez vos questions ou partagez vos idées sur notre espace dédié.",
+             access_forum: "Accéder au forum",
          
            },
            en: {
@@ -4771,6 +4789,9 @@ document.addEventListener('DOMContentLoaded', function() {
              cementMixerDefense: "We brought out the cement mixer in defense!",
              maulLikeSteamroller: "The maul is moving like a steamroller!",
              shedFellDogRan: "The shed has fallen and the dog has run off!",
+             forum_title: "Forum",
+             forum_description: "Join the community, ask questions or share your ideas on our dedicated space.",
+             access_forum: "Access the forum",
           },
            es: {
 langSectionTitle: "Idioma",
@@ -5251,6 +5272,9 @@ pigInCornRepeat: "¡Otra vez el cerdo en el maíz!",
 cementMixerDefense: "¡Sacamos la mezcladora en defensa!",
 maulLikeSteamroller: "¡El maul avanza como una apisonadora!",
 shedFellDogRan: "¡Se cayó la caseta y el perro salió corriendo!",
+             forum_title: "Foro",
+             forum_description: "Únete a la comunidad, haz preguntas o comparte tus ideas en nuestro espacio dedicado.",
+             access_forum: "Acceder al foro"
          
            }
          };
