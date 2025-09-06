@@ -12,10 +12,7 @@ import base64
 import importlib
 import requests
 import websocket
-import json
 import threading
-import time
-import os
 import zipfile
 import tempfile
 from datetime import datetime, timedelta
@@ -309,8 +306,13 @@ def write_json(filename, data):
 
 def load_data():
     if os.path.exists(JSON_PATH):
-        with open(JSON_PATH, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        try:
+            with open(JSON_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except json.JSONDecodeError:
+            # JSON corrompu → repartir sur une base propre
+            data = {}
+            save_data(data)
     else:
         data = {}
 
@@ -320,7 +322,9 @@ def load_data():
             "running": False,
             "start_timestamp": None
         }
+
     return data
+
 
 def save_data(data):
     with open(JSON_PATH, "w", encoding="utf-8") as f:
@@ -1890,10 +1894,9 @@ def update_commentaires():
             request.form.get('comment_score_adversaire') or
             request.form.get('comment_fin_match') or
             request.form.get('comment_expressions') or
-            request.form.get('comment_custom')
+            request.form.get('comment_custom') or
+            ""
         ).strip()
-
-        texte_normalisé = texte.replace("’", "'").strip()
 
         if texte:
             if joueur:
@@ -1901,136 +1904,7 @@ def update_commentaires():
             else:
                 data["commentaires"].append(f"{minute} - {texte}")
 
-            commentaire_score_domicile = {
-                "ESSAI !!! Magnifique enchaînement collectif, tout en puissance.": 5,
-                "ESSAI !!! Percée fulgurante, quelle action individuelle !": 5,
-                "ESSAI sur interception, quelle lecture du jeu incroyable !": 5,
-                "Transformation réussie, deux points supplémentaires au compteur.": 2,
-                "Pénalité réussie, l’écart se creuse au score.": 3,
-                "DROP !!! Trois points supplémentaires dans la besace !": 3,
-            }
-
-            commentaire_score_adverse = {
-                "Essai inscrit après plusieurs temps de jeu.": 5,
-                "Essai marqué après une interception.": 5,
-                "Transformation réussie suite à l'essai.": 2,
-                "Pénalité réussie sur faute au sol.": 3,
-                "Drop réussi pour ajouter trois points.": 3,
-            }
-
-            score = data.get("score", {"home": "0", "away": "0"})
-            home_score = int(score.get("home", 0))
-            away_score = int(score.get("away", 0))
-
-            if texte_normalisé in commentaire_score_domicile:
-                home_score += commentaire_score_domicile[texte_normalisé]
-            elif texte_normalisé in commentaire_score_adverse:
-                away_score += commentaire_score_adverse[texte_normalisé]
-
-            data["score"]["home"] = str(home_score)
-            data["score"]["away"] = str(away_score)
-
-            with open(os.path.join(HTML_OUTPUT_DIR, "score.html"), "w", encoding="utf-8") as f:
-                f.write(f"""<!DOCTYPE html>
-<html lang='fr'>
-<head><meta charset='UTF-8'><meta http-equiv='refresh' content='5'><title>Score en direct</title><link rel='stylesheet' href='/static/css/score.css'></head>
-<body><h2>Score en direct</h2><div class='columns'><div class='col'><h3>Équipe domicile</h3><div class='score'>{data["score"]["home"]}</div></div>
-<div class='col'><h3>Équipe extérieure</h3><div class='score'>{data["score"]["away"]}</div></div></div></body></html>""")
-
-        buteur_actions = {
-            "ESSAI !!! Magnifique enchaînement collectif, tout en puissance.": ("Essai (🏉)", "home"),
-            "ESSAI !!! Percée fulgurante, quelle action individuelle !": ("Essai (🏉)", "home"),
-            "ESSAI sur interception, quelle lecture du jeu incroyable !": ("Essai (🏉)", "home"),
-            "Transformation réussie, deux points supplémentaires au compteur.": ("Transfo. (🎯)", "home"),
-            "Pénalité réussie, l’écart se creuse au score.": ("Pénalité (🎯)", "home"),
-            "DROP !!! Trois points supplémentaires dans la besace !": ("Drop (🦶)", "home"),
-            "Essai inscrit après plusieurs temps de jeu.": ("Essai (🏉)", "away"),
-            "Essai marqué après une interception.": ("Essai (🏉)", "away"),
-            "Transformation réussie suite à l'essai.": ("Transfo. (🎯)", "away"),
-            "Pénalité réussie sur faute au sol.": ("Pénalité (🎯)", "away"),
-            "Drop réussi pour ajouter trois points.": ("Drop (🦶)", "away")
-        }
-
-        if joueur and texte_normalisé in buteur_actions:
-            action_type, equipe = buteur_actions[texte_normalisé]
-            try:
-                with open(BUTEURS_DATA, "r", encoding="utf-8") as f:
-                    buteurs_data = json.load(f)
-            except FileNotFoundError:
-                buteurs_data = {"home": [], "away": []}
-
-            buteurs_data.setdefault(equipe, [])
-            buteurs_data[equipe].append(f"{minute} - {joueur} - {action_type}")
-
-            with open(BUTEURS_DATA, "w", encoding="utf-8") as f:
-                json.dump(buteurs_data, f, ensure_ascii=False, indent=2)
-
-            generate_buteurs_html()
-
-        commentaire_evenements = {
-            "Carton jaune pour faute répétée.": ("Carton (🟨)", "home"),
-            "Carton rouge direct ! L'équipe est réduite à 14.": ("Carton (🟥)", "home"),
-            "Notre joueur sort sur blessure.": ("Blessure (🚑)", "home"),
-            "Carton jaune contre un joueur adverse pour anti-jeu.": ("Carton (🟨)", "away"),
-            "Carton rouge pour un geste dangereux côté adverse.": ("Carton (🟥)", "away"),
-            "Joueur de l'équipe adverse sort sur blessure.": ("Blessure (🚑)", "away")
-        }
-
-        if texte_normalisé in commentaire_evenements:
-            action, equipe = commentaire_evenements[texte_normalisé]
-            try:
-                with open(EVTS_DATA, "r", encoding="utf-8") as f:
-                    events = json.load(f)
-            except FileNotFoundError:
-                events = {"home": [], "away": []}
-
-            events.setdefault(equipe, [])
-            if joueur:
-                events[equipe].append(f"{minute}′ {joueur} ({action})")
-            else:
-                events[equipe].append(f"{minute}′ ({action})")
-
-            with open(EVTS_DATA, "w", encoding="utf-8") as f:
-                json.dump(events, f, ensure_ascii=False, indent=2)
-
-            generate_evenements_html()
-
         
-        phrases_pause_timer = [
-            "Arret du temps", "Arrêt du temps",
-            "Et c'est la mi-temps ! 40 minutes de haute intensité dans ce premier acte.",
-            "Coup de sifflet final, fin de la rencontre."
-        ]
-        phrases_reprise_timer = [
-            "Reprise du temps"
-        ]
-        phrase_deuxieme_mitemps = ""
-        phrase_premiere_mitemps = "Le coup d'envoi vient d'être donné, c'est parti pour 40 premières minutes intenses !"
-
-        timer_data = load_timer()
-
-        if any(phrase in texte_normalisé for phrase in phrases_pause_timer):
-            if not timer_data.get("paused", False):
-                timer_data["paused"] = True
-                timer_data["paused_at"] = time.time()
-        elif any(phrase in texte_normalisé for phrase in phrases_reprise_timer):
-            if timer_data.get("paused", False) and timer_data.get("paused_at"):
-                paused_duration = time.time() - timer_data["paused_at"]
-                timer_data["start_time"] += paused_duration
-                timer_data["paused"] = False
-                timer_data["paused_at"] = None
-        elif texte_normalisé == phrase_premiere_mitemps:
-            timer_data["start_time"] = time.time()
-            timer_data["paused"] = False
-            timer_data["paused_at"] = None
-            timer_data["offset"] = 0
-        elif texte_normalisé == phrase_deuxieme_mitemps:
-            timer_data["start_time"] = time.time()
-            timer_data["paused"] = False
-            timer_data["paused_at"] = None
-            timer_data["offset"] = 40 * 60
-
-        save_timer(timer_data)
         save_data(data)
 
     commentaires = data.get("commentaires", [])
@@ -2048,7 +1922,6 @@ def update_commentaires():
   <link rel="stylesheet" href="/static/css/livecomments.css">
   <title>Commentaires en direct</title>
   <script>
-   
     function supprimerCommentaire(index) {
       fetch('/delete_commentaire/' + index, { method: 'POST' })
         .then(() => location.reload());
@@ -2082,7 +1955,6 @@ def update_commentaires():
 
         f.write("</body>\n</html>")
 
-    
     return redirect(url_for("admin") + "#commentaires")
 
 @app.route("/delete_commentaire/<int:index>", methods=["POST"])
@@ -2908,7 +2780,15 @@ def get_local_version():
     except Exception:
         return "0", 200, {"Content-Type": "text/plain; charset=utf-8"}
 
-import subprocess
+import subprocess  
+
+@app.route('/favicon.ico')
+def favicon():
+    return redirect("/static/icons/favicon.ico")
+
+@app.route('/apple-touch-icon.png')
+def apple_touch_icon():
+    return redirect("/static/icons/apple-touch-icon.png")
 
 @app.route("/run_update_script", methods=["POST"])
 def run_update_script():
@@ -2927,12 +2807,26 @@ def run_update_script():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-import os
-
 @app.route("/shutdown", methods=["POST"])
 def shutdown():
-    app.logger.info("Demande d'arrêt reçue (shutdown route appelée).")
-    os._exit(0)
+    def _stop(pid):
+        time.sleep(0.2)  # laisse le 204 partir
+        try:
+            fn = request.environ.get("werkzeug.server.shutdown")
+            if fn:
+                fn()  # tente l'arrêt propre
+        except:
+            pass
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+        try:
+            subprocess.call(["taskkill", "/PID", str(pid), "/T", "/F"],
+                            creationflags=0x08000000)  # CREATE_NO_WINDOW
+        except:
+            pass
+        os._exit(0)  # filet de sécurité
+    threading.Thread(target=_stop, args=(os.getpid(),), daemon=True).start()
+    return ("", 204)
+
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True, use_reloader=False)
