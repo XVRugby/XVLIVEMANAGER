@@ -6,27 +6,22 @@ Const TIMEOUT = 30000
 Const WIN_W = 1280
 Const WIN_H = 800
 
-Dim fso, sh, vbsDir, srcDir, cmd, url
+Dim fso, sh, appDir, cmd, url
 Set fso = CreateObject("Scripting.FileSystemObject")
 Set sh  = CreateObject("WScript.Shell")
 
-vbsDir = fso.GetParentFolderName(WScript.ScriptFullName)
-If UCase(fso.GetFileName(vbsDir)) = "SRC" Then
-  srcDir = vbsDir
-Else
-  srcDir = vbsDir & "\SRC"
-End If
+appDir = fso.GetParentFolderName(WScript.ScriptFullName)
 
-If Not fso.FileExists(srcDir & "\python\python.exe") Then
-  MsgBox "Introuvable: " & srcDir & "\python\python.exe", 16, "Erreur"
+If Not fso.FileExists(appDir & "\python\python.exe") Then
+  MsgBox "Introuvable: " & appDir & "\python\python.exe", 16, "Erreur"
   WScript.Quit 1
 End If
-If Not fso.FileExists(srcDir & "\admin.py") Then
-  MsgBox "Introuvable: " & srcDir & "\admin.py", 16, "Erreur"
+If Not fso.FileExists(appDir & "\admin.py") Then
+  MsgBox "Introuvable: " & appDir & "\admin.py", 16, "Erreur"
   WScript.Quit 1
 End If
 
-cmd = "cmd.exe /c cd /d " & QQ(srcDir) & " && " & QQ("python\python.exe") & " " & QQ("admin.py")
+cmd = "cmd.exe /c cd /d " & QQ(appDir) & " && " & QQ("python\python.exe") & " " & QQ("admin.py")
 sh.Run cmd, 0, False
 
 If WaitUrl(URL1, TIMEOUT) Then
