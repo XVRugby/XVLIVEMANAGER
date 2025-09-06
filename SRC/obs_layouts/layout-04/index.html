@@ -652,18 +652,28 @@ async function updateCommentsSidebar() {
 
     const comments = Array.from(doc.querySelectorAll('.comment span'))
       .slice(0, 1)
-      .map(el => el.innerText);
-    const sidebar = document.getElementById('comments-sidebar');
-    if (!sidebar) return;
-    sidebar.innerHTML = `
-      <div class="comments-title">Direct</div>
-      ${comments.map(txt => `<div class="comment-latest">${txt}</div>`).join('')}
-    `;
-    sidebar.classList.remove('hide');
-  } catch {
+      .map(el => el.innerText.trim())
+      .filter(txt => txt.length > 0);
 
     const sidebar = document.getElementById('comments-sidebar');
-    if (sidebar) sidebar.classList.add('hide');
+    if (!sidebar) return;
+
+    if (comments.length > 0) {
+      sidebar.innerHTML = `
+        <div class="comments-title">Direct</div>
+        ${comments.map(txt => `<div class="comment-latest">${txt}</div>`).join('')}
+      `;
+      sidebar.classList.remove('hide');
+    } else {
+      sidebar.classList.add('hide');
+      sidebar.innerHTML = '';
+    }
+  } catch {
+    const sidebar = document.getElementById('comments-sidebar');
+    if (sidebar) {
+      sidebar.classList.add('hide');
+      sidebar.innerHTML = '';
+    }
   }
 }
 
