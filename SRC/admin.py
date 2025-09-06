@@ -1,4 +1,6 @@
-import os
+import os, pathlib
+os.chdir(pathlib.Path(__file__).resolve().parent)
+
 import sys
 import hashlib
 import json
@@ -31,9 +33,6 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 from bs4 import BeautifulSoup
-
-
-
 import socket
 
 def get_local_ip():
